@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<title>Joining List Dashboard Scouts</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & ROOT ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --navy: #1A1F3A;
+  --teal: #00A499;
+  --amber: #F5A623;
+  --red: #E63312;
+  --purple: #7B2D8B;
+  --green: #00855D;
+  --bg: #F0EDE8;
+  --card: #FFFFFF;
+  --text: #1A1F3A;
+  --muted: #6B7280;
+  --border: #E2DDD6;
+  --squirrel: #E8470A;
+  --beaver: #8B4513;
+  --cub: #D4940A;
+  --scout-c: #2563EB;
+  --explorer: #059669;
+  --network: #7C3AED;
+}
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ===== HEADER ===== */
+.header {
+  background:var(--navy); padding:1.8rem 2rem 0;
+  position:relative; overflow:hidden;
+}
+.header::before {
+  content:''; position:absolute; top:-60px; right:-60px;
+  width:260px; height:260px; border-radius:50%;
+  background:rgba(245,166,35,0.12);
+}
+.header::after {
+  content:''; position:absolute; bottom:-40px; left:40%;
+  width:160px; height:160px; border-radius:50%;
+  background:rgba(0,164,153,0.10);
+}
+.header-inner { max-width:1400px; margin:0 auto; position:relative; z-index:1; }
+.header-top { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1rem; padding-bottom:0.4rem; }
+.header-tag { font-size:0.68rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--amber); margin-bottom:0.3rem; }
+.header h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4vw,3.2rem); color:#fff; letter-spacing:0.03em; line-height:1; }
+.header-sub { color:rgba(255,255,255,0.5); font-size:0.82rem; margin-top:3px; }
+.header-stats { display:flex; gap:1.8rem; flex-wrap:wrap; padding-bottom:0.6rem; }
+.stat-item { display:flex; flex-direction:column; gap:1px; }
+.stat-label { font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.35); font-weight:500; }
+.stat-value { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:var(--amber); line-height:1; }
+
+/* ===== TABS ===== */
+.tab-bar { display:flex; gap:0; margin-top:1.2rem; position:relative; z-index:2; }
+.tab-btn {
+  padding:0.7rem 1.8rem; font-family:'DM Sans',sans-serif; font-size:0.82rem;
+  font-weight:600; border:none; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.55);
+  cursor:pointer; border-radius:10px 10px 0 0; transition:all 0.2s; letter-spacing:0.02em;
+  display:flex; align-items:center; gap:6px;
+}
+.tab-btn:hover { background:rgba(255,255,255,0.14); color:rgba(255,255,255,0.85); }
+.tab-btn.active { background:var(--bg); color:var(--navy); font-weight:700; }
+
+/* ===== TAB CONTENT ===== */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+.content-wrap { max-width:1400px; margin:0 auto; padding:2rem; }
+
+/* ===== ANALYTICS TAB ===== */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:1rem; margin-bottom:2rem; }
+.kpi-card {
+  background:var(--card); border-radius:12px; padding:1.1rem 1.3rem;
+  border:1px solid var(--border); position:relative; overflow:hidden;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:var(--accent,var(--teal)); border-radius:12px 0 0 12px;
+}
+.kpi-label { font-size:0.68rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:0.3rem; }
+.kpi-value { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; line-height:1; color:var(--text); }
+.kpi-sub { font-size:0.7rem; color:var(--muted); margin-top:0.15rem; }
+
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:1.4rem; margin-bottom:1.4rem; }
+.chart-card { background:var(--card); border-radius:14px; border:1px solid var(--border); padding:1.4rem; }
+.chart-card h3 { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:0.07em; color:var(--text); margin-bottom:0.2rem; }
+.chart-card .csub { font-size:0.73rem; color:var(--muted); margin-bottom:1rem; }
+.chart-wrap { position:relative; height:230px; }
+.chart-wrap-tall { position:relative; height:280px; }
+
+.alert-card { background:var(--card); border-radius:14px; border:1px solid var(--border); overflow:hidden; margin-bottom:1.4rem; }
+.alert-header { background:linear-gradient(135deg,#FFF7ED,#FEF3C7); padding:1rem 1.4rem; border-bottom:1px solid #FDE68A; display:flex; align-items:center; gap:0.5rem; }
+.alert-header h3 { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:0.07em; color:#92400E; }
+.a-table { width:100%; border-collapse:collapse; }
+.a-table thead tr { background:#F9FAFB; }
+.a-table th { font-size:0.67rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:0.65rem 1.4rem; text-align:left; border-bottom:1px solid var(--border); }
+.a-table td { padding:0.65rem 1.4rem; font-size:0.83rem; border-bottom:1px solid var(--border); }
+.a-table tbody tr:last-child td { border-bottom:none; }
+.a-table tbody tr:hover { background:#FAFAFA; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.67rem; font-weight:600; }
+.badge-red { background:#FEE2E2; color:#991B1B; }
+.badge-amber { background:#FEF3C7; color:#92400E; }
+
+.pc-info { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:0.5rem; margin-top:1rem; }
+.pc-box { background:var(--bg); border-radius:8px; padding:0.5rem 0.7rem; text-align:center; border:1px solid var(--border); }
+.pc-code { font-family:'Bebas Neue',sans-serif; font-size:0.85rem; letter-spacing:0.08em; color:var(--navy); }
+.pc-count { font-size:1.2rem; font-weight:600; color:var(--teal); display:block; }
+
+.insights { background:var(--navy); border-radius:14px; padding:1.6rem; margin-bottom:1.5rem; }
+.insights h3 { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:0.06em; color:var(--amber); margin-bottom:0.9rem; }
+.insight-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0.7rem; }
+.insight-item { display:flex; gap:0.7rem; align-items:flex-start; }
+.insight-num { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:var(--amber); line-height:1; flex-shrink:0; width:28px; }
+.insight-text { color:rgba(255,255,255,0.78); font-size:0.8rem; line-height:1.5; padding-top:4px; }
+.insight-text strong { color:#fff; }
+
+/* ===== DATA TABLE TAB ===== */
+.filter-bar {
+  background:var(--card); border-radius:12px; border:1px solid var(--border);
+  padding:1.1rem 1.4rem; margin-bottom:1.4rem;
+  display:flex; flex-wrap:wrap; gap:0.7rem; align-items:flex-end;
+}
+.fg { display:flex; flex-direction:column; gap:3px; }
+.fg label { font-size:0.67rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+.fg select, .fg input {
+  border:1px solid var(--border); border-radius:7px; padding:0.42rem 0.65rem;
+  font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--text);
+  background:#fff; min-width:130px; outline:none;
+}
+.fg select:focus, .fg input:focus { border-color:var(--teal); }
+.fg-search { flex:1; min-width:180px; }
+.fg-search input { width:100%; }
+.filter-stats { margin-left:auto; align-self:flex-end; font-size:0.78rem; color:var(--muted); white-space:nowrap; }
+.filter-stats span { font-weight:700; color:var(--text); }
+.btn-reset {
+  padding:0.42rem 0.9rem; background:var(--bg); border:1px solid var(--border);
+  border-radius:7px; font-family:'DM Sans',sans-serif; font-size:0.78rem;
+  cursor:pointer; color:var(--muted); font-weight:500; align-self:flex-end;
+}
+.btn-reset:hover { border-color:var(--teal); color:var(--text); }
+
+.table-wrap { background:var(--card); border-radius:12px; border:1px solid var(--border); overflow:auto; max-height:65vh; }
+.dt { width:100%; border-collapse:collapse; font-size:0.81rem; }
+.dt thead tr { background:#F8F6F2; }
+.dt th {
+  padding:0.65rem 0.9rem; text-align:left; font-size:0.66rem; font-weight:600;
+  letter-spacing:0.08em; text-transform:uppercase; color:var(--muted);
+  border-bottom:1px solid var(--border); white-space:nowrap; cursor:pointer;
+  user-select:none; position:sticky; top:0; background:#F8F6F2; z-index:2;
+}
+.dt th:hover { color:var(--text); }
+.dt th .sa::after { content:'↕'; opacity:0.3; margin-left:3px; }
+.dt th.asc .sa::after { content:'↑'; opacity:1; }
+.dt th.desc .sa::after { content:'↓'; opacity:1; }
+.dt td { padding:0.6rem 0.9rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+.dt tbody tr:last-child td { border-bottom:none; }
+.dt tbody tr:hover { background:#FAFAF8; }
+
+.sb { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.67rem; font-weight:700; letter-spacing:0.03em; }
+.sec-squirrels { background:#FEE8E0; color:#C13600; }
+.sec-beavers { background:#F5E6DA; color:#6B3410; }
+.sec-cubs { background:#FEF3C7; color:#92400E; }
+.sec-scouts { background:#DBEAFE; color:#1E40AF; }
+.sec-explorers { background:#D1FAE5; color:#065F46; }
+.sec-network { background:#EDE9FE; color:#5B21B6; }
+.sec-unknown { background:#F3F4F6; color:#6B7280; }
+
+.wb { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.67rem; font-weight:600; }
+.w-short { background:#D1FAE5; color:#065F46; }
+.w-medium { background:#FEF3C7; color:#92400E; }
+.w-long { background:#FEE2E2; color:#991B1B; }
+.w-critical { background:#7F1D1D; color:#fff; }
+.no-results { text-align:center; padding:3rem; color:var(--muted); font-size:0.88rem; }
+.notes-icon { cursor:pointer; font-size:0.9rem; }
+
+/* ===== MAP TAB ===== */
+.map-toolbar {
+  background:var(--card); border-radius:12px; border:1px solid var(--border);
+  padding:0.9rem 1.2rem; margin-bottom:1rem;
+  display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;
+}
+.mp {
+  padding:4px 12px; border-radius:20px; border:1px solid var(--border);
+  font-size:0.74rem; font-weight:600; cursor:pointer; background:#fff;
+  transition:all 0.15s; color:var(--muted); font-family:'DM Sans',sans-serif;
+}
+.mp:hover { border-color:var(--teal); color:var(--text); }
+.mp.active { border-color:transparent; color:#fff; }
+.mp-all.active { background:var(--navy); }
+.mp-sq.active { background:var(--squirrel); }
+.mp-bv.active { background:var(--beaver); }
+.mp-cu.active { background:var(--cub); }
+.mp-sc.active { background:var(--scout-c); }
+.mp-nw.active { background:var(--network); }
+
+.map-card { background:var(--card); border-radius:12px; border:1px solid var(--border); overflow:hidden; }
+#leaflet-map { width:100%; height:600px; z-index:0; }
+.map-status-box { font-size:0.72rem; color:var(--muted); padding:0.3rem 0; display:inline-block; }
+.leaflet-popup-content-wrapper { border-radius:10px !important; box-shadow:0 4px 16px rgba(0,0,0,0.18) !important; padding:0 !important; overflow:hidden; }
+.leaflet-popup-content { margin:0 !important; }
+.map-popup { padding:0.75rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; line-height:1.55; min-width:170px; }
+.map-popup strong { font-size:0.88rem; color:#1A1F3A; display:block; margin-bottom:3px; }
+.map-popup .pop-row { color:#6B7280; font-size:0.75rem; }
+.map-popup .pop-wait { font-weight:600; color:#1A1F3A; }
+.li { display:flex; align-items:center; gap:5px; margin-bottom:3px; font-family:'DM Sans',sans-serif; font-size:0.72rem; }
+.ld { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:1.5px solid rgba(255,255,255,0.6); }
+.map-no-pc {
+  background:var(--card); border-radius:12px; border:1px solid var(--border);
+  padding:1rem 1.4rem; margin-top:1rem; font-size:0.8rem; color:var(--muted);
+}
+.map-no-pc strong { color:var(--text); display:block; margin-bottom:0.3rem; }
+
+
+/* ===== EMAIL TOOLBAR ===== */
+.email-toolbar {
+  background:var(--navy); border-radius:12px; padding:1rem 1.4rem;
+  margin-bottom:1rem; display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap;
+}
+.email-toolbar .sel-count { color:rgba(255,255,255,0.6); font-size:0.8rem; }
+.email-toolbar .sel-count span { color:var(--amber); font-weight:700; font-size:1rem; }
+.email-btn {
+  padding:0.45rem 1rem; border-radius:8px; border:none; cursor:pointer;
+  font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600;
+  display:flex; align-items:center; gap:6px; transition:all 0.15s;
+}
+.email-btn-still { background:rgba(255,255,255,0.12); color:#fff; }
+.email-btn-still:hover { background:rgba(255,255,255,0.2); }
+.email-btn-trial { background:var(--amber); color:var(--navy); }
+.email-btn-trial:hover { background:#e69500; }
+.email-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.sel-all-btn { background:transparent; border:1px solid rgba(255,255,255,0.25); color:rgba(255,255,255,0.7); padding:0.35rem 0.8rem; border-radius:7px; font-size:0.75rem; cursor:pointer; font-family:'DM Sans',sans-serif; }
+.sel-all-btn:hover { border-color:rgba(255,255,255,0.5); color:#fff; }
+/* row checkbox */
+.dt td input[type=checkbox], .dt th input[type=checkbox] {
+  width:15px; height:15px; cursor:pointer; accent-color:var(--teal);
+}
+/* ===== EMAIL COMPOSE MODAL ===== */
+.emodal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; }
+.emodal-overlay.open { display:flex; }
+.emodal {
+  background:#fff; border-radius:16px; width:min(680px,95vw); max-height:90vh;
+  overflow-y:auto; box-shadow:0 24px 80px rgba(0,0,0,0.25); display:flex; flex-direction:column;
+}
+.emodal-header { background:var(--navy); padding:1.2rem 1.6rem; border-radius:16px 16px 0 0; display:flex; align-items:center; justify-content:space-between; }
+.emodal-header h3 { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:0.06em; color:#fff; }
+.emodal-close { color:rgba(255,255,255,0.6); cursor:pointer; font-size:1.2rem; background:none; border:none; }
+.emodal-body { padding:1.4rem 1.6rem; flex:1; }
+.emodal-label { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:0.3rem; display:block; }
+.emodal-recipients { background:var(--bg); border-radius:8px; padding:0.6rem 0.8rem; font-size:0.78rem; color:var(--muted); margin-bottom:1rem; max-height:80px; overflow-y:auto; line-height:1.7; }
+.emodal input[type=text] {
+  width:100%; border:1px solid var(--border); border-radius:8px; padding:0.5rem 0.8rem;
+  font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--text);
+  margin-bottom:1rem; outline:none;
+}
+.emodal input[type=text]:focus { border-color:var(--teal); }
+.emodal textarea {
+  width:100%; border:1px solid var(--border); border-radius:8px; padding:0.6rem 0.8rem;
+  font-family:'DM Sans',sans-serif; font-size:0.83rem; color:var(--text); line-height:1.6;
+  resize:vertical; min-height:240px; outline:none;
+}
+.emodal textarea:focus { border-color:var(--teal); }
+.emodal-hint { font-size:0.72rem; color:var(--muted); margin-top:0.4rem; margin-bottom:1rem; }
+.emodal-footer { padding:1rem 1.6rem; border-top:1px solid var(--border); display:flex; gap:0.7rem; justify-content:flex-end; background:#FAFAFA; border-radius:0 0 16px 16px; }
+.emodal-copy-btn { padding:0.55rem 1.1rem; background:var(--teal); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; cursor:pointer; display:inline-flex; align-items:center; }
+.emodal-copy-btn:hover { filter:brightness(1.1); }
+.emodal-copy-btn:hover { background:#008f85; }
+.emodal-cancel-btn { padding:0.55rem 1.1rem; background:var(--bg); border:1px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.85rem; cursor:pointer; color:var(--muted); }
+.emodal-cancel-btn:hover { border-color:var(--text); color:var(--text); }
+.copy-success { display:none; color:var(--teal); font-size:0.8rem; align-self:center; font-weight:600; }
+/* ===== UPLOAD TAB ===== */
+.upload-hero {
+  background:var(--card); border-radius:16px; border:2px dashed var(--border);
+  padding:3rem 2rem; text-align:center; cursor:pointer; transition:all 0.2s;
+  margin-top:1.5rem; position:relative;
+}
+.upload-hero:hover, .upload-hero.dragover { border-color:var(--teal); background:#F5FFFE; }
+.upload-hero input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-icon { font-size:2.5rem; margin-bottom:0.8rem; }
+.upload-hero h3 { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:0.06em; color:var(--navy); margin-bottom:0.4rem; }
+.upload-hero p { font-size:0.83rem; color:var(--muted); }
+.upload-hero .upload-hint { font-size:0.72rem; color:var(--muted); margin-top:0.5rem; }
+.upload-status { margin-top:1rem; padding:0.8rem 1rem; border-radius:10px; font-size:0.83rem; display:none; }
+.upload-status.success { background:#D1FAE5; color:#065F46; display:block; }
+.upload-status.error { background:#FEE2E2; color:#991B1B; display:block; }
+.upload-preview { background:var(--card); border-radius:12px; border:1px solid var(--border); margin-top:1.4rem; overflow:hidden; display:none; }
+.upload-preview-header { padding:1rem 1.4rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.upload-preview-header h4 { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:0.06em; color:var(--navy); }
+.apply-btn { padding:0.5rem 1.2rem; background:var(--teal); color:#fff; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; cursor:pointer; }
+.apply-btn:hover { background:#008f85; }
+.upload-table-wrap { overflow-x:auto; max-height:400px; overflow-y:auto; }
+.upload-table-wrap table { width:100%; border-collapse:collapse; font-size:0.78rem; }
+.upload-table-wrap th { background:#F8F6F2; padding:0.5rem 0.8rem; text-align:left; font-size:0.65rem; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); white-space:nowrap; }
+.upload-table-wrap td { padding:0.5rem 0.8rem; border-bottom:1px solid var(--border); white-space:nowrap; }
+.upload-info { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1rem; margin-top:1.4rem; }
+.upload-info-card { background:var(--card); border-radius:10px; border:1px solid var(--border); padding:0.9rem 1.1rem; }
+.upload-info-card .ui-label { font-size:0.67rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:0.2rem; }
+.upload-info-card .ui-val { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--navy); line-height:1; }
+
+/* ===== MODAL ===== */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:#fff; border-radius:14px; padding:1.6rem; max-width:460px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.modal h3 { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:0.05em; margin-bottom:0.7rem; }
+.modal p { font-size:0.84rem; color:var(--muted); line-height:1.6; }
+.modal-close { float:right; cursor:pointer; font-size:1.1rem; color:var(--muted); }
+
+footer { text-align:center; padding:1.2rem; color:var(--muted); font-size:0.72rem; border-top:1px solid var(--border); margin-top:1rem; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <div class="header-tag">Scout Group — Joining List</div>
+        <h1>Waiting List Dashboard</h1>
+        <div class="header-sub">As of 19 March 2026 &nbsp;·&nbsp; All sections</div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item"><span class="stat-label">Total</span><span class="stat-value">79</span></div>
+        <div class="stat-item"><span class="stat-label">Avg wait</span><span class="stat-value">12.9<span style="font-size:0.9rem"> mo</span></span></div>
+        <div class="stat-item"><span class="stat-label">Median wait</span><span class="stat-value">9.3<span style="font-size:0.9rem"> mo</span></span></div>
+        <div class="stat-item"><span class="stat-label">2+ yr wait</span><span class="stat-value">8</span></div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('analytics',this)">📊 Analytics</button>
+      <button class="tab-btn" onclick="switchTab('table',this)">📋 Member Data</button>
+      <button class="tab-btn" onclick="switchTab('map',this)">📍 Map</button>
+      <button class="tab-btn" onclick="switchTab('upload',this)">📂 Upload Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 1: ANALYTICS ==================== -->
+<div id="tab-analytics" class="tab-panel active">
+<div class="content-wrap">
+
+  <div class="kpi-grid" style="margin-top:1.5rem">
+    <div class="kpi-card" style="--accent:#E8470A"><div class="kpi-label">Squirrels (4–6)</div><div class="kpi-value">25</div><div class="kpi-sub">Avg wait: 6.9 months</div></div>
+    <div class="kpi-card" style="--accent:#8B4513"><div class="kpi-label">Beavers (6–8)</div><div class="kpi-value">17</div><div class="kpi-sub">Avg wait: 10.7 months</div></div>
+    <div class="kpi-card" style="--accent:#D4940A"><div class="kpi-label">Cubs (8–10.5)</div><div class="kpi-value">27</div><div class="kpi-sub">Avg wait: 14.0 months</div></div>
+    <div class="kpi-card" style="--accent:#2563EB"><div class="kpi-label">Scouts (10.5–14)</div><div class="kpi-value">7</div><div class="kpi-sub">Avg wait: 17.6 months</div></div>
+    <div class="kpi-card" style="--accent:#E63312"><div class="kpi-label">Waiting 2+ years</div><div class="kpi-value">5</div><div class="kpi-sub">Excl. Network members</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <h3>Members by Scouting Section</h3><div class="csub">Based on current age vs section age bands</div>
+      <div class="chart-wrap"><canvas id="sectionChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Waiting Time Distribution</h3><div class="csub">How long members have been on the list</div>
+      <div class="chart-wrap"><canvas id="waitChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <h3>Age Distribution</h3><div class="csub">Age profile of all children (76 with known DOB)</div>
+      <div class="chart-wrap-tall"><canvas id="ageHistChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Applications by Year Joined List</h3><div class="csub">Growth in registrations over time</div>
+      <div class="chart-wrap-tall"><canvas id="joinYearChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="chart-card">
+      <h3>Average Wait by Section</h3><div class="csub">Older sections face longer waits</div>
+      <div class="chart-wrap"><canvas id="sectionWaitChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Postcode District Breakdown</h3><div class="csub">Where families live (61 of 79 have postcodes)</div>
+      <div class="chart-wrap"><canvas id="postcodeChart"></canvas></div>
+      <div class="pc-info" style="margin-top:0.8rem">
+        <div class="pc-box"><div class="pc-code">SO22</div><span class="pc-count">49</span><div style="font-size:0.62rem;color:var(--muted)">Winchester West</div></div>
+        <div class="pc-box"><div class="pc-code">SO23</div><span class="pc-count">10</span><div style="font-size:0.62rem;color:var(--muted)">Winchester City</div></div>
+        <div class="pc-box"><div class="pc-code">SO21</div><span class="pc-count">2</span><div style="font-size:0.62rem;color:var(--muted)">Winchester Rural</div></div>
+        <div class="pc-box"><div class="pc-code" style="color:var(--muted)">None</div><span class="pc-count" style="color:var(--muted);font-size:1rem">18</span><div style="font-size:0.62rem;color:var(--muted)">No postcode</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-card">
+    <div class="alert-header"><span>⚠️</span><h3>Long-Wait Members — Action Required (2+ years)</h3></div>
+    <table class="a-table">
+      <thead><tr><th>Name</th><th>Section</th><th>Wait</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td>Isaac Blunn</td><td>Scouts (10.5–14)</td><td>65.4 months (5.5 yrs)</td><td><span class="badge badge-red">Critical</span></td></tr>
+        <tr><td>Fabian Greensmith Gil</td><td>Cubs (8–10.5)</td><td>46.7 months (3.9 yrs)</td><td><span class="badge badge-red">Critical</span></td></tr>
+        <tr><td>Josh Babb</td><td>Beavers (6–8)</td><td>32.8 months (2.7 yrs)</td><td><span class="badge badge-amber">High</span></td></tr>
+        <tr><td>Harvey Thompson</td><td>Cubs (8–10.5)</td><td>31.3 months (2.6 yrs)</td><td><span class="badge badge-amber">High</span></td></tr>
+        <tr><td>Dalton Duffy</td><td>Beavers (6–8)</td><td>30.2 months (2.5 yrs)</td><td><span class="badge badge-amber">High</span></td></tr>
+        <tr><td>Katerina Cochrane-Brown</td><td>Cubs (8–10.5)</td><td>28.9 months (2.4 yrs)</td><td><span class="badge badge-amber">High</span></td></tr>
+        <tr><td>Henry Smith</td><td>Cubs (8–10.5)</td><td>24.2 months (2.0 yrs)</td><td><span class="badge badge-amber">High</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="insights">
+    <h3>🔍 Key Insights &amp; Recommendations</h3>
+    <div class="insight-list">
+      <div class="insight-item"><div class="insight-num">1</div><div class="insight-text"><strong>Cubs is your biggest pressure point.</strong> 27 children (34%) are Cub-age with an average wait of 14 months — the highest of any age-appropriate section. Consider opening an additional pack.</div></div>
+      <div class="insight-item"><div class="insight-num">2</div><div class="insight-text"><strong>Squirrels demand is strong but short-wait.</strong> 25 children aged 4–6 are waiting only 6.9 months on average. Monitor as these children age into Beavers.</div></div>
+      <div class="insight-item"><div class="insight-num">3</div><div class="insight-text"><strong>2025 saw a surge in applications.</strong> 48 of 79 children (61%) joined in 2025 alone — suggesting rapidly growing local demand, potentially linked to new housing in SO22.</div></div>
+      <div class="insight-item"><div class="insight-num">4</div><div class="insight-text"><strong>SO22 dominates geographically.</strong> 80% of located families are in SO22 (Winchester West). A tightly clustered catchment serving high local demand.</div></div>
+      <div class="insight-item"><div class="insight-num">5</div><div class="insight-text"><strong>5 families waiting over 2 years</strong> (excl. Network). Children may be ageing out — particularly Isaac Blunn (5.5 yrs) and Fabian Greensmith Gil (3.9 yrs). Immediate contact recommended.</div></div>
+      <div class="insight-item"><div class="insight-num">6</div><div class="insight-text"><strong>18 records have no postcode.</strong> Completing this data would improve location analysis and help identify where additional sections are most needed.</div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== TAB 2: DATA TABLE ==================== -->
+<div id="tab-table" class="tab-panel">
+<div class="content-wrap">
+
+  <div class="filter-bar" style="margin-top:1.5rem">
+    <div class="fg fg-search">
+      <label>Search</label>
+      <input type="text" id="searchInput" placeholder="Name, postcode, address…" oninput="applyFilters()">
+    </div>
+    <div class="fg">
+      <label>Section</label>
+      <select id="filterSection" onchange="applyFilters()">
+        <option value="">All sections</option>
+        <option value="Squirrels">Squirrels (4–6)</option>
+        <option value="Beavers">Beavers (6–8)</option>
+        <option value="Cubs">Cubs (8–10.5)</option>
+        <option value="Scouts">Scouts (10.5–14)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Wait time</label>
+      <select id="filterWait" onchange="applyFilters()">
+        <option value="">Any wait</option>
+        <option value="short">Short (&lt; 6 mo)</option>
+        <option value="medium">Medium (6–12 mo)</option>
+        <option value="long">Long (1–2 yr)</option>
+        <option value="critical">Critical (2+ yr)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Postcode area</label>
+      <select id="filterPC" onchange="applyFilters()">
+        <option value="">All areas</option>
+        <option value="SO22">SO22 – Winchester West</option>
+        <option value="SO23">SO23 – Winchester City</option>
+        <option value="SO21">SO21 – Rural</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Notes</label>
+      <select id="filterNotes" onchange="applyFilters()">
+        <option value="">All</option>
+        <option value="yes">Has notes</option>
+      </select>
+    </div>
+    <button class="btn-reset" onclick="resetFilters()">Reset</button>
+    <div class="filter-stats">Showing <span id="countShown">79</span> of 79</div>
+  </div>
+
+  <div class="email-toolbar" id="emailToolbar">
+    <div class="sel-count">Selected: <span id="selCount">0</span></div>
+    <button class="sel-all-btn" onclick="toggleSelectAll()">Select all visible</button>
+    <button class="email-btn email-btn-still" id="btnStill" disabled onclick="openEmail('still')">✉️ Still interested?</button>
+    <button class="email-btn email-btn-trial" id="btnTrial" disabled onclick="openEmail('trial')">🎉 Trial session invite</button>
+    <div style="margin-left:auto;font-size:0.72rem;color:rgba(255,255,255,0.45)">Tick rows to compose emails</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="dt" id="membersTable">
+      <thead>
+        <tr>
+          <th style="width:32px"><input type="checkbox" id="selectAllChk" onchange="toggleSelectAll()" title="Select all"></th>
+          <th style="width:36px">#</th>
+          <th onclick="sortTable('name')" data-col="name">Name<span class="sa"></span></th>
+          <th onclick="sortTable('dob')" data-col="dob">DOB<span class="sa"></span></th>
+          <th onclick="sortTable('age')" data-col="age">Age<span class="sa"></span></th>
+          <th onclick="sortTable('section')" data-col="section">Section<span class="sa"></span></th>
+          <th onclick="sortTable('joined')" data-col="joined">Joined List<span class="sa"></span></th>
+          <th onclick="sortTable('waiting')" data-col="waiting">Wait<span class="sa"></span></th>
+          <th onclick="sortTable('postcode')" data-col="postcode">Postcode<span class="sa"></span></th>
+          <th>Address</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="noResults" class="no-results" style="display:none">No members match the current filters.</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== TAB 3: MAP ==================== -->
+<div id="tab-map" class="tab-panel">
+<div class="content-wrap">
+
+  <div class="map-toolbar" style="margin-top:1.5rem">
+    <span style="font-size:0.72rem;font-weight:600;color:var(--muted);margin-right:4px">FILTER:</span>
+    <button class="mp mp-all active" onclick="filterMap('all',this)">All sections</button>
+    <button class="mp mp-sq" onclick="filterMap('Squirrels',this)">🐿 Squirrels</button>
+    <button class="mp mp-bv" onclick="filterMap('Beavers',this)">🦫 Beavers</button>
+    <button class="mp mp-cu" onclick="filterMap('Cubs',this)">🐻 Cubs</button>
+    <button class="mp mp-sc" onclick="filterMap('Scouts',this)">⚜️ Scouts</button>
+
+    <span id="mapCountLabel" style="margin-left:auto;font-size:0.73rem;color:var(--muted)">—</span>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;flex-wrap:wrap;gap:0.5rem;">
+    <div id="mapStatusBox" class="map-status-box">⏳ Fetching coordinates…</div>
+    <div style="font-size:0.7rem;color:var(--muted)">Click a marker for details · Scroll to zoom · Drag to pan</div>
+  </div>
+  <div class="map-card">
+    <div id="leaflet-map"></div>
+  </div>
+
+  <div class="map-no-pc" id="noPostcodeList">
+    <strong>18 members have no postcode on file — not shown on map:</strong>
+    <span id="noPostcodeNames" style="font-size:0.78rem"></span>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="notesModal">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal()">✕</span>
+    <h3 id="modalName">Notes</h3>
+    <p id="modalNotes"></p>
+  </div>
+</div>
+
+<!-- EMAIL COMPOSE MODAL -->
+<div class="emodal-overlay" id="emailModal">
+  <div class="emodal">
+    <div class="emodal-header">
+      <h3 id="emailModalTitle">Compose Email</h3>
+      <button class="emodal-close" onclick="closeEmailModal()">✕</button>
+    </div>
+    <div class="emodal-body">
+      <label class="emodal-label">To (<span id="recipientCount">0</span> recipients)</label>
+      <div class="emodal-recipients" id="recipientList"></div>
+      <label class="emodal-label">Subject</label>
+      <input type="text" id="emailSubject" value="">
+      <label class="emodal-label">Email Body</label>
+      <div class="emodal-hint">💡 Use <code>[FIRST NAME]</code> as a placeholder — when you use Gmail or Mail App with multiple recipients, a separate window opens per person with their name auto-filled.</div>
+      <textarea id="emailBody"></textarea>
+    </div>
+    <div class="emodal-footer">
+      <span class="copy-success" id="copySuccess">✓ Copied!</span>
+      <button class="emodal-cancel-btn" onclick="closeEmailModal()">Cancel</button>
+      <button class="emodal-copy-btn" style="background:#6B7280" onclick="copyEmail()" title="Copy subject + body to clipboard">📋 Copy</button>
+      <button class="emodal-copy-btn" style="background:#1A73E8" onclick="openGmail()" title="Open in Gmail (browser)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="vertical-align:middle;margin-right:4px"><path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Open in Gmail
+      </button>
+      <button class="emodal-copy-btn" style="background:#00A499" onclick="openMailto()" title="Open in default mail app (Outlook, Apple Mail etc.)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white" style="vertical-align:middle;margin-right:4px"><path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Open in Mail App
+      </button>
+    </div>
+    <div id="multiWarning" style="display:none;background:#FEF3C7;padding:0.6rem 1.6rem;font-size:0.75rem;color:#92400E;border-top:1px solid #FDE68A;">
+      ⚠️ <strong>Multiple recipients selected.</strong> Gmail/Mail App will open one window per person so you can personalise each email with their name. Your browser may ask to allow multiple tabs — please click Allow.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: UPLOAD DATA ==================== -->
+<div id="tab-upload" class="tab-panel">
+<div class="content-wrap">
+
+  <div class="upload-hero" id="uploadHero">
+    <input type="file" accept=".xlsx,.xls" onchange="handleFileUpload(this.files[0])" id="fileInput">
+    <div class="upload-icon">📂</div>
+    <h3>Upload Updated Joining List</h3>
+    <p>Drop your Excel file here or click to browse</p>
+    <div class="upload-hint">Accepts .xlsx or .xls — expects the same column format as the original export</div>
+  </div>
+  <div class="upload-status" id="uploadStatus"></div>
+
+  <div class="upload-info" id="uploadInfo" style="display:none">
+    <div class="upload-info-card"><div class="ui-label">Total Members</div><div class="ui-val" id="uiTotal">—</div></div>
+    <div class="upload-info-card"><div class="ui-label">With Postcode</div><div class="ui-val" id="uiPostcode">—</div></div>
+    <div class="upload-info-card"><div class="ui-label">Avg Wait (mo)</div><div class="ui-val" id="uiAvgWait">—</div></div>
+    <div class="upload-info-card"><div class="ui-label">2+ Year Waiters</div><div class="ui-val" id="uiLongWait">—</div></div>
+  </div>
+
+  <div class="upload-preview" id="uploadPreview">
+    <div class="upload-preview-header">
+      <h4 id="uploadPreviewTitle">Preview — 0 rows</h4>
+      <button class="apply-btn" onclick="applyUploadedData()">✅ Apply & Replace Data</button>
+    </div>
+    <div class="upload-table-wrap">
+      <table>
+        <thead id="uploadPreviewHead"></thead>
+        <tbody id="uploadPreviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="margin-top:1.4rem;background:var(--card);border-radius:12px;border:1px solid var(--border);padding:1.2rem 1.4rem;font-size:0.82rem;color:var(--muted);line-height:1.7">
+    <strong style="color:var(--text);display:block;margin-bottom:0.4rem">📋 Expected Column Format</strong>
+    The file should be the standard Scout joining list export with these columns (row 2 as headers):
+    <code style="display:block;margin-top:0.5rem;background:var(--bg);padding:0.5rem 0.8rem;border-radius:6px;font-size:0.75rem">
+      First name · Last name · Date of birth · Joined Waiting List · Gender · Address 1 · Address 2 · Address 3 · Address 4 · Postcode · Email 1 · … · notes
+    </code>
+    <div style="margin-top:0.6rem">Once you click <strong>Apply &amp; Replace Data</strong>, all three tabs (Analytics, Member Data, Map) will update live with the new data.</div>
+  </div>
+
+</div>
+</div>
+
+<footer>Scout Group Joining List Dashboard · 19 March 2026 · 79 members</footer>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const members = [
+  {first:"Lisa",last:"Beusmans",dob:"",joined:"01/01/2015",gender:"Female",section:"Network",age:null,waiting_months:134.5,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:"If I have a seizure contact George Beusmans for support"},
+  {first:"Suzi",last:"Payne",dob:"",joined:"19/09/2024",gender:"Female",section:"Network",age:null,waiting_months:17.9,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Susie",last:"Wall",dob:"",joined:"19/07/2025",gender:"",section:"Network",age:null,waiting_months:8.0,wait_badge:"medium",postcode:"SO22 6SE",pc_district:"SO22",address:"14 Cranworth Road, Winchester",notes:""},
+  {first:"James",last:"Smith",dob:"01/05/2012",joined:"08/09/2025",gender:"",section:"Scouts",age:13.9,waiting_months:6.3,wait_badge:"medium",postcode:"SO23 7LG",pc_district:"SO23",address:"10 Bentley Close, Kings Worthy, Winchester",notes:""},
+  {first:"Bernard",last:"Fung",dob:"22/08/2012",joined:"12/01/2025",gender:"",section:"Scouts",age:13.6,waiting_months:14.2,wait_badge:"long",postcode:"SO23 0NG",pc_district:"SO23",address:"22 Moss Road, Winchester",notes:""},
+  {first:"Miyuki",last:"Le Bras",dob:"18/04/2013",joined:"04/10/2025",gender:"",section:"Scouts",age:12.9,waiting_months:5.5,wait_badge:"short",postcode:"SO22 5HE",pc_district:"SO22",address:"31 Chilbolton Ave, Winchester",notes:""},
+  {first:"Isaac",last:"Blunn",dob:"11/07/2014",joined:"06/10/2020",gender:"Male",section:"Scouts",age:11.7,waiting_months:65.4,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:"Dad helps at Beaver - 2019"},
+  {first:"Alfie",last:"French",dob:"09/07/2015",joined:"09/08/2025",gender:"",section:"Scouts",age:10.7,waiting_months:7.3,wait_badge:"medium",postcode:"SO22 5AB",pc_district:"SO22",address:"22 St Paul's Hill, Winchester",notes:""},
+  {first:"Aidan",last:"Smith",dob:"22/07/2015",joined:"04/06/2025",gender:"",section:"Scouts",age:10.7,waiting_months:9.5,wait_badge:"medium",postcode:"SO23 7BQ",pc_district:"SO23",address:"3 Woodpeckers, Park Road, Winchester",notes:""},
+  {first:"Jack",last:"Wolfhagen",dob:"06/09/2015",joined:"10/12/2024",gender:"",section:"Scouts",age:10.5,waiting_months:15.2,wait_badge:"long",postcode:"SO22 6SG",pc_district:"SO22",address:"40 Fairfield Road, Winchester",notes:""},
+  {first:"Scarlett",last:"Fung",dob:"11/12/2015",joined:"07/02/2025",gender:"",section:"Cubs",age:10.3,waiting_months:13.3,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Winston",last:"Hancock",dob:"24/12/2015",joined:"01/11/2024",gender:"Male",section:"Cubs",age:10.2,waiting_months:16.5,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Harvey",last:"Thompson",dob:"02/02/2016",joined:"08/08/2023",gender:"Male",section:"Cubs",age:10.1,waiting_months:31.3,wait_badge:"critical",postcode:"SO22 5EF",pc_district:"SO22",address:"8 Cheriton Road, Winchester",notes:""},
+  {first:"Lawrence",last:"Baird",dob:"14/04/2016",joined:"24/03/2025",gender:"",section:"Cubs",age:9.9,waiting_months:11.8,wait_badge:"medium",postcode:"SO22 5SY",pc_district:"SO22",address:"5 Fellowes Rise, Winchester",notes:""},
+  {first:"Fabian",last:"Greensmith Gil",dob:"10/05/2016",joined:"28/04/2022",gender:"Male",section:"Cubs",age:9.9,waiting_months:46.7,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:"Left Tues Beavers mid-term due to personal commitments. May request to rejoin in future."},
+  {first:"Merryn",last:"Huggett-Smith",dob:"18/05/2016",joined:"01/12/2024",gender:"",section:"Cubs",age:9.8,waiting_months:15.5,wait_badge:"long",postcode:"SO22 6SE",pc_district:"SO22",address:"31 Cranworth Road, Winchester",notes:""},
+  {first:"Faith",last:"Mills",dob:"18/05/2016",joined:"07/02/2025",gender:"",section:"Cubs",age:9.8,waiting_months:13.3,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Theo",last:"Heathcote",dob:"09/09/2016",joined:"21/10/2024",gender:"",section:"Cubs",age:9.5,waiting_months:16.9,wait_badge:"long",postcode:"SO22 4DN",pc_district:"SO22",address:"41 Woolford Close, Winchester",notes:""},
+  {first:"Milo",last:"McNeil",dob:"15/09/2016",joined:"01/02/2026",gender:"",section:"Cubs",age:9.5,waiting_months:1.5,wait_badge:"short",postcode:"SO22 6HA",pc_district:"SO22",address:"8 Centinal Road, Kings Barton, Winchester",notes:""},
+  {first:"Jay",last:"Dosanjh",dob:"29/09/2016",joined:"04/12/2024",gender:"Male",section:"Cubs",age:9.5,waiting_months:15.4,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Simon",last:"Marshall",dob:"03/12/2016",joined:"16/03/2026",gender:"",section:"Cubs",age:9.3,waiting_months:0.1,wait_badge:"short",postcode:"SO22 5AG",pc_district:"SO22",address:"16 Elm Road, Winchester",notes:""},
+  {first:"Jona",last:"Degan-Banno",dob:"08/12/2016",joined:"05/03/2026",gender:"",section:"Cubs",age:9.3,waiting_months:0.5,wait_badge:"short",postcode:"SO22 5AH",pc_district:"SO22",address:"9 Western Road, Winchester",notes:""},
+  {first:"Jasper",last:"Ng",dob:"17/02/2017",joined:"02/10/2024",gender:"Male",section:"Cubs",age:9.1,waiting_months:17.5,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Oscar",last:"Telford",dob:"18/02/2017",joined:"02/10/2024",gender:"",section:"Cubs",age:9.1,waiting_months:17.5,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Caylum",last:"Brown",dob:"21/02/2017",joined:"22/01/2026",gender:"",section:"Cubs",age:9.1,waiting_months:1.8,wait_badge:"short",postcode:"SO22 5AT",pc_district:"SO22",address:"9 Byron Avenue, Winchester",notes:""},
+  {first:"Lilla",last:"Moffett",dob:"04/03/2017",joined:"08/07/2025",gender:"",section:"Cubs",age:9.0,waiting_months:8.3,wait_badge:"medium",postcode:"SO22 5DZ",pc_district:"SO22",address:"16 Greenhill Close, Winchester",notes:""},
+  {first:"Maxim",last:"Shestakov",dob:"22/04/2017",joined:"09/02/2025",gender:"",section:"Cubs",age:8.9,waiting_months:13.2,wait_badge:"long",postcode:"SO22 5SZ",pc_district:"SO22",address:"43 Percival House, Fellowes Rise, Winchester",notes:""},
+  {first:"Finley",last:"Webster",dob:"10/05/2017",joined:"18/09/2024",gender:"Male",section:"Cubs",age:8.9,waiting_months:18.0,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Poppy",last:"Wrigley",dob:"20/05/2017",joined:"28/03/2025",gender:"",section:"Cubs",age:8.8,waiting_months:11.7,wait_badge:"medium",postcode:"SO22 6RR",pc_district:"SO22",address:"74 Hatherley Road, Winchester",notes:""},
+  {first:"Henry",last:"Smith",dob:"14/06/2017",joined:"11/03/2024",gender:"Male",section:"Cubs",age:8.8,waiting_months:24.2,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Katerina",last:"Cochrane-Brown",dob:"04/08/2017",joined:"20/10/2023",gender:"Female",section:"Cubs",age:8.6,waiting_months:28.9,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Alfred",last:"O'Sullivan",dob:"11/08/2017",joined:"03/06/2025",gender:"",section:"Cubs",age:8.6,waiting_months:9.5,wait_badge:"medium",postcode:"SO23 7HN",pc_district:"SO23",address:"2 Dyson Drive, Winchester",notes:""},
+  {first:"Madeleine",last:"Payne",dob:"11/12/2017",joined:"23/09/2024",gender:"Female",section:"Cubs",age:8.3,waiting_months:17.8,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"James",last:"Mckeown",dob:"28/12/2017",joined:"12/04/2025",gender:"",section:"Cubs",age:8.2,waiting_months:11.2,wait_badge:"medium",postcode:"SO22 5AY",pc_district:"SO22",address:"56 Cheriton Road, Winchester",notes:""},
+  {first:"Finley",last:"Mungo",dob:"11/01/2018",joined:"09/06/2025",gender:"",section:"Cubs",age:8.2,waiting_months:9.3,wait_badge:"medium",postcode:"SO22 6EE",pc_district:"SO22",address:"15 Fleming Road, Winchester",notes:""},
+  {first:"Zsanett",last:"Kallo",dob:"19/02/2018",joined:"09/12/2025",gender:"",section:"Cubs",age:8.1,waiting_months:3.3,wait_badge:"short",postcode:"SO23 0JJ",pc_district:"SO23",address:"2 St Giles Close, Winchester",notes:""},
+  {first:"Akos",last:"Horvath",dob:"19/02/2018",joined:"09/12/2025",gender:"",section:"Cubs",age:8.1,waiting_months:3.3,wait_badge:"short",postcode:"SO23 0JJ",pc_district:"SO23",address:"2 St Giles Close, Winchester",notes:""},
+  {first:"Grace",last:"Bryant",dob:"17/04/2018",joined:"14/04/2025",gender:"Female",section:"Beavers",age:7.9,waiting_months:11.1,wait_badge:"medium",postcode:"SO22 5EZ",pc_district:"SO22",address:"West Beech House, Sarum Road, Winchester",notes:""},
+  {first:"Edward",last:"Bishop",dob:"03/07/2018",joined:"13/02/2025",gender:"",section:"Beavers",age:7.7,waiting_months:13.1,wait_badge:"long",postcode:"SO21 2LP",pc_district:"SO21",address:"Victoria Cottage, Sparsholt Dean",notes:""},
+  {first:"Alasdair",last:"McCloghrie",dob:"08/12/2018",joined:"07/09/2025",gender:"",section:"Beavers",age:7.3,waiting_months:6.3,wait_badge:"medium",postcode:"SO22 5LA",pc_district:"SO22",address:"10 Westley Close, Winchester",notes:""},
+  {first:"Orla",last:"MacNamara",dob:"31/12/2018",joined:"16/05/2025",gender:"Female",section:"Beavers",age:7.2,waiting_months:10.1,wait_badge:"medium",postcode:"SO22 5EN",pc_district:"SO22",address:"19 West End Terrace, Winchester",notes:""},
+  {first:"Rex",last:"McNeil",dob:"21/01/2019",joined:"01/02/2026",gender:"",section:"Beavers",age:7.2,waiting_months:1.5,wait_badge:"short",postcode:"SO22 6HA",pc_district:"SO22",address:"8 Centinal Road, Kings Barton, Winchester",notes:""},
+  {first:"Isabelle",last:"Bennet",dob:"30/01/2019",joined:"02/10/2025",gender:"",section:"Beavers",age:7.1,waiting_months:5.5,wait_badge:"short",postcode:"SO22 6RR",pc_district:"SO22",address:"46 Hatherley Road, Winchester",notes:""},
+  {first:"Jude",last:"Maspero",dob:"15/03/2019",joined:"26/11/2025",gender:"",section:"Beavers",age:7.0,waiting_months:3.7,wait_badge:"short",postcode:"SO22 5NW",pc_district:"SO22",address:"35 Hillside Road, Winchester",notes:""},
+  {first:"Toby",last:"Williams",dob:"17/03/2019",joined:"06/07/2024",gender:"Male",section:"Beavers",age:7.0,waiting_months:20.4,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:"Moved to Wales, used to be in Beavers"},
+  {first:"Josh",last:"Babb",dob:"07/04/2019",joined:"24/06/2023",gender:"",section:"Beavers",age:6.9,waiting_months:32.8,wait_badge:"critical",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Zachary",last:"Souch",dob:"15/04/2019",joined:"28/09/2025",gender:"",section:"Beavers",age:6.9,waiting_months:5.7,wait_badge:"short",postcode:"SO21 2NJ",pc_district:"SO21",address:"Elizabeth Vaine Cottage, Church Lane, Sparsholt",notes:""},
+  {first:"Levi",last:"Oskar",dob:"12/05/2019",joined:"08/09/2025",gender:"",section:"Beavers",age:6.9,waiting_months:6.3,wait_badge:"medium",postcode:"SO23 8AZ",pc_district:"SO23",address:"18 Parchment Street, Winchester",notes:""},
+  {first:"Dalton",last:"Duffy",dob:"13/05/2019",joined:"11/09/2023",gender:"",section:"Beavers",age:6.9,waiting_months:30.2,wait_badge:"critical",postcode:"SO22 6LX",pc_district:"SO22",address:"8 Swanmore Close, Winchester",notes:""},
+  {first:"Arlo",last:"Mee",dob:"12/10/2019",joined:"03/09/2025",gender:"",section:"Beavers",age:6.4,waiting_months:6.5,wait_badge:"medium",postcode:"SO22 5AW",pc_district:"SO22",address:"8 Fordington Avenue, Winchester",notes:""},
+  {first:"Elis",last:"Moffett",dob:"14/10/2019",joined:"28/03/2025",gender:"",section:"Beavers",age:6.4,waiting_months:11.7,wait_badge:"medium",postcode:"SO22 5DZ",pc_district:"SO22",address:"16 Greenhill Close, Winchester",notes:""},
+  {first:"Hazel",last:"Rivers-Shah",dob:"06/11/2019",joined:"17/04/2025",gender:"Female",section:"Beavers",age:6.4,waiting_months:11.0,wait_badge:"medium",postcode:"",pc_district:"",address:"",notes:""},
+  {first:"Amaya",last:"Frances Szymko",dob:"13/12/2019",joined:"12/02/2026",gender:"",section:"Beavers",age:6.3,waiting_months:1.1,wait_badge:"short",postcode:"SO22 5BX",pc_district:"SO22",address:"5 Poets Way, Winchester",notes:""},
+  {first:"Henry",last:"Mitchell",dob:"16/03/2020",joined:"18/10/2025",gender:"",section:"Beavers",age:6.0,waiting_months:5.0,wait_badge:"short",postcode:"SO22 5AQ",pc_district:"SO22",address:"10 Avenue Road, Winchester",notes:""},
+  {first:"Peter",last:"Raper",dob:"10/06/2020",joined:"01/09/2025",gender:"",section:"Squirrels",age:5.8,waiting_months:6.5,wait_badge:"medium",postcode:"SO22 6BW",pc_district:"SO22",address:"17 Lynford Way, Winchester",notes:""},
+  {first:"Rory",last:"Crisp",dob:"13/07/2020",joined:"25/06/2025",gender:"",section:"Squirrels",age:5.7,waiting_months:8.8,wait_badge:"medium",postcode:"SO22 5BU",pc_district:"SO22",address:"36 Clifton Road, Winchester",notes:""},
+  {first:"Oliver",last:"Hayward",dob:"06/10/2020",joined:"08/09/2025",gender:"",section:"Squirrels",age:5.4,waiting_months:6.3,wait_badge:"medium",postcode:"SO22 6QP",pc_district:"SO22",address:"15 Rozelle Close, Littleton, Winchester",notes:""},
+  {first:"Arthur",last:"Bennett",dob:"14/10/2020",joined:"21/07/2025",gender:"",section:"Squirrels",age:5.4,waiting_months:7.9,wait_badge:"medium",postcode:"SO22 5BE",pc_district:"SO22",address:"St James Tavern, Romsey Road, Winchester",notes:"Got football on Saturday, can't do Squirrels"},
+  {first:"Enid",last:"Mills",dob:"13/01/2021",joined:"19/10/2024",gender:"",section:"Squirrels",age:5.2,waiting_months:17.0,wait_badge:"long",postcode:"SO22 4DR",pc_district:"SO22",address:"184 Stanmore Lane, Winchester",notes:""},
+  {first:"Oberon",last:"Chu-Frith",dob:"01/03/2021",joined:"11/09/2025",gender:"",section:"Squirrels",age:5.0,waiting_months:6.2,wait_badge:"medium",postcode:"SO22 5HD",pc_district:"SO22",address:"1 Vitruvius Court, 28 Chilbolton Avenue, Winchester",notes:""},
+  {first:"Reuben",last:"Michael Harding",dob:"10/03/2021",joined:"22/11/2025",gender:"",section:"Squirrels",age:5.0,waiting_months:3.8,wait_badge:"short",postcode:"SO22 5DX",pc_district:"SO22",address:"129 Greenhill Road, Winchester",notes:""},
+  {first:"Charlie",last:"Lingwood",dob:"18/03/2021",joined:"03/05/2025",gender:"",section:"Squirrels",age:5.0,waiting_months:10.5,wait_badge:"medium",postcode:"SO22 5AL",pc_district:"SO22",address:"5 Fordington Road, Winchester",notes:"Wants Beavers rather than Squirrels"},
+  {first:"Audrey",last:"Leung",dob:"24/03/2021",joined:"15/03/2026",gender:"",section:"Squirrels",age:5.0,waiting_months:0.1,wait_badge:"short",postcode:"SO22 6SY",pc_district:"SO22",address:"15 Bethell Road, Winchester",notes:""},
+  {first:"Ted",last:"Burrows",dob:"08/04/2021",joined:"01/12/2025",gender:"",section:"Squirrels",age:4.9,waiting_months:3.5,wait_badge:"short",postcode:"SO22 5EW",pc_district:"SO22",address:"17 West End Close, Winchester",notes:""},
+  {first:"Oliver",last:"Evans",dob:"17/04/2021",joined:"06/11/2025",gender:"",section:"Squirrels",age:4.9,waiting_months:4.4,wait_badge:"short",postcode:"SO22 5EW",pc_district:"SO22",address:"3 West End Close, Winchester",notes:""},
+  {first:"Elsie",last:"Melcher",dob:"24/04/2021",joined:"01/11/2024",gender:"Female",section:"Squirrels",age:4.9,waiting_months:16.5,wait_badge:"long",postcode:"",pc_district:"",address:"",notes:"Wants to join Beavers"},
+  {first:"Harry",last:"Wilks",dob:"06/05/2021",joined:"17/03/2026",gender:"",section:"Squirrels",age:4.9,waiting_months:0.1,wait_badge:"short",postcode:"SO22 5HH",pc_district:"SO22",address:"19 Bath Place, Winchester",notes:""},
+  {first:"Jude",last:"Johnson",dob:"25/05/2021",joined:"13/01/2025",gender:"",section:"Squirrels",age:4.8,waiting_months:14.1,wait_badge:"long",postcode:"SO22 5AH",pc_district:"SO22",address:"52 Western Road, Winchester",notes:""},
+  {first:"Philip",last:"Fraser",dob:"27/05/2021",joined:"08/05/2025",gender:"",section:"Squirrels",age:4.8,waiting_months:10.3,wait_badge:"medium",postcode:"SO23 0JP",pc_district:"SO23",address:"Flat 9 Northbrook Court, Winchester",notes:""},
+  {first:"Jude",last:"Beggio",dob:"14/06/2021",joined:"14/12/2025",gender:"",section:"Squirrels",age:4.8,waiting_months:3.1,wait_badge:"short",postcode:"SO22 5BX",pc_district:"SO22",address:"2 Poets Way, Winchester",notes:""},
+  {first:"Finn",last:"MacNamara",dob:"28/07/2021",joined:"22/03/2025",gender:"",section:"Squirrels",age:4.6,waiting_months:11.9,wait_badge:"medium",postcode:"SO22 5EN",pc_district:"SO22",address:"19 West End Terrace, Winchester",notes:""},
+  {first:"Yara",last:"England",dob:"26/08/2021",joined:"01/07/2025",gender:"",section:"Squirrels",age:4.6,waiting_months:8.6,wait_badge:"medium",postcode:"SO23 9RG",pc_district:"SO23",address:"16 Hubert Road, St Cross, Winchester",notes:""},
+  {first:"Benjamin",last:"Hepworth Broadley",dob:"22/09/2021",joined:"10/09/2025",gender:"",section:"Squirrels",age:4.5,waiting_months:6.2,wait_badge:"medium",postcode:"SO22 6RA",pc_district:"SO22",address:"5 Dale Close, Littleton",notes:"Can't commit to parent attending every week — reach out Sept 2026"},
+  {first:"Edith",last:"Crisp",dob:"23/01/2022",joined:"25/06/2025",gender:"",section:"Squirrels",age:4.2,waiting_months:8.8,wait_badge:"medium",postcode:"SO22 5BU",pc_district:"SO22",address:"36 Clifton Road, Winchester",notes:""},
+  {first:"Olivia",last:"Harvie",dob:"09/04/2022",joined:"15/10/2025",gender:"",section:"Squirrels",age:3.9,waiting_months:5.1,wait_badge:"short",postcode:"SO22 5AT",pc_district:"SO22",address:"1 Byron Ave, Winchester",notes:""},
+  {first:"Naomi",last:"Le Bras",dob:"02/07/2022",joined:"04/10/2025",gender:"",section:"Squirrels",age:3.7,waiting_months:5.5,wait_badge:"short",postcode:"SO23 5HE",pc_district:"SO23",address:"31 Chilbolton Ave, Winchester",notes:""},
+  {first:"Arthur",last:"Mitchell",dob:"03/04/2023",joined:"18/10/2025",gender:"",section:"Squirrels",age:3.0,waiting_months:5.0,wait_badge:"short",postcode:"SO22 5AQ",pc_district:"SO22",address:"10 Avenue Road, Winchester",notes:""},
+  {first:"Freddie",last:"Parker",dob:"26/10/2023",joined:"02/02/2026",gender:"",section:"Squirrels",age:2.4,waiting_months:1.5,wait_badge:"short",postcode:"SO22 6RT",pc_district:"SO22",address:"28 Hatherley Road, Winchester",notes:""}
+];
+
+// ============================================================
+// TABS
+// ============================================================
+let chartsInited = false;
+let mapInited = false;
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'analytics' && !chartsInited) { initCharts(); chartsInited = true; }
+  if (name === 'map' && !mapInited) { initMap(); mapInited = true; }
+  if (name === 'map' && leafletMap) { setTimeout(() => leafletMap.invalidateSize(), 100); }
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function esc(s) { return (s||'').replace(/'/g,"&#39;").replace(/"/g,"&quot;"); }
+function fmtWait(m) {
+  if (m == null) return '—';
+  if (m >= 24) return (m/12).toFixed(1) + ' yrs';
+  return m.toFixed(1) + ' mo';
+}
+const secClass = s => ({'Squirrels':'squirrels','Beavers':'beavers','Cubs':'cubs','Scouts':'scouts','Explorers':'explorers','Network':'network'}[s]||'unknown');
+
+// ============================================================
+// ANALYTICS CHARTS
+// ============================================================
+function initCharts() {
+  const C = s => getComputedStyle(document.documentElement).getPropertyValue(s).trim();
+  const font = { family:'DM Sans', size:11 };
+
+  new Chart(document.getElementById('sectionChart'), {
+    type:'bar',
+    data:{ labels:['Squirrels (4–6)','Beavers (6–8)','Cubs (8–10.5)','Scouts (10.5–14)'],
+      datasets:[{data:[25,17,27,7],backgroundColor:['#E8470A','#8B4513','#D4940A','#2563EB'],borderRadius:6,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:'#F0EDE8'},ticks:{font}},x:{grid:{display:false},ticks:{font,maxRotation:20}}}}
+  });
+
+  new Chart(document.getElementById('waitChart'), {
+    type:'doughnut',
+    data:{ labels:['< 3 months','3–6 months','6–12 months','1–2 years','2–3 years','3+ years'],
+      datasets:[{data:[10,14,28,19,5,3],backgroundColor:['#10B981','#34D399','#F5A623','#F97316','#EF4444','#991B1B'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{font:{family:'DM Sans',size:10},boxWidth:11,padding:7}}}}
+  });
+
+  const ages=[13.9,13.6,12.9,11.7,10.7,10.7,10.5,10.3,10.2,10.1,9.9,9.9,9.8,9.8,9.5,9.5,9.5,9.3,9.3,9.1,9.1,9.1,9.0,8.9,8.9,8.8,8.8,8.6,8.6,8.3,8.2,8.2,8.1,8.1,7.9,7.7,7.3,7.2,7.2,7.1,7.0,7.0,6.9,6.9,6.9,6.9,6.4,6.4,6.4,6.3,6.0,5.8,5.7,5.4,5.4,5.2,5.0,5.0,5.0,5.0,5.0,4.9,4.9,4.9,4.9,4.8,4.8,4.8,4.6,4.6,4.5,4.2,3.9,3.7,3.0,2.4];
+  const bL=[],bV=[];
+  for(let i=2;i<14;i++){bL.push(`${i}–${i+1}`);bV.push(ages.filter(a=>a>=i&&a<i+1).length);}
+  const bColors=bL.map(l=>{const a=parseInt(l);return a<6?'#E8470A':a<8?'#8B4513':a<10?'#D4940A':'#2563EB';});
+  new Chart(document.getElementById('ageHistChart'), {
+    type:'bar',
+    data:{labels:bL,datasets:[{data:bV,backgroundColor:bColors,borderRadius:5,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{title:i=>`Age ${i[0].label}`,label:i=>`${i.raw} child${i.raw!==1?'ren':''}`}}},
+      scales:{y:{beginAtZero:true,grid:{color:'#F0EDE8'},ticks:{font,stepSize:1}},
+        x:{grid:{display:false},ticks:{font},title:{display:true,text:'Age (years)',font:{family:'DM Sans',size:10},color:'#6B7280'}}}}
+  });
+
+  new Chart(document.getElementById('joinYearChart'), {
+    type:'line',
+    data:{labels:['2015','2020','2022','2023','2024','2025','2026'],
+      datasets:[{data:[1,1,1,4,14,48,10],borderColor:'#7B2D8B',backgroundColor:'rgba(123,45,139,0.08)',
+        fill:true,tension:0.4,pointBackgroundColor:'#7B2D8B',pointRadius:5,borderWidth:2.5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:'#F0EDE8'},ticks:{font}},x:{grid:{display:false},ticks:{font}}}}
+  });
+
+  new Chart(document.getElementById('sectionWaitChart'), {
+    type:'bar',
+    data:{labels:['Squirrels','Beavers','Cubs','Scouts'],
+      datasets:[{data:[6.9,10.7,14.0,17.6],backgroundColor:['#E8470A','#8B4513','#D4940A','#2563EB'],borderRadius:6,borderWidth:0}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>`${i.raw} months avg`}}},
+      scales:{x:{beginAtZero:true,grid:{color:'#F0EDE8'},ticks:{font},
+        title:{display:true,text:'Average months on list',font:{family:'DM Sans',size:10},color:'#6B7280'}},
+        y:{grid:{display:false},ticks:{font}}}}
+  });
+
+  new Chart(document.getElementById('postcodeChart'), {
+    type:'doughnut',
+    data:{labels:['SO22 (Winchester W.)','SO23 (Winchester City)','SO21 (Rural)','No postcode'],
+      datasets:[{data:[49,10,2,18],backgroundColor:['#00A499','#7B2D8B','#F5A623','#E2DDD6'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:10},boxWidth:10,padding:7}}}}
+  });
+}
+
+// Auto-init analytics on page load
+window.addEventListener('DOMContentLoaded', () => { initCharts(); chartsInited = true; });
+
+// ============================================================
+// DATA TABLE
+// ============================================================
+let sortCol = 'waiting', sortDir = 'desc';
+let filtered = [...members];
+
+let selectedIds = new Set();
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const noRes = document.getElementById('noResults');
+  tbody.innerHTML = '';
+  if (!filtered.length) { noRes.style.display = ''; updateEmailButtons(); return; }
+  noRes.style.display = 'none';
+  filtered.forEach((m, i) => {
+    const sc = secClass(m.section);
+    const wb = m.wait_badge || 'unknown';
+    const uid = m.first + '|' + m.last + '|' + m.joined;
+    const chk = selectedIds.has(uid);
+    const tr = document.createElement('tr');
+    if (chk) tr.style.background = '#F0FDF4';
+    tr.innerHTML = `
+      <td><input type="checkbox" ${chk?'checked':''} data-uid="${uid}" onchange="toggleRow(this,'${uid}')"></td>
+      <td style="color:var(--muted);font-size:0.72rem">${i+1}</td>
+      <td style="font-weight:600">${cap(m.first)} ${cap(m.last)}</td>
+      <td style="color:var(--muted);font-size:0.78rem">${m.dob||'—'}</td>
+      <td>${m.age != null ? m.age : '—'}</td>
+      <td><span class="sb sec-${sc}">${m.section}</span></td>
+      <td style="color:var(--muted);font-size:0.78rem">${m.joined}</td>
+      <td><span class="wb w-${wb}">${fmtWait(m.waiting_months)}</span></td>
+      <td>${m.postcode ? `<code style="font-size:0.75rem;background:var(--bg);padding:2px 5px;border-radius:4px">${m.postcode}</code>` : '<span style="color:var(--muted);font-style:italic;font-size:0.73rem">—</span>'}</td>
+      <td style="max-width:150px;font-size:0.74rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(m.address)}">${m.address||'—'}</td>
+      <td>${m.notes ? `<span class="notes-icon" onclick="openModal('${esc(cap(m.first)+' '+cap(m.last))}','${esc(m.notes)}')" title="${esc(m.notes)}">📝</span>` : ''}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('countShown').textContent = filtered.length;
+  updateEmailButtons();
+}
+
+function toggleRow(chkEl, uid) {
+  const tr = chkEl.closest('tr');
+  if (chkEl.checked) { selectedIds.add(uid); tr.style.background='#F0FDF4'; }
+  else { selectedIds.delete(uid); tr.style.background=''; }
+  updateEmailButtons();
+}
+
+function toggleSelectAll() {
+  const masterChk = document.getElementById('selectAllChk');
+  const allUids = filtered.map(m => m.first+'|'+m.last+'|'+m.joined);
+  if (masterChk && masterChk.checked) {
+    allUids.forEach(u => selectedIds.add(u));
+  } else {
+    allUids.forEach(u => selectedIds.delete(u));
+  }
+  renderTable();
+}
+
+function updateEmailButtons() {
+  const n = selectedIds.size;
+  document.getElementById('selCount').textContent = n;
+  document.getElementById('btnStill').disabled = n === 0;
+  document.getElementById('btnTrial').disabled = n === 0;
+}
+
+function getSelectedMembers() {
+  return members.filter(m => selectedIds.has(m.first+'|'+m.last+'|'+m.joined));
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const sec = document.getElementById('filterSection').value;
+  const wait = document.getElementById('filterWait').value;
+  const pc = document.getElementById('filterPC').value;
+  const notes = document.getElementById('filterNotes').value;
+  filtered = members.filter(m => {
+    if (q && !(m.first+' '+m.last).toLowerCase().includes(q) && !(m.postcode||'').toLowerCase().includes(q) && !(m.address||'').toLowerCase().includes(q)) return false;
+    if (sec && m.section !== sec) return false;
+    if (wait && m.wait_badge !== wait) return false;
+    if (pc && m.pc_district !== pc) return false;
+    if (notes === 'yes' && !m.notes) return false;
+    return true;
+  });
+  sortData(); renderTable();
+}
+
+function sortTable(col) {
+  if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = 'asc'; }
+  document.querySelectorAll('.dt th').forEach(th => th.classList.remove('asc','desc'));
+  const th = document.querySelector(`.dt th[data-col="${col}"]`);
+  if (th) th.classList.add(sortDir === 'asc' ? 'asc' : 'desc');
+  sortData(); renderTable();
+}
+
+function sortData() {
+  filtered.sort((a, b) => {
+    let va, vb;
+    if (sortCol==='name') { va=(a.first+a.last).toLowerCase(); vb=(b.first+b.last).toLowerCase(); }
+    else if (sortCol==='age') { va=a.age||0; vb=b.age||0; }
+    else if (sortCol==='waiting') { va=a.waiting_months||0; vb=b.waiting_months||0; }
+    else if (sortCol==='section') { va=a.section; vb=b.section; }
+    else if (sortCol==='postcode') { va=a.postcode; vb=b.postcode; }
+    else if (sortCol==='joined') { va=a.joined; vb=b.joined; }
+    else if (sortCol==='dob') { va=a.dob; vb=b.dob; }
+    else return 0;
+    return va < vb ? (sortDir==='asc'?-1:1) : va > vb ? (sortDir==='asc'?1:-1) : 0;
+  });
+}
+
+function resetFilters() {
+  ['searchInput','filterSection','filterWait','filterPC','filterNotes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  filtered = [...members]; sortData(); renderTable();
+}
+
+function openModal(name, notes) {
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalNotes').textContent = notes;
+  document.getElementById('notesModal').classList.add('open');
+}
+function closeModal() { document.getElementById('notesModal').classList.remove('open'); }
+document.getElementById('notesModal').addEventListener('click', e => { if (e.target === document.getElementById('notesModal')) closeModal(); });
+
+// ── EMAIL COMPOSE ──────────────────────────────────────────────────────────
+const emailTemplates = {
+  still: {
+    title: 'Still Interested? Email',
+    subject: 'Are you still interested in joining our Scout Group?',
+    body: `Dear [FIRST NAME],
+
+I hope this message finds you well.
+
+I'm writing to check in as you've been on our waiting list for some time. We'd love to confirm that you are still interested in joining our Scout Group so we can keep your place reserved.
+
+Could you please let us know if you'd like to remain on the list? If we don't hear back from you within the next two weeks, we may need to remove your name to make space for others who are actively waiting.
+
+If your circumstances have changed or you no longer wish to join, please do let us know and we will update our records accordingly.
+
+Thank you for your patience — we look forward to hearing from you.
+
+Warm regards,
+[Your Name]
+Scout Group Leader`
+  },
+  trial: {
+    title: 'Trial Session Invitation',
+    subject: "You're invited to a trial session at [SECTION NAME]!",
+    body: `Dear [FIRST NAME],
+
+Great news — we have a place available for [FIRST NAME] to come along for a trial session at [SECTION NAME]!
+
+We'd love for them to come along and experience what Scouting is all about — games, adventures, skills, and making new friends.
+
+Details:
+  📅 Date: [DATE]
+  ⏰ Time: [TIME]
+  📍 Venue: [VENUE]
+
+Please come along a few minutes early so we can meet you and get [FIRST NAME] settled in. There is no need to bring anything special for the first session — just comfortable clothing suitable for activities.
+
+If this date doesn't work for you, please do get in touch and we'll do our best to find a suitable alternative.
+
+We look forward to welcoming [FIRST NAME] to the troop!
+
+Warm regards,
+[Your Name]
+Scout Group Leader`
+  }
+};
+
+function openEmail(type) {
+  const sel = getSelectedMembers();
+  if (!sel.length) return;
+  const tmpl = emailTemplates[type];
+  document.getElementById('emailModalTitle').textContent = tmpl.title;
+  document.getElementById('emailSubject').value = tmpl.subject;
+  document.getElementById('emailBody').value = tmpl.body;
+  document.getElementById('recipientCount').textContent = sel.length;
+  document.getElementById('recipientList').innerHTML = sel.map(m =>
+    `<span style="display:inline-block;background:#fff;border:1px solid #E2DDD6;border-radius:5px;padding:1px 8px;margin:2px;font-size:0.75rem">${cap(m.first)} ${cap(m.last)}${m.email ? ' <span style="color:#6B7280">'+m.email+'</span>' : ' <span style="color:#F59E0B">⚠ no email</span>'}</span>`
+  ).join('');
+  showMultiWarning(sel.length);
+  document.getElementById('copySuccess').style.display = 'none';
+  document.getElementById('emailModal').classList.add('open');
+}
+
+function closeEmailModal() { document.getElementById('emailModal').classList.remove('open'); }
+document.getElementById('emailModal').addEventListener('click', e => { if (e.target === document.getElementById('emailModal')) closeEmailModal(); });
+
+function copyEmail() {
+  const subject = document.getElementById('emailSubject').value;
+  const body = document.getElementById('emailBody').value;
+  const full = `Subject: ${subject}\n\n${body}`;
+  navigator.clipboard.writeText(full).then(() => {
+    const s = document.getElementById('copySuccess');
+    s.style.display = 'inline';
+    setTimeout(() => s.style.display = 'none', 2500);
+  });
+}
+
+function personalise(text, member) {
+  return text
+    .replace(/\[FIRST NAME\]/g, cap(member.first))
+    .replace(/\[LAST NAME\]/g, cap(member.last))
+    .replace(/\[FULL NAME\]/g, cap(member.first) + ' ' + cap(member.last));
+}
+
+function showMultiWarning(n) {
+  const w = document.getElementById('multiWarning');
+  w.style.display = n > 1 ? 'block' : 'none';
+}
+
+function openGmail() {
+  const sel = getSelectedMembers();
+  const subject = document.getElementById('emailSubject').value;
+  const bodyTemplate = document.getElementById('emailBody').value;
+  showMultiWarning(sel.length);
+
+  sel.forEach((m, idx) => {
+    const body = personalise(bodyTemplate, m);
+    const emailAddr = m.email || '';
+    // Build Gmail compose URL
+    const url = 'https://mail.google.com/mail/?view=cm&fs=1'
+      + '&to=' + encodeURIComponent(emailAddr)
+      + '&su=' + encodeURIComponent(personalise(subject, m))
+      + '&body=' + encodeURIComponent(body);
+    // Stagger opening slightly so browser doesn't block all at once
+    setTimeout(() => window.open(url, '_blank'), idx * 300);
+  });
+}
+
+function openMailto() {
+  const sel = getSelectedMembers();
+  const subject = document.getElementById('emailSubject').value;
+  const bodyTemplate = document.getElementById('emailBody').value;
+  showMultiWarning(sel.length);
+
+  sel.forEach((m, idx) => {
+    const body = personalise(bodyTemplate, m);
+    const emailAddr = m.email || '';
+    const href = 'mailto:' + encodeURIComponent(emailAddr)
+      + '?subject=' + encodeURIComponent(personalise(subject, m))
+      + '&body=' + encodeURIComponent(body);
+    setTimeout(() => { window.location.href = href; }, idx * 800);
+  });
+}
+
+// ── UPLOAD TAB ─────────────────────────────────────────────────────────────
+let uploadedData = null;
+
+const uploadHero = document.getElementById('uploadHero');
+uploadHero.addEventListener('dragover', e => { e.preventDefault(); uploadHero.classList.add('dragover'); });
+uploadHero.addEventListener('dragleave', () => uploadHero.classList.remove('dragover'));
+uploadHero.addEventListener('drop', e => {
+  e.preventDefault(); uploadHero.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFileUpload(file);
+});
+
+function handleFileUpload(file) {
+  if (!file) return;
+  const status = document.getElementById('uploadStatus');
+  status.className = 'upload-status';
+  status.textContent = '⏳ Reading file…';
+  status.style.display = 'block';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type:'array', cellDates:true });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:'' });
+
+      // Find header row (look for "First name")
+      let headerIdx = -1;
+      for (let i=0; i<rows.length; i++) {
+        if (rows[i].some(c => String(c).toLowerCase().includes('first name') || String(c).toLowerCase() === 'first name')) {
+          headerIdx = i; break;
+        }
+      }
+      if (headerIdx < 0) throw new Error('Could not find header row with "First name" column');
+
+      const headers = rows[headerIdx].map(h => String(h).trim());
+      const dataRows = rows.slice(headerIdx+1).filter(r => r.some(c => c !== ''));
+
+      // Parse into member objects
+      const today = new Date(2026,2,19);
+      const parsed = dataRows.map(row => {
+        const get = (name) => {
+          const idx = headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+          return idx >= 0 ? row[idx] : '';
+        };
+        const first = String(get('first name')||'').trim();
+        const last  = String(get('last name')||'').trim();
+        if (!first && !last) return null;
+
+        // DOB
+        let dob = '', age = null;
+        const dobRaw = get('date of birth');
+        if (dobRaw && dobRaw !== '-' && dobRaw !== '') {
+          const d = dobRaw instanceof Date ? dobRaw : new Date(dobRaw);
+          if (!isNaN(d)) {
+            dob = d.toLocaleDateString('en-GB');
+            age = Math.round(((today - d) / (365.25*24*3600*1000)) * 10) / 10;
+          }
+        }
+
+        // Section
+        const getSection = (a) => {
+          if (a == null) return 'Unknown';
+          if (a < 6) return 'Squirrels';
+          if (a < 8) return 'Beavers';
+          if (a < 10.5) return 'Cubs';
+          if (a < 14) return 'Scouts';
+          if (a < 18) return 'Explorers';
+          return 'Network';
+        };
+        const section = getSection(age);
+
+        // Joined date + wait
+        let joined = '', waiting_months = null, wait_badge = 'unknown';
+        const joinRaw = get('joined waiting');
+        if (joinRaw) {
+          const jd = joinRaw instanceof Date ? joinRaw : new Date(joinRaw);
+          if (!isNaN(jd)) {
+            joined = jd.toLocaleDateString('en-GB');
+            waiting_months = Math.round(((today - jd) / (30.44*24*3600*1000)) * 10) / 10;
+            wait_badge = waiting_months < 6 ? 'short' : waiting_months < 12 ? 'medium' : waiting_months < 24 ? 'long' : 'critical';
+          }
+        }
+
+        // Postcode
+        const pcRaw = String(get('postcode')||'').trim().toUpperCase().replace(/\s+/,' ');
+        const pcNorm = pcRaw.replace(/\s/,'');
+        const pcMatch = pcNorm.match(/^([A-Z]{1,2}\d{1,2}[A-Z]?)/);
+        const pc_district = pcMatch ? pcMatch[1] : '';
+
+        // Address
+        const addrParts = ['address 1','address 2','address 3','address 4'].map(a => String(get(a)||'').trim()).filter(Boolean);
+        const address = addrParts.join(', ');
+
+        // Email
+        const emailIdx = headers.findIndex(h => h.toLowerCase().includes('email 1') || h.toLowerCase() === 'email');
+        const email = emailIdx >= 0 ? String(row[emailIdx]||'').trim() : '';
+
+        // Notes
+        const notesIdx = headers.findIndex(h => h.toLowerCase() === 'notes');
+        const notes = notesIdx >= 0 ? String(row[notesIdx]||'').trim() : '';
+
+        return { first, last, dob, joined, gender:String(get('gender')||'').trim(), section, age, waiting_months, wait_badge, postcode:pcRaw, pc_district, address, email, notes };
+      }).filter(Boolean).filter(m => m.section !== 'Network');
+
+      uploadedData = parsed;
+
+      // Stats
+      const withPC = parsed.filter(m => m.postcode).length;
+      const avgWait = parsed.filter(m=>m.waiting_months!=null).reduce((s,m)=>s+m.waiting_months,0) / (parsed.filter(m=>m.waiting_months!=null).length||1);
+      const longWait = parsed.filter(m=>m.waiting_months >= 24).length;
+
+      document.getElementById('uiTotal').textContent = parsed.length;
+      document.getElementById('uiPostcode').textContent = withPC;
+      document.getElementById('uiAvgWait').textContent = avgWait.toFixed(1);
+      document.getElementById('uiLongWait').textContent = longWait;
+      document.getElementById('uploadInfo').style.display = 'grid';
+
+      // Preview table
+      const previewCols = ['first','last','section','dob','joined','waiting_months','postcode'];
+      const previewLabels = ['First','Last','Section','DOB','Joined','Wait (mo)','Postcode'];
+      document.getElementById('uploadPreviewHead').innerHTML = '<tr>' + previewLabels.map(l=>`<th>${l}</th>`).join('') + '</tr>';
+      document.getElementById('uploadPreviewBody').innerHTML = parsed.slice(0,20).map(m =>
+        '<tr>' + previewCols.map(c => `<td>${m[c]!=null?m[c]:'—'}</td>`).join('') + '</tr>'
+      ).join('');
+      document.getElementById('uploadPreviewTitle').textContent = `Preview — ${parsed.length} members (showing first 20)`;
+      document.getElementById('uploadPreview').style.display = 'block';
+
+      status.className = 'upload-status success';
+      status.textContent = `✅ Successfully read ${parsed.length} members from "${file.name}" (Network members excluded). Review the preview below and click Apply to update the dashboard.`;
+
+    } catch(err) {
+      status.className = 'upload-status error';
+      status.textContent = `❌ Error reading file: ${err.message}`;
+      document.getElementById('uploadPreview').style.display = 'none';
+      document.getElementById('uploadInfo').style.display = 'none';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyUploadedData() {
+  if (!uploadedData) return;
+  // Replace global members array
+  members.length = 0;
+  uploadedData.forEach(m => members.push(m));
+  // Reset selections
+  selectedIds.clear();
+  // Refresh table
+  filtered = [...members]; sortData(); renderTable();
+  // Reset map if loaded
+  if (mapInited) {
+    postcodeCoords = {};
+    mapPoints = [];
+    allMarkers.forEach(m => m.remove());
+    allMarkers = [];
+    mapInited = false;
+  }
+  // Switch to table tab to show results
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-table').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+
+  document.getElementById('uploadStatus').className = 'upload-status success';
+  document.getElementById('uploadStatus').textContent = `✅ Dashboard updated with ${members.length} members. Analytics charts will reflect the new data on next visit to that tab.`;
+  alert(`✅ Data applied! ${members.length} members loaded. Switch to the Member Data or Map tabs to explore the updated data.`);
+}
+
+sortData(); renderTable();
+
+// ============================================================
+// MAP — Leaflet + OpenStreetMap
+// ============================================================
+const sectionColors = { Squirrels:'#E8470A', Beavers:'#8B4513', Cubs:'#D4940A', Scouts:'#2563EB', Explorers:'#059669', Network:'#7C3AED' };
+const sectionPopBg  = { Squirrels:'#FEE8E0', Beavers:'#F5E6DA', Cubs:'#FEF3C7', Scouts:'#DBEAFE', Explorers:'#D1FAE5', Network:'#EDE9FE' };
+const sectionPopFg  = { Squirrels:'#C13600', Beavers:'#6B3410', Cubs:'#92400E', Scouts:'#1E40AF', Explorers:'#065F46', Network:'#5B21B6' };
+
+let leafletMap = null;
+let allMarkers = [];
+let postcodeCoords = {};
+let mapFilter = 'all';
+let mapPoints = [];
+
+function normPC(pc) { return (pc||'').toUpperCase().replace(/\s/g,''); }
+
+function makeCircleIcon(color) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+    <circle cx="11" cy="11" r="8" fill="${color}" stroke="white" stroke-width="2.5"/>
+    <circle cx="11" cy="11" r="3" fill="white" opacity="0.5"/>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -13]
+  });
+}
+
+async function initMap() {
+  // Init Leaflet map centred on Winchester
+  leafletMap = L.map('leaflet-map', { zoomControl: true }).setView([51.063, -1.308], 13);
+
+  // OpenStreetMap tiles
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(leafletMap);
+
+  // Custom legend control
+  const legend = L.control({ position: 'bottomleft' });
+  legend.onAdd = function() {
+    const div = L.DomUtil.create('div', 'leaflet-legend');
+    div.innerHTML = `
+      <h4 style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B7280;margin-bottom:0.4rem;font-family:'DM Sans',sans-serif;">Section</h4>
+      <div class="li"><div class="ld" style="background:#E8470A;border-color:#fff"></div><span>Squirrels</span></div>
+      <div class="li"><div class="ld" style="background:#8B4513;border-color:#fff"></div><span>Beavers</span></div>
+      <div class="li"><div class="ld" style="background:#D4940A;border-color:#fff"></div><span>Cubs</span></div>
+      <div class="li"><div class="ld" style="background:#2563EB;border-color:#fff"></div><span>Scouts</span></div>
+      <div class="li"><div class="ld" style="background:#7C3AED;border-color:#fff"></div><span>Network</span></div>`;
+    return div;
+  };
+  legend.addTo(leafletMap);
+
+  // Geocode postcodes
+  const pcs = [...new Set(members.filter(m=>m.postcode).map(m=>m.postcode))];
+  document.getElementById('mapStatusBox').textContent = `⏳ Geocoding ${pcs.length} postcodes…`;
+
+  const chunks = [];
+  for (let i=0; i<pcs.length; i+=100) chunks.push(pcs.slice(i,i+100));
+  for (const chunk of chunks) {
+    try {
+      const resp = await fetch('https://api.postcodes.io/postcodes', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({postcodes: chunk})
+      });
+      const data = await resp.json();
+      if (data.result) {
+        data.result.forEach(r => {
+          if (r.result) postcodeCoords[normPC(r.query)] = { lat: r.result.latitude, lng: r.result.longitude };
+        });
+      }
+    } catch(e) { console.warn('Geocode error', e); }
+  }
+
+  buildMapPoints();
+  placeMarkers();
+  document.getElementById('mapStatusBox').textContent = `✓ ${Object.keys(postcodeCoords).length}/${pcs.length} postcodes located`;
+  updateMapCount();
+
+  // List members without postcode
+  const noPC = members.filter(m => !m.postcode);
+  document.getElementById('noPostcodeNames').textContent = noPC.map(m => cap(m.first)+' '+cap(m.last)).join(' · ');
+}
+
+function buildMapPoints() {
+  mapPoints = members.filter(m => m.postcode && postcodeCoords[normPC(m.postcode)]).map(m => ({
+    ...m, lat: postcodeCoords[normPC(m.postcode)].lat, lng: postcodeCoords[normPC(m.postcode)].lng,
+  }));
+}
+
+function placeMarkers() {
+  // Clear existing markers
+  allMarkers.forEach(m => m.remove());
+  allMarkers = [];
+
+  const pts = mapFilter === 'all' ? mapPoints : mapPoints.filter(p=>p.section===mapFilter);
+
+  pts.forEach(p => {
+    const col = sectionColors[p.section] || '#9CA3AF';
+    const bgCol = sectionPopBg[p.section] || '#F3F4F6';
+    const fgCol = sectionPopFg[p.section] || '#374151';
+    const waitStr = fmtWait(p.waiting_months);
+
+    const marker = L.marker([p.lat, p.lng], { icon: makeCircleIcon(col) });
+    marker.bindPopup(`
+      <div class="map-popup">
+        <strong>${cap(p.first)} ${cap(p.last)}</strong>
+        <span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:0.67rem;font-weight:700;background:${bgCol};color:${fgCol};margin-bottom:5px">${p.section}</span>
+        <div class="pop-row">Age: ${p.age != null ? p.age : '—'}</div>
+        <div class="pop-row">Postcode: <strong style="color:#1A1F3A">${p.postcode}</strong></div>
+        <div class="pop-row">On list since: ${p.joined}</div>
+        <div class="pop-row">Waiting: <span class="pop-wait">${waitStr}</span></div>
+        ${p.address ? `<div class="pop-row" style="margin-top:4px;font-size:0.72rem">${p.address}</div>` : ''}
+      </div>`, { maxWidth: 240 });
+
+    marker.addTo(leafletMap);
+    allMarkers.push(marker);
+  });
+
+  // Fit map to visible markers if any
+  if (pts.length > 0) {
+    const lats = pts.map(p=>p.lat), lngs = pts.map(p=>p.lng);
+    leafletMap.fitBounds([[Math.min(...lats)-0.005, Math.min(...lngs)-0.01],[Math.max(...lats)+0.005, Math.max(...lngs)+0.01]], { animate: true });
+  }
+}
+
+function updateMapCount() {
+  const pts = mapFilter === 'all' ? mapPoints : mapPoints.filter(p=>p.section===mapFilter);
+  document.getElementById('mapCountLabel').textContent = `${pts.length} members shown on map`;
+}
+
+function filterMap(section, btn) {
+  mapFilter = section;
+  document.querySelectorAll('.mp').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMapCount();
+  if (leafletMap) placeMarkers();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winchester District Scouts — Learning Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-dark: #3d1a6e;
+  --purple-light: #7a4aab;
+  --purple-faint: #f3eeff;
+  --teal: #0d9488;
+  --teal-light: #14b8a6;
+  --teal-faint: #f0fdfa;
+  --amber: #d97706;
+  --amber-faint: #fffbeb;
+  --green: #059669;
+  --green-faint: #ecfdf5;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --blue-faint: #eff6ff;
+  --bg: #f8f7fc;
+  --surface: #ffffff;
+  --border: #e5e0f0;
+  --text: #1a1033;
+  --text-mid: #4b3f6b;
+  --text-muted: #8b7aaa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── NMND Tooltip ── */
+.nmnd-tooltip {
+  position: relative;
+  border-bottom: 1.5px dashed var(--purple);
+  cursor: help;
+  display: inline;
+}
+.nmnd-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--purple);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.81rem;
+  color: var(--text-mid);
+  line-height: 1.6;
+  box-shadow: 0 4px 20px rgba(91,45,142,0.15);
+  z-index: 100;
+  font-weight: 400;
+  text-align: left;
+  cursor: default;
+}
+/* Invisible bridge fills the gap between trigger and popup so mouse doesn't lose hover */
+.nmnd-popup::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: transparent;
+}
+.nmnd-popup strong { color: var(--purple); font-weight: 600; }
+.nmnd-tooltip:hover .nmnd-popup,
+.nmnd-tooltip:focus .nmnd-popup,
+.nmnd-popup:hover { display: block; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 60%, var(--purple-light) 100%);
+  color: white; padding: 0;
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto; padding: 28px 32px 0;
+  display: flex; align-items: flex-start; gap: 20px;
+}
+.header-logo {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+}
+.header-text { flex: 1; }
+.header-text h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.header-text .subtitle { font-size: 0.85rem; opacity: 0.72; margin-top: 3px; }
+.header-links { display: flex; gap: 8px; align-items: center; padding-top: 4px; flex-wrap: wrap; }
+.header-links a {
+  color: rgba(255,255,255,0.82); font-size: 0.76rem; text-decoration: none;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 11px; border-radius: 20px; transition: all 0.15s; white-space: nowrap;
+}
+.header-links a:hover { background: rgba(255,255,255,0.22); color: white; }
+
+.header-tabs { max-width: 1100px; margin: 0 auto; padding: 16px 32px 0; display: flex; gap: 4px; flex-wrap: wrap; }
+.tab-btn {
+  background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7);
+  padding: 8px 18px; border-radius: 8px 8px 0 0;
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.tab-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+.tab-btn.active { background: var(--bg); color: var(--purple); font-weight: 600; }
+.tab-btn.coming-soon { opacity: 0.55; cursor: default; font-style: italic; }
+
+/* ── MAIN ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 32px 32px 64px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── CALLOUT BANNER ── */
+.callout {
+  background: var(--purple-faint); border: 1px solid #d8c8f8; border-left: 4px solid var(--purple);
+  border-radius: 10px; padding: 14px 18px; margin-bottom: 28px;
+  font-size: 0.87rem; color: var(--text-mid); line-height: 1.6;
+}
+.callout strong { color: var(--purple); }
+
+/* ── JOURNEY TIMELINE ── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+
+.milestone {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0 24px;
+  position: relative;
+}
+
+/* Vertical line down the left */
+.milestone:not(:last-child) .milestone-line {
+  position: absolute;
+  left: 179px;
+  top: 48px;
+  bottom: -1px;
+  width: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+
+.milestone-label {
+  text-align: right;
+  padding: 0 0 32px 0;
+  position: relative;
+}
+.milestone-label-inner {
+  display: inline-block;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  position: relative;
+  z-index: 1;
+}
+.milestone-label-inner.day1   { border-color: var(--purple); background: var(--purple-faint); }
+.milestone-label-inner.d30    { border-color: var(--red); background: #fff5f5; }
+.milestone-label-inner.d180   { border-color: var(--amber); background: var(--amber-faint); }
+.milestone-label-inner.d365   { border-color: var(--green); background: var(--green-faint); }
+
+.milestone-label-inner .day-num {
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  display: block; opacity: 0.75;
+}
+.milestone-label-inner .day-label {
+  font-size: 1.3rem; font-weight: 700; line-height: 1; display: block; margin-top: 2px;
+}
+.day1   .day-num { color: var(--purple); }
+.day1   .day-label { color: var(--purple); }
+.d30    .day-num { color: var(--red); }
+.d30    .day-label { color: var(--red); }
+.d180   .day-num { color: var(--amber); }
+.d180   .day-label { color: var(--amber); }
+.d365   .day-num { color: var(--green); }
+.d365   .day-label { color: var(--green); }
+
+/* Connector dot */
+.milestone-label::after {
+  content: '';
+  position: absolute;
+  right: -13px; top: 16px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid var(--surface);
+  z-index: 2;
+}
+.milestone:first-child .milestone-label::after { background: var(--purple); }
+.milestone:nth-child(2) .milestone-label::after { background: var(--red); }
+.milestone:nth-child(3) .milestone-label::after { background: var(--amber); }
+.milestone:nth-child(4) .milestone-label::after { background: var(--green); }
+
+.milestone-cards { padding-bottom: 32px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ── TASK CARD ── */
+.task-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.task-card:hover { box-shadow: 0 2px 12px rgba(91,45,142,0.08); }
+.task-card.checked { background: #f9f9f9; }
+/* Milestone tints */
+[data-tint="purple"] .task-card { background: #f3eeff; border-color: #e0d0f8; }
+[data-tint="purple"] .task-card:hover { background: #ece0ff; }
+[data-tint="purple"] .task-card.checked { background: #ede8f8; }
+[data-tint="red"]    .task-card { background: #fff5f5; border-color: #fecaca; }
+[data-tint="red"]    .task-card:hover { background: #fee2e2; }
+[data-tint="red"]    .task-card.checked { background: #fef0f0; }
+[data-tint="amber"]  .task-card { background: #fffbeb; border-color: #fde68a; }
+[data-tint="amber"]  .task-card:hover { background: #fef3c7; }
+[data-tint="amber"]  .task-card.checked { background: #fef8e8; }
+[data-tint="green"]  .task-card { background: #ecfdf5; border-color: #a7f3d0; }
+[data-tint="green"]  .task-card:hover { background: #d1fae5; }
+[data-tint="green"]  .task-card.checked { background: #edfaf4; }
+.task-card.checked .task-title { text-decoration: line-through; color: var(--text-muted); }
+.task-card.checked .task-desc { color: var(--text-muted); opacity: 0.7; }
+
+.task-checkbox {
+  width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px;
+  border: 2px solid var(--border); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; background: white;
+}
+.task-card.checked .task-checkbox {
+  background: var(--teal); border-color: var(--teal);
+}
+.task-checkbox svg { display: none; }
+.task-card.checked .task-checkbox svg { display: block; }
+
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: 0.93rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+.task-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.task-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; margin-top: 5px; }
+.task-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.task-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.78rem; font-weight: 600;
+  padding: 4px 10px; border-radius: 6px; text-decoration: none;
+  background: var(--purple-faint); color: var(--purple); border: 1px solid #d8c8f8;
+  transition: all 0.15s;
+}
+.task-link:hover { background: var(--purple); color: white; border-color: var(--purple); }
+.task-link.teal { background: var(--teal-faint); color: var(--teal); border-color: #99f6e4; }
+.task-link.teal:hover { background: var(--teal); color: white; border-color: var(--teal); }
+.task-link.amber { background: var(--amber-faint); color: var(--amber); border-color: #fde68a; }
+.task-link.amber:hover { background: var(--amber); color: white; border-color: var(--amber); }
+
+.tag {
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 2px 7px; border-radius: 20px;
+}
+.tag-mandatory { background: #fee2e2; color: #991b1b; }
+.tag-learning  { background: var(--purple-faint); color: var(--purple); }
+.tag-admin     { background: #e0f2fe; color: #0369a1; }
+.tag-renewal   { background: #f3f4f6; color: #374151; }
+.tag-action    { background: #fef9c3; color: #854d0e; }
+.tag-social    { background: var(--teal-faint); color: var(--teal-dark, #0f766e); }
+
+/* Progress bar */
+.progress-wrap {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+}
+.progress-label { font-size: 0.85rem; font-weight: 600; color: var(--text-mid); white-space: nowrap; }
+.progress-bar-outer { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.progress-bar-inner { height: 8px; background: linear-gradient(90deg, var(--teal), var(--teal-light)); border-radius: 4px; transition: width 0.4s ease; }
+.progress-count { font-size: 0.85rem; font-weight: 700; color: var(--teal); white-space: nowrap; }
+.progress-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+
+/* ── MODULE CARDS (Growing Roots, Additional) ── */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+.module-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 20px; display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.module-card:hover { border-color: var(--purple-light); box-shadow: 0 2px 12px rgba(91,45,142,0.08); }
+.module-card-header { display: flex; align-items: flex-start; gap: 12px; }
+.module-icon {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.module-title { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+.module-role  { font-size: 0.73rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-top: 2px; }
+.module-desc  { font-size: 0.82rem; color: var(--text-mid); line-height: 1.55; flex: 1; }
+.module-bullets { font-size: 0.8rem; color: var(--text-mid); line-height: 1.6; padding-left: 16px; }
+.module-bullets li { margin-bottom: 2px; }
+.module-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.module-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.8rem; font-weight: 600; padding: 6px 14px; border-radius: 8px;
+  text-decoration: none; background: var(--purple); color: white; transition: all 0.15s;
+}
+.module-link:hover { background: var(--purple-dark); }
+.module-link.teal { background: var(--teal); }
+.module-link.teal:hover { background: var(--teal-dark, #0f766e); }
+
+/* ── DBS TAB ── */
+.dbs-intro { max-width: 700px; margin-bottom: 28px; }
+.dbs-intro p { font-size: 0.9rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 10px; }
+.dbs-steps { display: flex; flex-direction: column; gap: 12px; max-width: 760px; }
+.dbs-step {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 18px;
+}
+.dbs-num {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: var(--purple); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.87rem; font-weight: 700;
+}
+.dbs-step-body { flex: 1; }
+.dbs-step-title { font-size: 0.93rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.dbs-step-desc  { font-size: 0.82rem; color: var(--text-mid); line-height: 1.55; }
+.dbs-faq-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px; font-size: 0.83rem; font-weight: 600;
+  color: var(--purple); text-decoration: none; padding: 8px 16px;
+  border: 1.5px solid var(--purple); border-radius: 8px; background: var(--purple-faint);
+  transition: all 0.15s;
+}
+.dbs-faq-link:hover { background: var(--purple); color: white; }
+
+/* ── BRANCHING OUT ── */
+.coming-soon-wrap {
+  text-align: center; padding: 60px 20px;
+  border: 2px dashed var(--border); border-radius: 16px;
+  background: var(--surface); max-width: 600px; margin: 0 auto;
+}
+.coming-soon-wrap .icon { font-size: 3rem; margin-bottom: 16px; }
+.coming-soon-wrap h3 { font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.coming-soon-wrap p { font-size: 0.87rem; color: var(--text-muted); line-height: 1.6; max-width: 420px; margin: 0 auto 20px; }
+.coming-soon-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.85rem; font-weight: 600; padding: 10px 20px; border-radius: 8px;
+  text-decoration: none; background: var(--purple); color: white; transition: all 0.15s;
+}
+.coming-soon-link:hover { background: var(--purple-dark); }
+
+/* ── SECTION HEADING ── */
+.section-heading {
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted); margin-bottom: 14px; margin-top: 28px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.section-heading:first-child { margin-top: 0; }
+
+/* ── ROLE CARDS ── */
+.role-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.role-card:hover { box-shadow: 0 2px 14px rgba(91,45,142,0.08); }
+.role-card-header {
+  display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+  border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.role-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.role-title { font-size: 0.97rem; font-weight: 700; color: var(--text); }
+.role-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.role-badge {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 3px 10px; border-radius: 20px;
+}
+.role-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+.role-body p { font-size: 0.87rem; color: var(--text-mid); line-height: 1.65; }
+.role-rules { display: flex; flex-direction: column; gap: 5px; }
+.role-rule {
+  font-size: 0.83rem; padding: 5px 10px; border-radius: 6px; line-height: 1.4;
+}
+.role-rule.can { background: var(--green-faint); color: #065f46; }
+.role-rule.cannot { background: #fff5f5; color: #991b1b; }
+.role-note {
+  font-size: 0.81rem; color: var(--text-mid); line-height: 1.6;
+  background: var(--bg); border-left: 3px solid var(--teal);
+  padding: 10px 14px; border-radius: 0 8px 8px 0;
+}
+/* ── DECISION TREE ── */
+.tree-btn {
+  padding: 9px 18px; border-radius: 9px; border: 1.5px solid var(--purple);
+  background: var(--purple); color: white;
+  font-family: "DM Sans", sans-serif; font-size: 0.87rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.tree-btn:hover { background: var(--purple-dark); border-color: var(--purple-dark); }
+.tree-btn-ghost {
+  background: var(--surface); color: var(--text-muted);
+  border-color: var(--border);
+}
+.tree-btn-ghost:hover { border-color: var(--text-muted); color: var(--text); background: var(--surface); }
+.tree-result-box {
+  background: var(--purple-faint); border: 1.5px solid #d8c8f8;
+  border-left: 4px solid var(--purple); border-radius: 10px; padding: 16px 18px;
+}
+.tree-result-box.teal { background: var(--teal-faint); border-color: #99f6e4; border-left-color: var(--teal); }
+.tree-result-box.grey { background: #f3f4f6; border-color: #e5e7eb; border-left-color: #9ca3af; }
+.tree-result-box.blue { background: #eff6ff; border-color: #bfdbfe; border-left-color: #2563eb; }
+.tree-result-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.tree-result-desc { font-size: 0.84rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 12px; }
+
+@media (max-width: 700px) {
+  .header-inner { flex-direction: column; gap: 12px; }
+  .main { padding: 20px 16px 48px; }
+  .milestone { grid-template-columns: 120px 1fr; gap: 0 14px; }
+  .milestone-line { left: 119px !important; }
+  .milestone-label::after { right: -9px !important; }
+  .module-grid { grid-template-columns: 1fr; }
+  .milestone-label-inner .day-num { font-size: 1.1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">📚</div>
+    <div class="header-text">
+      <h1>Winchester District Scouts — Learning Hub</h1>
+      <div class="subtitle">Your guide to volunteering learning &amp; development</div>
+    </div>
+    <div class="header-links">
+      <a href="https://www.scouts.org.uk" target="_blank">↗ scouts.org.uk</a>
+      <a href="https://learn.scouts.org.uk" target="_blank">↗ TSA Learning</a>
+      <a href="https://members.hampshirescouts.org.uk/adult-learning" target="_blank">↗ Hampshire Adult Learning</a>
+    </div>
+  </div>
+  <div class="header-tabs">
+    <button class="tab-btn active" onclick="switchTab('journey', this)">Your Journey</button>
+    <button class="tab-btn" onclick="switchTab('dbs', this)">DBS Check</button>
+    <button class="tab-btn" onclick="switchTab('mandatory', this)">Mandatory Learning</button>
+    <button class="tab-btn" onclick="switchTab('growing', this)">Growing Roots</button>
+    <button class="tab-btn" onclick="switchTab('additional', this)">Additional Learning</button>
+    <button class="tab-btn" onclick="switchTab('roles', this)">Roles</button>
+    <button class="tab-btn" onclick="switchTab('branching', this)">Branching Out</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 — YOUR JOURNEY
+  ══════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-journey">
+
+    <div class="callout">
+      <strong>All volunteers (except <span class="nmnd-tooltip" tabindex="0">Non-Member Needs Disclosure<span class="nmnd-popup">A <strong>Non-Member Needs Disclosure (NMND)</strong> is the official title for an adult — typically a parent or carer — who helps out on an occasional basis. They are not a member of Scouts or the Section Team. Anyone added to the Scout Membership System as an NMND will need a DBS check. Once complete they can attend overnight events. Winchester District expects NMNDs who attend regularly or attend overnight camps to also complete the <strong>Safety and Safeguarding</strong> online modules. <a href="#" onclick="switchTab('roles', document.querySelectorAll('.tab-btn')[4]); return false;" style="color:var(--purple);font-weight:600;white-space:nowrap;">See the Roles tab for more info →</a></span></span>) must complete Mandatory Training and all four Growing Roots modules.</strong>
+      Some roles — Trustees, GLVs, District Leadership — have additional requirements.
+      See the <a href="#" onclick="switchTab('additional', document.querySelectorAll('.tab-btn')[3]); return false;" style="color:var(--purple);font-weight:600;">Additional Learning</a> tab for details.
+      <br><br>
+      The <strong>Scout Membership System (SMS)</strong> is the Scout Association's membership and learning system for adult volunteers. It is separate from <strong>Online Scout Manager (OSM)</strong>, which you may also be added to — OSM is a digital system for managing young members and the week-to-week running of sections.
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <span class="progress-label">Your progress</span>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+      </div>
+      <span class="progress-count" id="progressCount">0 / 12</span>
+    </div>
+    <div class="progress-note" style="margin-top:-18px;margin-bottom:24px;font-size:0.72rem;color:var(--text-muted);padding-left:4px;">
+      ℹ Your progress is saved in this browser — ticks will still be here when you come back. <a href="#" onclick="clearProgress();return false;" style="color:var(--text-muted);">Reset all</a>
+    </div>
+
+    <div class="timeline">
+
+      <!-- ── Day 1 ── -->
+      <div class="milestone" data-tint="purple">
+        <div class="milestone-line"></div>
+        <div class="milestone-label">
+          <div class="milestone-label-inner day1">
+            <span class="day-num">Day 1</span>
+            <span class="day-label">Getting Started</span>
+          </div>
+        </div>
+        <div class="milestone-cards">
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Your GLV or Team Leader adds you to the Membership System</div>
+              <div class="task-meta"><span class="tag tag-action">Action by GLV/TL</span></div>
+              <div class="task-desc">They'll need your full name, email address, date of birth and postcode. This starts the clock on your 30-day mandatory training window.</div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Log in to the Scout Membership System</div>
+              <div class="task-meta"><span class="tag tag-admin">Your action</span></div>
+              <div class="task-desc">You'll receive a welcome email. Follow the link to set up your account, read and tick the declaration, and complete your profile — including contact details, references, ethnicity, and gender.</div>
+              <div class="task-links">
+                <a href="https://membership.scouts.org.uk" target="_blank" class="task-link">↗ membership.scouts.org.uk</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Notify your GLV/Team Leader that your profile is complete</div>
+              <div class="task-meta"><span class="tag tag-action">Your action</span></div>
+              <div class="task-desc">Once you've signed the declaration and completed your profile, let your GLV or Team Leader know. This triggers the DBS check process — an automated email will be sent to you with next steps.</div>
+              <div class="task-links">
+                <a href="#" onclick="switchTab('dbs', document.querySelectorAll('.tab-btn')[1]); return false;" class="task-link teal">ℹ DBS — what happens next</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Within 30 days ── -->
+      <div class="milestone" data-tint="red">
+        <div class="milestone-line"></div>
+        <div class="milestone-label">
+          <div class="milestone-label-inner d30">
+            <span class="day-num">Within</span>
+            <span class="day-label">30 days</span>
+          </div>
+        </div>
+        <div class="milestone-cards">
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Safeguarding</div>
+              <div class="task-meta">
+                <span class="tag tag-mandatory">Mandatory — Online Learning Module</span>
+                <span class="tag tag-renewal">Renews every 3 years</span>
+              </div>
+              <div class="task-desc">Essential training covering how to keep young people safe. Must be completed within 30 days of joining and renewed every three years.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf#/users/@self/catalogues/1700/courses/9279660/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Safety Training</div>
+              <div class="task-meta">
+                <span class="tag tag-mandatory">Mandatory — Online Learning Module</span>
+                <span class="tag tag-renewal">Renews every 3 years</span>
+              </div>
+              <div class="task-desc">Covers the essentials of keeping activities safe. Must be completed within 30 days of joining and renewed every three years.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf#/users/@self/catalogues/1700/courses/247450/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">DBS Check</div>
+              <div class="task-meta">
+                <span class="tag tag-mandatory">Mandatory</span>
+                <span class="tag tag-admin">Administrative</span>
+              </div>
+              <div class="task-desc">Your Disclosure and Barring Service check must be completed within 30 days. The process runs in parallel with your learning — see the DBS tab for the full step-by-step.</div>
+              <div class="task-links">
+                <a href="#" onclick="switchTab('dbs', document.querySelectorAll('.tab-btn')[1]); return false;" class="task-link teal">ℹ DBS process</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Within 6 months ── -->
+      <div class="milestone" data-tint="amber">
+        <div class="milestone-line"></div>
+        <div class="milestone-label">
+          <div class="milestone-label-inner d180">
+            <span class="day-num">Within</span>
+            <span class="day-label">6 months</span>
+          </div>
+        </div>
+        <div class="milestone-cards">
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Who We Are &amp; What We Do</div>
+              <div class="task-meta"><span class="tag tag-learning">Growing Roots — Online Learning Module</span></div>
+              <div class="task-desc">Understand how Scouts works, what our shared goal is, and what support is available to you as a volunteer.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279673/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Delivering a Great Programme</div>
+              <div class="task-meta"><span class="tag tag-learning">Growing Roots — Online Learning Module</span></div>
+              <div class="task-desc">How to use the Scout Method, involve young people, promote positive behaviour, plan safe and exciting programmes, and work with parents and carers.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279624/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Creating Inclusion</div>
+              <div class="task-meta"><span class="tag tag-learning">Growing Roots — Online Learning Module</span></div>
+              <div class="task-desc">Learn how to challenge assumptions, be more inclusive in everything you do, respond to reasonable adjustment needs, and challenge discrimination.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/247460/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Data Protection in Scouts</div>
+              <div class="task-meta"><span class="tag tag-learning">Growing Roots — Online Learning Module</span></div>
+              <div class="task-desc">What data protection means in practice — how to gather, use, share, store and delete personal data, and how to respond to a breach or access request.</div>
+              <div class="task-links">
+                <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279613/description" target="_blank" class="task-link">↗ Start module</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">Welcome Conversation</div>
+              <div class="task-meta"><span class="tag tag-social">Face to Face Meeting</span></div>
+              <div class="task-desc">A friendly chat with two existing volunteers — a chance to talk about your role, ask questions, and make sure you feel settled and supported. This isn't a test; it's part of how we welcome people properly.</div>
+              <div class="task-links">
+                <a href="https://www.scouts.org.uk/volunteers/running-things-locally/tools-to-support-leadership-teams/welcoming-volunteers/joining-journey/" target="_blank" class="task-link teal">↗ About the joining journey</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Within 12 months ── -->
+      <div class="milestone" data-tint="green">
+        <div class="milestone-label">
+          <div class="milestone-label-inner d365">
+            <span class="day-num">Within</span>
+            <span class="day-label">12 months</span>
+          </div>
+        </div>
+        <div class="milestone-cards">
+
+          <div class="task-card" onclick="toggleTask(this)">
+            <div class="task-checkbox">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="task-body">
+              <div class="task-title">First Response</div>
+              <div class="task-meta">
+                <span class="tag tag-mandatory">Mandatory — Face to Face or Hybrid Online Course</span>
+                <span class="tag tag-renewal">Renews every 3 years</span>
+              </div>
+              <div class="task-desc">First aid training for Scouts volunteers. You can complete this online or via a face-to-face course — the Hampshire Scouts link lets you book onto a local session.</div>
+              <div class="task-links">
+                <a href="https://members.hampshirescouts.org.uk/adult-learning/first-response" target="_blank" class="task-link amber">↗ Book via Hampshire Scouts</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end timeline -->
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 — DBS CHECK
+  ══════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-dbs">
+
+    <div class="dbs-intro">
+      <p>A Disclosure and Barring Service (DBS) check is a background check required for all Scouts volunteers. It must be completed within <strong>30 days</strong> of joining. The process runs alongside your mandatory learning — you don't need to wait for one before starting the other.</p>
+      <p>The steps below explain what happens and what you need to do at each stage.</p>
+    </div>
+
+    <div class="dbs-steps">
+
+      <div class="dbs-step">
+        <div class="dbs-num">1</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">Complete your SMS profile and notify your GLV/Team Leader</div>
+          <div class="dbs-step-desc">Once you've signed the declaration and filled in your profile on the Membership System, let your GLV or Team Leader know. This is what triggers the DBS process — it can't begin until your profile is complete.</div>
+        </div>
+      </div>
+
+      <div class="dbs-step">
+        <div class="dbs-num">2</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">Automated DBS email sent to you</div>
+          <div class="dbs-step-desc">Once triggered, the Membership System automatically sends you an email with a link to the DBS application. Check your spam folder if you don't see it within a few hours.</div>
+        </div>
+      </div>
+
+      <div class="dbs-step">
+        <div class="dbs-num">3</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">Complete your DBS application online</div>
+          <div class="dbs-step-desc">Follow the link in the email to fill in your DBS information. You'll need your address history for the past five years, details of any name changes, and three forms of ID. These are usually a passport, driving licence, and birth or marriage certificate, but many other options are accepted — typically at least one document showing your current address. Once done, notify your GLV or Team Leader.</div>
+        </div>
+      </div>
+
+      <div class="dbs-step">
+        <div class="dbs-num">4</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">ID verification by the DBS Administrator</div>
+          <div class="dbs-step-desc">A DBS Administrator will need to verify your identity in person. They'll check the original documents you entered into the system in the previous step. Your GLV or Team Leader will help arrange this.</div>
+        </div>
+      </div>
+
+      <div class="dbs-step">
+        <div class="dbs-num">5</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">DBS check processed — usually 1–2 weeks</div>
+          <div class="dbs-step-desc">Once submitted and verified, the DBS check is processed nationally. This normally takes between one week and ten days.</div>
+        </div>
+      </div>
+
+    </div>
+
+      <div class="dbs-step">
+        <div class="dbs-num">6</div>
+        <div class="dbs-step-body">
+          <div class="dbs-step-title">You'll be notified when it's complete</div>
+          <div class="dbs-step-desc">You will receive notification when the DBS check is complete and your record in the Membership System will be updated automatically.</div>
+        </div>
+      </div>
+
+    <a href="https://www.scouts.org.uk/volunteers/staying-safe-and-safeguarding/criminal-record-checks/criminal-record-checks-faqs/" target="_blank" class="dbs-faq-link" style="margin-top:24px;display:inline-flex;">
+      ↗ DBS checks — frequently asked questions (scouts.org.uk)
+    </a>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB — ROLES
+  ══════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-roles">
+
+    <div class="callout">
+      Not sure where you fit? Use the quick finder below, or read the full role descriptions further down the page.
+    </div>
+
+    <!-- ── Decision tree ── -->
+    <div id="roleTree" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:24px;margin-bottom:28px;max-width:680px;">
+      <div id="treeStep0">
+        <p style="font-size:0.93rem;font-weight:600;color:var(--text);margin-bottom:16px;">Are you registered on the Scout Membership System (SMS)?</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="tree-btn" onclick="treeGo('step1yes')">Yes, I am on SMS</button>
+          <button class="tree-btn" onclick="treeGo('step1no')">No, not yet</button>
+        </div>
+      </div>
+      <div id="treeStep1yes" style="display:none;">
+        <p style="font-size:0.93rem;font-weight:600;color:var(--text);margin-bottom:16px;">Have you completed the full volunteer joining journey — including Safety, Safeguarding, Growing Roots learning and a Welcome Conversation?</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="tree-btn" onclick="treeResult('member')">Yes, all done</button>
+          <button class="tree-btn" onclick="treeResult('memberinprogress')">No, still working through it</button>
+          <button class="tree-btn" onclick="treeResult('nmnd')">No — I was added just for a DBS check</button>
+          <button class="tree-btn tree-btn-ghost" onclick="treeGo('step0')">Back</button>
+        </div>
+      </div>
+      <div id="treeStep1no" style="display:none;">
+        <p style="font-size:0.93rem;font-weight:600;color:var(--text);margin-bottom:16px;">Are you helping out occasionally, or do you intend to join the section team?</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="tree-btn" onclick="treeResult('helper')">Just helping out occasionally</button>
+          <button class="tree-btn" onclick="treeResult('newjoin')">I want to join the team</button>
+          <button class="tree-btn tree-btn-ghost" onclick="treeGo('step0')">Back</button>
+        </div>
+      </div>
+      <div id="treeResult" style="display:none;"></div>
+    </div>
+
+    <!-- ── Role cards ── -->
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:760px;">
+
+      <!-- Helper -->
+      <div class="role-card" id="roleHelper">
+        <div class="role-card-header">
+          <div class="role-icon" style="background:#f3f4f6;">🙋</div>
+          <div>
+            <div class="role-title">Helper</div>
+            <div class="role-subtitle">Not registered on SMS · No DBS check</div>
+          </div>
+          <span class="role-badge" style="background:#f3f4f6;color:#6b7280;">Informal</span>
+        </div>
+        <div class="role-body">
+          <p>A Helper is anyone who assists at a Scouts session without being formally registered. This is typically a parent or carer who turns up occasionally to lend a hand. Helpers are not DBS checked and are <strong>not members of Scouts</strong>.</p>
+          <div class="role-rules">
+            <div class="role-rule can">✓ Attend and help at meetings</div>
+            <div class="role-rule can">✓ Run activities under supervision of a Team Member or Team Leader</div>
+            <div class="role-rule cannot">✗ Be left unsupervised with young people</div>
+            <div class="role-rule cannot">✗ Attend overnight events</div>
+            <div class="role-rule cannot">✗ Be put on a regular adult rota</div>
+          </div>
+          <div class="role-note">If a Helper is coming along regularly, they should be added to SMS as an NMND or encouraged to become a Team Member — whichever suits their level of involvement.
+            <div style="margin-top:8px;"><a href="https://www.scouts.org.uk/por/16-adult-roles/161-welcome-the-volunteer-joining-journey/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ POR 16.1.4 — Helpers and the NMND role</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NMND -->
+      <div class="role-card" id="roleNmnd">
+        <div class="role-card-header">
+          <div class="role-icon" style="background:#eff6ff;">🪪</div>
+          <div>
+            <div class="role-title">Non-Member — Needs Disclosure <span style="font-size:0.75rem;font-weight:500;color:var(--text-muted);">(NMND)</span></div>
+            <div class="role-subtitle">Registered on SMS · DBS checked · Not a Scout member</div>
+          </div>
+          <span class="role-badge" style="background:#eff6ff;color:#2563eb;">NMND</span>
+        </div>
+        <div class="role-body">
+          <p>Formerly known as the <strong>Occasional Helper</strong>, the NMND role is for adults — typically parents or carers — who help out on a regular or more meaningful basis. They are added to SMS by a GLV or Team Leader, which triggers a DBS check. They are <strong>not members of Scouts</strong> and do not go through the full volunteer joining journey.</p>
+          <div class="role-rules">
+            <div class="role-rule can">✓ Help unsupervised with young people (once DBS is complete)</div>
+            <div class="role-rule can">✓ Help up to once a week, or four times in any 30-day period</div>
+            <div class="role-rule can">✓ Attend overnight events and Nights Away</div>
+            <div class="role-rule cannot">✗ Access personal data about young people or adults</div>
+            <div class="role-rule cannot">✗ Take on formal team responsibilities</div>
+            <div class="role-rule cannot">✗ Count time towards length-of-service awards</div>
+            <div class="role-rule cannot">✗ Receive Scouts membership benefits (e.g. personal accident insurance)</div>
+          </div>
+          <div class="role-note" style="border-left-color:var(--purple);">
+            <strong>Winchester District:</strong> NMNDs who attend regularly or come on overnight camps are expected to complete the <strong>Safety</strong> and <strong>Safeguarding</strong> online learning modules. The NMND role should not be used as a way to avoid the full joining journey — if someone is helping regularly, they should be encouraged to become a Team Member.
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+              <a href="https://www.scouts.org.uk/volunteers/running-things-locally/local-teams/team-members-and-helpers/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ scouts.org.uk — Team Members and helpers</a>
+              <a href="https://www.scouts.org.uk/por/16-adult-roles/161-welcome-the-volunteer-joining-journey/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ POR 16.1.4.6 — What the NMND role is not</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Member -->
+      <div class="role-card" id="roleMember">
+        <div class="role-card-header">
+          <div class="role-icon" style="background:var(--teal-faint);">⚜️</div>
+          <div>
+            <div class="role-title">Team Member</div>
+            <div class="role-subtitle">Full Scout volunteer · Completed joining journey</div>
+          </div>
+          <span class="role-badge" style="background:var(--teal-faint);color:var(--teal);">Member</span>
+        </div>
+        <div class="role-body">
+          <p>A Team Member is a full Scout volunteer who has completed the volunteer joining journey. They plan and deliver the programme for young people and are a core part of the section team. Team Members can volunteer flexibly — some give time every week, others less frequently — and share tasks in a way that suits everyone.</p>
+          <div class="role-rules">
+            <div class="role-rule can">✓ Plan and deliver sessions, activities and events</div>
+            <div class="role-rule can">✓ Work unsupervised with young people</div>
+            <div class="role-rule can">✓ Attend overnight events and Nights Away</div>
+            <div class="role-rule can">✓ Access personal data relevant to their role</div>
+            <div class="role-rule can">✓ Full Scouts membership benefits including personal accident insurance</div>
+            <div class="role-rule can">✓ Time counts towards length-of-service awards</div>
+          </div>
+          <div class="role-note">
+            To become a Team Member, a volunteer completes the full joining journey — including DBS check, Safety, Safeguarding, Growing Roots learning, First Response, and a Welcome Conversation.
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+              <a href="https://www.scouts.org.uk/por/16-adult-roles/161-welcome-the-volunteer-joining-journey/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ POR 16.1.3 — The volunteer joining journey</a>
+              <a href="https://www.scouts.org.uk/volunteers/running-things-locally/local-teams/team-members-and-helpers/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ scouts.org.uk — Team Members and helpers</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Leader -->
+      <div class="role-card" id="roleLeader">
+        <div class="role-card-header">
+          <div class="role-icon" style="background:var(--purple-faint);">🌟</div>
+          <div>
+            <div class="role-title">Team Leader</div>
+            <div class="role-subtitle">Experienced Team Member · Recognition of leadership in practice</div>
+          </div>
+          <span class="role-badge" style="background:var(--purple-faint);color:var(--purple);">Leader</span>
+        </div>
+        <div class="role-body">
+          <p>A Team Leader is an experienced Team Member who has naturally taken on a coordinating and leadership role within the team. In most cases, someone becoming a Team Leader is already doing much of this work — the role is a recognition of that contribution rather than a new set of duties landing on them all at once.</p>
+          <p style="margin-top:8px;">If you're finding yourself regularly organising the session, supporting newer volunteers, and being the main point of contact with the GLV — you may already be acting as a Team Leader.</p>
+          <div class="role-rules">
+            <div class="role-rule can">✓ All Team Member responsibilities</div>
+            <div class="role-rule can">✓ Conduct Welcome Conversations for new volunteers joining the team</div>
+            <div class="role-rule can">✓ Add new members to SMS and manage roles</div>
+            <div class="role-rule can">✓ Support and line-manage other Team Members</div>
+            <div class="role-rule can">✓ Liaise with the GLV on behalf of the team</div>
+          </div>
+          <div class="role-note" style="border-left-color:var(--purple);">
+            <strong>Additional learning:</strong> Team Leaders are encouraged to complete <strong>Leading Scout Volunteers</strong> (see the Additional Learning tab) to develop their confidence in supporting and motivating their team.
+            <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+              <a href="https://www.scouts.org.uk/por/16-adult-roles/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ POR 16 — Adult roles</a>
+              <a href="https://www.scouts.org.uk/volunteers/running-things-locally/local-teams/" target="_blank" style="font-size:0.79rem;color:var(--teal);font-weight:600;">↗ scouts.org.uk — Local teams</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB — MANDATORY LEARNING
+  ══════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-mandatory">
+
+    <div class="callout">
+      The three Mandatory Learning modules must be completed by <strong>all volunteers</strong>. Safeguarding and Safety must be done <strong>within 30 days</strong> of joining. First Response must be completed <strong>within 12 months</strong>. All three renew every three years.
+    </div>
+
+    <div class="module-grid">
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#fee2e2;">🛡️</div>
+          <div>
+            <div class="module-title">Safeguarding</div>
+            <div class="module-role">All volunteers · within 30 days · renews every 3 years</div>
+          </div>
+        </div>
+        <div class="module-desc">Essential training covering how to keep young people safe. This is one of the most important modules you'll complete — it must be done within 30 days of joining and renewed every three years without exception.</div>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf#/users/@self/catalogues/1700/courses/9279660/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#fef9c3;">⚠️</div>
+          <div>
+            <div class="module-title">Safety Training</div>
+            <div class="module-role">All volunteers · within 30 days · renews every 3 years</div>
+          </div>
+        </div>
+        <div class="module-desc">Covers the essentials of keeping activities and meetings safe for young people and volunteers alike. Must be completed within 30 days of joining and renewed every three years.</div>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf#/users/@self/catalogues/1700/courses/247450/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#dcfce7;">🩺</div>
+          <div>
+            <div class="module-title">First Response</div>
+            <div class="module-role">All volunteers · within 12 months · renews every 3 years</div>
+          </div>
+        </div>
+        <div class="module-desc">First aid training for Scouts volunteers. Complete online or attend a face-to-face course. Hampshire Scouts run local sessions you can book onto directly.</div>
+        <div class="module-footer">
+          <a href="https://members.hampshirescouts.org.uk/adult-learning/first-response" target="_blank" class="module-link teal">↗ Book via Hampshire Scouts</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 — GROWING ROOTS
+  ══════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-growing">
+
+    <div class="callout">
+      The four Growing Roots modules must be completed by <strong>all volunteers within 6 months</strong> of joining. They're available on the TSA learning platform — you'll need to be logged in to your Scout Membership account to access them.
+    </div>
+
+    <div class="module-grid">
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#ede9fe;">🏕️</div>
+          <div>
+            <div class="module-title">Who We Are &amp; What We Do</div>
+            <div class="module-role">All volunteers · within 6 months</div>
+          </div>
+        </div>
+        <div class="module-desc">Understand how Scouts works, what our shared goal is, and what support is available to you. A great starting point for any new volunteer.</div>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279673/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#fef9c3;">🌟</div>
+          <div>
+            <div class="module-title">Delivering a Great Programme</div>
+            <div class="module-role">All volunteers · within 6 months</div>
+          </div>
+        </div>
+        <ul class="module-bullets">
+          <li>The Scout Method and how we create impact</li>
+          <li>Involving young people — being youth shaped</li>
+          <li>Promoting positive behaviour</li>
+          <li>Planning safe, exciting programmes</li>
+          <li>Working with parents and carers</li>
+        </ul>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279624/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#dcfce7;">🤝</div>
+          <div>
+            <div class="module-title">Creating Inclusion</div>
+            <div class="module-role">All volunteers · within 6 months</div>
+          </div>
+        </div>
+        <ul class="module-bullets">
+          <li>Challenge assumptions</li>
+          <li>Practical ways to be more inclusive</li>
+          <li>Respond when people need reasonable adjustments</li>
+          <li>Challenge discrimination</li>
+        </ul>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/247460/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#e0f2fe;">🔒</div>
+          <div>
+            <div class="module-title">Data Protection in Scouts</div>
+            <div class="module-role">All volunteers · within 6 months</div>
+          </div>
+        </div>
+        <ul class="module-bullets">
+          <li>What personal data is and why it matters</li>
+          <li>How to gather, use, share and store data</li>
+          <li>Securely deleting or archiving records</li>
+          <li>Responding to a breach or access request</li>
+        </ul>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9279613/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<div class="tab-panel" id="tab-additional">
+
+    <div class="callout">
+      These modules are for volunteers in specific roles. <strong>Trustees</strong> must complete Trustee Introduction. <strong>GLVs, DLVs and District Leadership</strong> should complete Leading Scout Volunteers. Others are available to anyone who wishes to deepen their knowledge.
+    </div>
+
+    <p class="section-heading">Trustees</p>
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#f3e8ff;">⚖️</div>
+          <div>
+            <div class="module-title">Trustee Introduction</div>
+            <div class="module-role">Trustees only · one-off</div>
+          </div>
+        </div>
+        <div class="module-desc">Required for all Trustee Board members. Covers your responsibilities, legal duties, and how to fulfil your role effectively. Only needs to be completed once.</div>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1107#/users/@self/coursetemplates/10609402/courses/9419706/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-heading">Leadership Roles</p>
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#fef9c3;">👥</div>
+          <div>
+            <div class="module-title">Leading Scout Volunteers</div>
+            <div class="module-role">GLVs, DLVs, District Leadership</div>
+          </div>
+        </div>
+        <ul class="module-bullets">
+          <li>Adapting your leadership style</li>
+          <li>How the Scouts approach to teams works</li>
+          <li>Welcoming and reviewing volunteers</li>
+          <li>Having constructive conversations</li>
+          <li>Permit approvals, activity approvals, suspensions</li>
+          <li>Leading on inclusive growth</li>
+        </ul>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/9844903/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#dcfce7;">🩹</div>
+          <div>
+            <div class="module-title">First Aid Kits</div>
+            <div class="module-role">Leadership Team · recommended</div>
+          </div>
+        </div>
+        <ul class="module-bullets">
+          <li>Ground rules around first aid kits</li>
+          <li>Examples and suggestions of what to include</li>
+          <li>Scenario-based choices for different activities</li>
+        </ul>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf#/users/@self/catalogues/1700/courses/10857922/description" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-heading">Accreditations</p>
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-card-header">
+          <div class="module-icon" style="background:#e0f2fe;">💬</div>
+          <div>
+            <div class="module-title">Welcome Conversation</div>
+            <div class="module-role">Volunteers wishing to conduct Welcome Conversations</div>
+          </div>
+        </div>
+        <div class="module-desc">If you'd like to be accredited to conduct Welcome Conversations for new volunteers, complete this learning module. This is separate from receiving your own Welcome Conversation when you join.</div>
+        <div class="module-footer">
+          <a href="https://learn.scouts.org.uk/ilp/pages/course.jsf?courseId=247265&pollingMode=on#!/courseroom/course" target="_blank" class="module-link">↗ Start module</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 5 — BRANCHING OUT
+  ══════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-branching">
+
+    <div class="callout">
+      <strong>Branching Out</strong> is optional learning you can do after your first year — develop your skills further, work towards the <strong>Wood Badge</strong>, or complete modules needed for permits and accreditations. There's no time limit and no commitment required.
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:2rem;">🌲</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text);">Branching Out &amp; Wood Badge</div>
+        <div style="font-size:0.84rem;color:var(--text-mid);line-height:1.6;">A full guide to Branching Out learning, the Wood Badge, both tracks (Section and Manager &amp; Supporter), the six Section Wood Badge modules, and how validation works.</div>
+        <a href="winchester_branching_out.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:0.83rem;font-weight:600;padding:9px 16px;border-radius:8px;text-decoration:none;background:var(--purple);color:white;margin-top:auto;align-self:flex-start;">↗ Open full guide</a>
+      </div>
+
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:2rem;">📅</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text);">Hampshire Scouts Training</div>
+        <div style="font-size:0.84rem;color:var(--text-mid);line-height:1.6;">Many Branching Out modules are delivered face-to-face locally. Hampshire Scouts runs regular courses — check the calendar for what's available and how to book.</div>
+        <a href="https://members.hampshirescouts.org.uk/adult-learning" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:0.83rem;font-weight:600;padding:9px 16px;border-radius:8px;text-decoration:none;background:var(--teal);color:white;margin-top:auto;align-self:flex-start;">↗ Hampshire Adult Learning</a>
+      </div>
+
+    </div>
+
+    <div class="callout teal" style="background:var(--teal-faint);border-color:#99f6e4;border-left-color:var(--teal);">
+      <strong style="color:var(--teal);">When to start:</strong> Branching Out is typically started after your first year in the role, once you've completed your Growing Roots learning and feel settled. There's no rush — do it at your own pace and in any order that suits you.
+    </div>
+
+  </div>
+
+</div><!-- end main -->
+
+<script>
+const STORAGE_KEY = 'wds_learning_hub_progress';
+
+// ── Decision tree ──
+const treeSteps = ['step0','step1yes','step1no'];
+function treeGo(step) {
+  // Hide all steps and result
+  ['treeStep0','treeStep1yes','treeStep1no','treeResult'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  // Show the requested step
+  var showId = step === 'step0'    ? 'treeStep0'
+             : step === 'step1yes' ? 'treeStep1yes'
+             : step === 'step1no'  ? 'treeStep1no'
+             : 'treeStep0';
+  var target = document.getElementById(showId);
+  if (target) target.style.display = 'block';
+}
+
+const treeResults = {
+  helper: {
+    cls: 'grey',
+    title: 'You are a Helper',
+    desc: 'You are helping out informally without being on the SMS. Make sure you are always supervised by a Team Member or Team Leader when with young people. If you are coming along regularly, speak to your GLV or Team Leader about being added to SMS as an NMND.',
+    anchor: 'roleHelper'
+  },
+  nmnd: {
+    cls: 'blue',
+    title: 'You are an NMND - Non-Member Needs Disclosure',
+    desc: 'You are registered on SMS and have a DBS check but are not going through the full volunteer joining journey. You can help unsupervised and attend overnights once your DBS is complete. If you are helping regularly, consider becoming a full Team Member.',
+    anchor: 'roleNmnd'
+  },
+  member: {
+    cls: 'teal',
+    title: 'You are a Team Member',
+    desc: 'You have completed the volunteer joining journey and are a full Scout volunteer. You can plan and deliver the programme, work unsupervised, and attend all events. If you are already coordinating the team, you might be ready to become a Team Leader.',
+    anchor: 'roleMember'
+  },
+  memberinprogress: {
+    cls: 'teal',
+    title: 'You are a Team Member - joining journey in progress',
+    desc: 'You are on SMS and working through the volunteer joining journey. You are already a Team Member - keep going with the learning and your Welcome Conversation will complete the process. Check the Your Journey tab to see what is still to do.',
+    anchor: 'roleMember'
+  },
+  newjoin: {
+    cls: '',
+    title: 'Welcome - let us get you started!',
+    desc: 'Your GLV or Team Leader will add you to the Scout Membership System to begin your volunteer joining journey. Head to the Your Journey tab for a full guide to what to expect and when.',
+    anchor: null
+  }
+};
+
+function treeResult(key) {
+  ['treeStep0','treeStep1yes','treeStep1no'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var r = treeResults[key];
+  var box = document.getElementById('treeResult');
+  var scrollLink = '';
+  if (r.anchor) {
+    scrollLink = '<a href="#" onclick="scrollToRole(\'' + r.anchor + '\');return false;" style="font-size:0.82rem;font-weight:600;color:var(--purple);">&darr; See full role description below</a><br>';
+  }
+  box.innerHTML =
+    '<div class="tree-result-box ' + r.cls + '">' +
+      '<div class="tree-result-title">' + r.title + '</div>' +
+      '<div class="tree-result-desc">' + r.desc + '</div>' +
+      scrollLink +
+      '<button class="tree-btn tree-btn-ghost" style="margin-top:10px;font-size:0.8rem;" onclick="treeReset()">&larr; Start again</button>' +
+    '</div>';
+  box.style.display = 'block';
+}
+
+function scrollToRole(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function treeReset() {
+  treeGo('step0');
+}
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function toggleTask(card) {
+  card.classList.toggle('checked');
+  saveProgress();
+  updateProgress();
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('#tab-journey .task-card');
+  const done = document.querySelectorAll('#tab-journey .task-card.checked');
+  const pct = Math.round((done.length / all.length) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = done.length + ' / ' + all.length;
+}
+
+function saveProgress() {
+  const cards = document.querySelectorAll('#tab-journey .task-card');
+  const state = Array.from(cards).map(c => c.classList.contains('checked'));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const state = JSON.parse(saved);
+    const cards = document.querySelectorAll('#tab-journey .task-card');
+    cards.forEach((card, i) => {
+      if (state[i]) card.classList.add('checked');
+    });
+  } catch(e) {}
+  updateProgress();
+}
+
+function clearProgress() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  document.querySelectorAll('#tab-journey .task-card').forEach(c => c.classList.remove('checked'));
+  updateProgress();
+}
+
+// Initialise on load
+loadProgress();
+</script>
+
+</body>
+</html>

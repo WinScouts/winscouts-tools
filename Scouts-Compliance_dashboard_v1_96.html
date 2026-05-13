@@ -1,0 +1,3375 @@
+<!--
+================================================================================
+  SCOUTS COMPLIANCE DASHBOARD
+  Winchester District Scouts (S10001168)
+================================================================================
+
+  OWNER & CONTACT
+  Nick Elborough, District Lead Volunteer
+  nelborough@gmail.com
+
+  COPYRIGHT & OWNERSHIP
+  © 2024–2026 Winchester District Scouts. All rights reserved.
+  This file is the property of Winchester District Scouts and is intended
+  solely for authorised internal use by district leadership and administrators.
+
+  CONFIDENTIALITY
+  This tool processes personal data relating to Scout volunteers including
+  names, contact details, DBS status, and training records. It is classified
+  as SENSITIVE and must not be shared with, or made accessible to,
+  unauthorised individuals.
+
+  DATA PROTECTION
+  This tool is operated in accordance with the UK General Data Protection
+  Regulation (UK GDPR) and the Data Protection Act 2018. Personal data
+  processed by this tool must be handled lawfully, fairly, and transparently.
+  Data subjects have rights including access, rectification, and erasure.
+  Any data breach must be reported in accordance with Scouts DPA procedures.
+
+  SAFEGUARDING
+  This tool contains DBS and safeguarding compliance information. Access
+  is restricted to authorised personnel only. Misuse of this information
+  may constitute a safeguarding concern and will be treated accordingly.
+
+  DISCLAIMER
+  This tool is provided for administrative convenience only. Winchester
+  District Scouts accepts no liability for decisions made solely on the
+  basis of data presented here. Users are responsible for verifying
+  information against the Scout Membership System (SMS) before taking
+  formal action.
+
+  AUTHORISED USE ONLY
+  Unauthorised access, copying, distribution, or modification of this
+  file or its contents is strictly prohibited. If you have received this
+  file in error, please contact Nick Elborough (nelborough@gmail.com)
+  immediately and delete all copies.
+
+================================================================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance Dashboard Scouts</title>
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  /* ─────────────────────────────────────────
+     COLOUR TOKENS — dark mode (default)
+  ───────────────────────────────────────── */
+  :root {
+    --bg:        #0A0E14;   /* page background          */
+    --surf:      #111720;   /* card / panel surface     */
+    --surf2:     #182030;   /* raised surface / hover   */
+    --surf3:     #0E1520;   /* recessed surface         */
+    --border:    #1E2D40;   /* all borders              */
+    --border2:   #1A2535;   /* table row dividers       */
+    --text:      #D4E0F0;   /* primary text             */
+    --muted:     #5A7A99;   /* secondary / label text   */
+  }
+
+  /* ── Light mode overrides ── */
+  body.light {
+    --bg:        #F4F6F9;
+    --surf:      #FFFFFF;
+    --surf2:     #E8EDF4;
+    --surf3:     #EDF0F5;
+    --border:    #CBD5E1;
+    --border2:   #E2E8F0;
+    --text:      #0F1923;
+    --muted:     #64748B;
+  }
+
+  /* ─────────────────────────────────────────
+     RESET & BASE
+  ───────────────────────────────────────── */
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background 0.2s, color 0.2s; }
+
+  /* ─────────────────────────────────────────
+     PASTE SCREEN
+  ───────────────────────────────────────── */
+  #pasteScreen {
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:40px 24px;
+  }
+  .logo {
+    display:inline-block; background:linear-gradient(135deg,#7B1FA2,#00838F);
+    padding:10px 22px; border-radius:100px; font-size:12px; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; color:white; margin-bottom:24px;
+  }
+  #pasteScreen h1 {
+    font-family:'Syne',Arial,sans-serif; font-size:32px; font-weight:800;
+    margin-bottom:10px; text-align:center;
+  }
+  #pasteScreen p {
+    color:var(--muted); font-size:15px; margin-bottom:28px;
+    text-align:center; max-width:500px; line-height:1.6;
+  }
+  .paste-box-wrap {
+    width:100%; max-width:640px; background:var(--surf);
+    border:2px dashed var(--border); border-radius:16px; padding:28px; transition:border-color 0.2s;
+  }
+  .paste-box-wrap:focus-within { border-color:#00C8FF; }
+  .paste-box-wrap.drag-over { border-color:#00C8FF; background:rgba(0,200,255,0.06); }
+  #tsvFileInput { display:none; }
+  #importTsvBtn {
+    display:block; width:100%; max-width:640px; margin-top:10px; padding:12px;
+    background:var(--surf); border:1px solid var(--border); border-radius:10px;
+    color:var(--muted); font-family:'DM Sans',Arial,sans-serif; font-size:14px;
+    font-weight:600; cursor:pointer; transition:border-color 0.2s, color 0.2s;
+  }
+  #importTsvBtn:hover { border-color:#00C8FF; color:var(--text); }
+  .paste-box-wrap label {
+    display:block; font-size:12px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--muted); margin-bottom:10px;
+  }
+  #pasteInput {
+    width:100%; min-height:120px; max-height:200px; overflow:auto;
+    background:var(--bg); border:1px solid var(--border); border-radius:8px;
+    color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:11px;
+    padding:12px; outline:none; white-space:pre-wrap; word-break:break-all;
+  }
+  .paste-hint { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; }
+  .paste-hint strong { color:#00C8FF; }
+  #loadBtn {
+    display:block; width:100%; max-width:640px; margin-top:16px; padding:15px;
+    background:linear-gradient(135deg,#7B1FA2,#00838F); border:none; border-radius:10px;
+    color:white; font-family:'DM Sans',Arial,sans-serif; font-size:16px; font-weight:600; cursor:pointer;
+  }
+  #loadBtn:hover { opacity:0.9; }
+  #pasteError { color:#FF6666; font-size:13px; margin-top:12px; text-align:center; display:none; }
+
+  /* ─────────────────────────────────────────
+     DASHBOARD CHROME
+  ───────────────────────────────────────── */
+  #dashboard { display:none; }
+
+  .topbar {
+    background:var(--surf); border-bottom:1px solid var(--border); padding:0 24px; height:56px;
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:300;
+  }
+  .topbar-left { display:flex; align-items:center; gap:12px; }
+  .topbar-logo {
+    background:linear-gradient(135deg,#7B1FA2,#00838F); border-radius:7px;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:white;
+  }
+  .topbar-title { font-family:'Syne',Arial,sans-serif; font-weight:700; font-size:15px; }
+  .topbar-unit {
+    background:var(--surf2); border:1px solid var(--border); border-radius:100px;
+    padding:3px 12px; font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;
+  }
+  .btn-reset {
+    background:var(--surf2); border:1px solid var(--border); border-radius:6px;
+    color:var(--muted); font-size:12px; padding:6px 12px; cursor:pointer;
+    font-family:'DM Sans',Arial,sans-serif;
+  }
+  .btn-reset:hover { color:var(--text); background:var(--border); }
+
+  /* ─────────────────────────────────────────
+     STATS
+  ───────────────────────────────────────── */
+  .stats-section { border-bottom:1px solid var(--border); }
+  .stats-toggle {
+    width:100%; background:var(--surf3); border:none; color:var(--muted);
+    font-family:'DM Sans',Arial,sans-serif; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.06em; padding:5px 24px;
+    text-align:left; cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+  .stats-toggle:hover { color:var(--text); background:var(--surf); }
+  .toggle-arrow { transition:transform 0.2s; font-size:9px; }
+  .toggle-arrow.collapsed { transform:rotate(-90deg); }
+  .stats-row {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:1px; background:var(--border);
+  }
+  .stats-row.hidden { display:none; }
+  .stat-cell {
+    background:var(--surf); padding:12px 14px; text-align:center;
+    cursor:pointer; transition:background 0.15s;
+  }
+  .stat-cell:hover { background:var(--surf2); }
+  .stat-cell.active { background:var(--surf2); outline:2px solid #00C8FF; outline-offset:-2px; }
+  .stat-value { font-family:'Syne',Arial,sans-serif; font-size:22px; font-weight:800; line-height:1; margin-bottom:1px; }
+  .stat-pct   { font-size:11px; font-weight:600; opacity:0.75; margin-bottom:2px; }
+  .stat-label { font-size:11px; color:var(--text); opacity:0.8; text-transform:uppercase; letter-spacing:0.06em; }
+
+  /* ─────────────────────────────────────────
+     COLOUR TOKENS
+  ───────────────────────────────────────── */
+  .c-blue  { color:#00C8FF; }
+  .c-green { color:#00E676; }
+  .c-amber { color:#FFB300; }
+  .c-red   { color:#FF4444; }
+
+  /* ─────────────────────────────────────────
+     FILTER BAR
+  ───────────────────────────────────────── */
+  .filter-bar {
+    padding:8px 24px; background:var(--surf); border-bottom:1px solid var(--border);
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .filter-row {
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  }
+  .filter-bar input,
+  .filter-bar select {
+    background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-family:'DM Sans',Arial,sans-serif; font-size:12px;
+    padding:6px 10px; outline:none;
+  }
+  .filter-bar input:focus,
+  .filter-bar select:focus { border-color:#00C8FF; }
+  .filter-bar select option { background:var(--bg); }
+
+  /* ── Multi-select dropdown ── */
+  .ms-wrap { position:relative; display:inline-block; }
+  .ms-btn {
+    background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-family:'DM Sans',Arial,sans-serif; font-size:12px;
+    padding:6px 28px 6px 10px; outline:none; cursor:pointer; white-space:nowrap;
+    min-width:110px; text-align:left; display:flex; align-items:center;
+    gap:5px; transition:border-color 0.15s;
+  }
+  .ms-btn:hover, .ms-btn.open { border-color:#00C8FF; }
+  .ms-btn::after {
+    content:'▾'; position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:10px; color:var(--muted); pointer-events:none;
+  }
+  .ms-btn.active { border-color:#00C8FF; background:rgba(0,200,255,0.07); color:#00C8FF; }
+  .ms-count {
+    background:#00C8FF; color:var(--bg); border-radius:100px;
+    font-size:9px; font-weight:700; padding:1px 5px; min-width:16px; text-align:center;
+  }
+  .ms-panel {
+    position:absolute; top:calc(100% + 4px); left:0; z-index:500;
+    background:var(--surf); border:1px solid var(--border); border-radius:8px;
+    min-width:200px; max-width:280px; max-height:280px; overflow-y:auto;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3); display:none;
+  }
+  .ms-panel.open { display:block; }
+  .ms-search {
+    width:100%; background:var(--bg); border:none; border-bottom:1px solid var(--border);
+    color:var(--text); font-family:'DM Sans',Arial,sans-serif; font-size:12px;
+    padding:7px 10px; outline:none;
+  }
+  .ms-options { padding:4px 0; }
+  .ms-option {
+    display:flex; align-items:center; gap:8px; padding:6px 12px;
+    cursor:pointer; font-size:12px; color:var(--text); transition:background 0.1s;
+    user-select:none;
+  }
+  .ms-option:hover { background:var(--surf2); }
+  .ms-option input[type=checkbox] { accent-color:#00C8FF; width:13px; height:13px; cursor:pointer; flex-shrink:0; }
+  .ms-option.all-opt { border-bottom:1px solid var(--border); font-weight:600; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; }
+  .ms-empty { padding:10px 12px; font-size:12px; color:var(--muted); font-style:italic; }
+  .btn-export {
+    background:var(--surf2); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-size:12px; font-weight:500; padding:6px 14px;
+    cursor:pointer; font-family:'DM Sans',Arial,sans-serif;
+  }
+  .btn-export:hover { background:var(--border); }
+  #memberCount { margin-left:auto; }
+
+  /* ─────────────────────────────────────────
+     TABLE WRAPPER
+  ───────────────────────────────────────── */
+  .table-wrap { overflow:auto; max-height:calc(100vh - 56px - 95px - 80px); padding-bottom:16px; }
+  table { border-collapse:collapse; font-size:11px; white-space:nowrap; table-layout:auto; }
+  thead { position:sticky; top:0; z-index:10; }
+
+  /* ── Group header row ── */
+  thead tr.grp th {
+    background:var(--surf2); border-bottom:none;
+    font-size:0;
+    padding:0; text-align:left; overflow:hidden;
+    height:28px;
+  }
+  thead tr.grp th.grp-label {
+    font-size:9px; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.07em; cursor:pointer; user-select:none; white-space:nowrap;
+    width:0; min-width:0; overflow:visible; position:relative;
+  }
+  /* Absolutely position the label so it floats over neighbouring cells
+     without contributing to column width calculation */
+  thead tr.grp th.grp-label .grp-inner {
+    position:absolute; left:0; top:0; bottom:0;
+    display:flex; align-items:center; gap:4px; padding:5px 8px;
+    white-space:nowrap; pointer-events:none;
+  }
+  /* Restore pointer events on the arrow only */
+  thead tr.grp th.grp-label .grp-inner .grp-arrow { pointer-events:auto; }
+  thead tr.grp th.grp-label:hover { filter:brightness(1.3); }
+  .grp-inner { display:flex; align-items:center; gap:4px; padding:5px 8px; }
+  .grp-arrow { font-size:8px; transition:transform 0.2s; }
+
+  /* Collapsed label: fixed 24px strip with rotated text */
+  thead tr.grp th.grp-label.grp-collapsed {
+    width:24px !important; min-width:24px !important; max-width:24px !important;
+    overflow:visible;
+  }
+  thead tr.grp th.grp-label.grp-collapsed .grp-inner {
+    position:relative !important;  /* must beat the absolute rule above */
+    writing-mode:vertical-rl; transform:rotate(180deg);
+    padding:4px 4px; white-space:nowrap; overflow:visible;
+    width:24px; height:94px;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Group colour bands — group band row (data-grp-th) gets surf2 background */
+  th[data-grp-th="name"]     { background:var(--surf2) !important; color:var(--text); }
+  th[data-grp-th="info"]     { background:var(--surf2) !important; color:#00C8FF; }
+  th[data-grp-th="welcome"]  { background:var(--surf2) !important; color:#C080FF; }
+  th[data-grp-th="critical"] { background:var(--surf2) !important; color:#FF6060; }
+  th[data-grp-th="learning"] { background:var(--surf2) !important; color:#FFB300; }
+  th[data-grp-th="dbs"]      { background:var(--surf2) !important; color:#00E676; }
+
+  /* Col header row (data-grp) — colour ONLY, no border-top or background override */
+  th[data-grp="info"]     { color:#00C8FF; }
+  th[data-grp="welcome"]  { color:#C080FF; }
+  th[data-grp="critical"] { color:#FF6060; }
+  th[data-grp="learning"] { color:#FFB300; }
+  th[data-grp="dbs"]      { color:#00E676; }
+
+  /* Col header row */
+  thead tr.cols th {
+    background:var(--surf) !important; border-bottom:2px solid var(--border); padding:6px 8px;
+    font-weight:600; font-size:10px; color:var(--text);
+    text-align:left; cursor:pointer; user-select:none;
+  }
+  thead tr.cols th:hover { color:var(--text); background:var(--surf2); }
+  thead tr.cols th.sorted-asc::after  { content:' ↑'; color:#00C8FF; }
+  thead tr.cols th.sorted-desc::after { content:' ↓'; color:#00C8FF; }
+  thead tr.cols th.rot {
+    width: 36px; min-width: 36px; max-width: 36px;
+    padding: 5px 2px;
+    overflow: visible;
+    background: var(--surf) !important;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
+    vertical-align: middle;
+    text-align: left;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ── CSS-only column hiding ──
+     Applied to BOTH the group-band <th>, the col-header <th>, AND every <td>.
+     The table always renders all columns; visibility is CSS-driven only.      */
+  .grp-col-hidden {
+    display:none !important;
+    /* belt-and-braces: prevent any residual space */
+    width:0 !important; min-width:0 !important;
+    padding:0 !important; border:none !important; overflow:hidden !important;
+  }
+
+  /* ── Frozen columns: Name (left:0) + Number (left:var(--name-w)) ── */
+  :root { --name-w:150px; --num-w:90px; }
+
+  th.col-name, td.col-name {
+    position:sticky; left:0; z-index:5;
+    background:var(--surf); min-width:var(--name-w);
+  }
+  th.col-num, td.col-num {
+    position:sticky; left:var(--name-w); z-index:5;
+    background:var(--surf); min-width:var(--num-w);
+    border-right:1px solid var(--border);
+    font-family:'IBM Plex Mono',monospace; font-size:10px;
+  }
+  /* Frozen cells in the group-band row need higher z-index */
+  thead tr.grp th.col-name { z-index:12; background:var(--surf2); }
+  thead tr.grp th.col-num  { z-index:12; background:var(--surf2); }
+  thead tr.cols th.col-name,
+  thead tr.cols th.col-num  { z-index:11; }
+
+  tbody tr:hover td.col-name,
+  tbody tr:hover td.col-num { background:var(--surf2); }
+
+  tr.row-issue  td.col-name { border-left:3px solid #FF4444; }
+  tr.row-expiry td.col-name { border-left:3px solid #FFB300; }
+  tr.row-ok     td.col-name { border-left:3px solid #00E676; }
+
+  /* ── Body cells ── */
+  tbody tr { border-bottom:1px solid var(--border2); }
+  tbody tr:hover { background:var(--surf2); }
+  tbody td { padding:7px 8px; vertical-align:middle; }
+
+  td.cell-name   { font-weight:500; }
+  td.cell-mono   { font-family:'IBM Plex Mono',monospace; font-size:10px; }
+  td.cell-num    { font-family:'IBM Plex Mono',monospace; font-size:10px; text-align:right;
+                   width:36px; min-width:36px; max-width:36px; padding:4px 4px; }
+  td.cell-icon   { text-align:center; font-size:13px;
+                   width:36px; min-width:36px; max-width:36px; padding:4px 2px; }
+  td.cell-unit   { white-space:nowrap; }
+  td.cell-expiry { font-family:'IBM Plex Mono',monospace; font-size:10px;
+                   width:72px; min-width:72px; max-width:72px; padding:4px 4px; }
+  td.cell-status-text { max-width:180px; overflow:hidden; text-overflow:ellipsis;
+                        font-family:'IBM Plex Mono',monospace; font-size:10px; }
+
+  /* ── Expiry colour classes ── */
+  .exp-red    { background:rgba(255,68,68,0.15);  color:#FF4444; }
+  .exp-orange { background:rgba(255,120,0,0.15);  color:#FF7800; }
+  .exp-amber  { background:rgba(255,179,0,0.12);  color:#FFB300; }
+  .exp-icon-red    { background:rgba(255,68,68,0.14);  }
+  .exp-icon-orange { background:rgba(255,120,0,0.14);  }
+  .exp-icon-amber  { background:rgba(255,179,0,0.14);  }
+  .exp-icon-miss   { background:rgba(255,68,68,0.14);  }
+
+  /* ── Status badge ── */
+  .badge { display:inline-block; padding:1px 7px; border-radius:100px; font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+  .b-full  { background:rgba(0,230,118,0.15); color:#00E676; }
+  .b-prov  { background:rgba(255,179,0,0.15);  color:#FFB300; }
+  .b-other { background:var(--surf2); color:var(--muted); }
+  /* Light mode — darken badge text so it reads against white backgrounds */
+  body.light .b-full  { background:rgba(0,180,80,0.15);  color:#1a7a40; }
+  body.light .b-prov  { background:rgba(180,120,0,0.15); color:#a06600; }
+  body.light .b-other { background:var(--surf2); color:var(--muted); }
+
+  .empty-state { text-align:center; padding:60px; color:var(--muted); font-size:14px; }
+
+  /* ── Sticky group colour band (sits above table, avoids border-collapse quirks) ── */
+  #grpBand { position:sticky; top:0; z-index:20; height:4px; overflow:hidden; pointer-events:none; background:var(--surf2); }
+  .grp-band-seg { position:absolute; top:0; height:4px; }
+
+  /* ── Column zebra stripe on headers only ── */
+  thead tr.cols th.col-even { background: #1a2d45 !important; }
+  body.light thead tr.cols th.col-even { background: #e8edf4 !important; }
+
+  /* ── Column hover highlight ── */
+  .col-hover { background:#0d2235 !important; }
+  thead tr.cols th.col-hover { background:#0a2a3d !important; color:#00C8FF; }
+  body.light .col-hover { background:#daeaf7 !important; }
+  body.light thead tr.cols th.col-hover { background:#cce3f5 !important; color:#00C8FF; }
+
+  /* ── Member count pill in filter bar ── */
+  #memberCount {
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    color:var(--text); background:var(--surf2); border:1px solid var(--border);
+    border-radius:100px; padding:3px 10px; white-space:nowrap; margin-left:auto;
+  }
+  #memberCount.is-filtered { color:#00C8FF; border-color:#00C8FF; background:rgba(0,200,255,0.08); }
+
+  /* ─────────────────────────────────────────
+     TABS
+  ───────────────────────────────────────── */
+  .tab-bar {
+    display:flex; background:var(--surf3); border-bottom:1px solid var(--border);
+    padding:0 24px; gap:0;
+  }
+  .tab-btn {
+    padding:10px 18px; font-size:12px; font-weight:600; cursor:pointer;
+    border:none; background:none; color:var(--muted); border-bottom:2px solid transparent;
+    font-family:'DM Sans',Arial,sans-serif; transition:color 0.15s; margin-bottom:-1px;
+  }
+  .tab-btn:hover { color:var(--text); }
+  .tab-btn.active { color:#00C8FF; border-bottom-color:#00C8FF; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* District roll-up table */
+  .district-wrap { padding:20px 24px; overflow-x:auto; }
+  .district-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .district-table th {
+    background:var(--surf2); border-bottom:2px solid var(--border);
+    padding:8px 12px; text-align:left; font-weight:600; color:var(--text);
+    cursor:pointer; user-select:none;
+  }
+  .district-table th:hover { color:#00C8FF; }
+  .district-table td { padding:9px 12px; border-bottom:1px solid var(--border2); }
+  .district-table tr:hover td { background:var(--surf2); }
+  .district-table tr:last-child td { border-bottom:none; }
+  .dt-bar-wrap { width:120px; height:8px; border-radius:4px; background:var(--border); overflow:hidden; display:inline-flex; align-items:stretch; vertical-align:middle; margin-right:8px; }
+  .dt-bar-fill  { height:8px; border-radius:4px; flex-shrink:0; }
+  .dt-pct { font-family:'Syne',Arial,sans-serif; font-size:14px; font-weight:800; vertical-align:middle; }
+  .dt-name { font-weight:600; }
+  .dt-chip {
+    display:inline-block; font-size:9px; font-weight:600; padding:1px 6px;
+    border-radius:100px; text-transform:uppercase; letter-spacing:0.04em; margin-right:3px;
+  }
+
+  /* District role breakdown */
+  .district-table tr.dt-total-row td {
+    background:var(--surf2); font-weight:700; border-top:2px solid var(--border);
+    border-bottom:none; color:var(--text);
+  }
+  /* Role column group header in district thead */
+  .dt-role-grp-th {
+    background:rgba(192,128,255,0.15); border-bottom:2px solid var(--border);
+    padding:8px 12px; text-align:center; font-weight:700; font-size:11px;
+    color:#C080FF; letter-spacing:0.05em; text-transform:uppercase;
+    cursor:pointer; user-select:none; white-space:nowrap;
+  }
+  .dt-role-grp-th:hover { color:var(--text); }
+  /* Role count cells */
+  td.dt-role-cell {
+    text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px;
+    color:var(--muted); min-width:48px;
+  }
+  td.dt-role-cell.has-val { color:var(--text); font-weight:600; }
+  /* Hidden role columns */
+  .dt-role-col-hidden { display:none; }
+
+  /* ─────────────────────────────────────────
+     EMAIL DRAFT GENERATOR
+  ───────────────────────────────────────── */
+  .email-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65);
+    z-index:1000; align-items:flex-start; justify-content:center;
+    padding:40px 20px; overflow-y:auto;
+  }
+  .email-modal-overlay.open { display:flex; }
+  .email-modal {
+    background:var(--surf); border:1px solid var(--border); border-radius:14px;
+    padding:28px 32px; width:100%; max-width:640px;
+  }
+  .email-modal h3 {
+    font-family:'Syne',Arial,sans-serif; font-size:16px; font-weight:800;
+    margin-bottom:4px; color:var(--text);
+  }
+  .email-modal-sub { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .email-select-wrap { max-height:200px; overflow-y:auto; border:1px solid var(--border);
+                       border-radius:8px; margin-bottom:14px; }
+  .email-member-row {
+    display:flex; align-items:center; gap:10px; padding:7px 12px;
+    border-bottom:1px solid var(--border2); cursor:pointer; font-size:12px;
+  }
+  .email-member-row:last-child { border-bottom:none; }
+  .email-member-row:hover { background:var(--surf2); }
+  .email-member-row input[type=checkbox] { accent-color:#00C8FF; width:14px; height:14px; }
+  .email-member-name { font-weight:600; flex:1; }
+  .email-member-issues { font-size:11px; color:var(--muted); }
+  .email-subject-wrap { margin-bottom:10px; }
+  .email-subject-wrap label { font-size:11px; color:var(--muted); font-weight:600;
+                               text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:4px; }
+  .email-subject-input {
+    width:100%; background:var(--bg); border:1px solid var(--border); border-radius:6px;
+    color:var(--text); font-family:'DM Sans',Arial,sans-serif; font-size:13px;
+    padding:7px 10px; outline:none;
+  }
+  .email-subject-input:focus { border-color:#00C8FF; }
+  .email-body-wrap label { font-size:11px; color:var(--muted); font-weight:600;
+                            text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:4px; }
+  .email-textarea {
+    width:100%; min-height:220px; background:var(--bg); border:1px solid var(--border);
+    border-radius:6px; color:var(--text); font-family:'DM Sans',Arial,sans-serif;
+    font-size:13px; padding:10px; outline:none; resize:vertical; line-height:1.6;
+  }
+  .email-textarea:focus { border-color:#00C8FF; }
+  .email-modal-btns { display:flex; gap:8px; margin-top:14px; }
+  .btn-copy-email {
+    flex:1; padding:9px; background:linear-gradient(135deg,#7B1FA2,#00838F);
+    border:none; border-radius:8px; color:white;
+    font-family:'DM Sans',Arial,sans-serif; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .btn-copy-email:hover { opacity:0.9; }
+  .btn-close-email {
+    padding:9px 16px; background:var(--surf2); border:1px solid var(--border);
+    border-radius:8px; color:var(--text); font-family:'DM Sans',Arial,sans-serif;
+    font-size:13px; cursor:pointer;
+  }
+  .email-copied { font-size:12px; color:#00E676; display:none; align-self:center; }
+
+  /* Row selection checkbox */
+  td.cell-check { width:28px; text-align:center; padding:4px; }
+  td.cell-check input { accent-color:#00C8FF; width:14px; height:14px; cursor:pointer; }
+  .btn-draft-email {
+    background:rgba(0,200,255,0.1); border:1px solid #00C8FF; border-radius:6px;
+    color:#00C8FF; font-size:12px; font-weight:600; padding:6px 12px;
+    cursor:pointer; font-family:'DM Sans',Arial,sans-serif; display:none;
+  }
+  .btn-draft-email.visible { display:inline-block; }
+
+  /* ─────────────────────────────────────────
+     SAVED SNAPSHOTS
+  ───────────────────────────────────────── */
+  .snapshots-section {
+    padding:10px 24px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  }
+  .snapshots-label { font-size:11px; color:var(--muted); font-weight:600;
+                     text-transform:uppercase; letter-spacing:0.06em; }
+  .snapshot-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--surf2); border:1px solid var(--border); border-radius:100px;
+    padding:3px 10px; font-size:11px; cursor:pointer; color:var(--text);
+    font-family:'DM Sans',Arial,sans-serif; transition:border-color 0.15s;
+  }
+  .snapshot-chip:hover { border-color:#00C8FF; color:#00C8FF; }
+  .snapshot-del {
+    font-size:13px; color:var(--muted); cursor:pointer; line-height:1;
+    margin-left:2px;
+  }
+  .snapshot-del:hover { color:#FF4444; }
+
+  /* ─────────────────────────────────────────
+     KEYBOARD SHORTCUT MODAL
+  ───────────────────────────────────────── */
+  .kb-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    z-index:1000; align-items:center; justify-content:center;
+  }
+  .kb-modal-overlay.open { display:flex; }
+  .kb-modal {
+    background:var(--surf); border:1px solid var(--border); border-radius:14px;
+    padding:28px 32px; min-width:340px; max-width:480px;
+  }
+  .kb-modal h3 {
+    font-family:'Syne',Arial,sans-serif; font-size:16px; font-weight:800;
+    margin-bottom:16px; color:var(--text);
+  }
+  .kb-row { display:flex; justify-content:space-between; align-items:center;
+            padding:6px 0; border-bottom:1px solid var(--border2); font-size:13px; }
+  .kb-row:last-child { border-bottom:none; }
+  .kb-key {
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    background:var(--surf2); border:1px solid var(--border); border-radius:4px;
+    padding:2px 8px; color:var(--text);
+  }
+  .kb-close {
+    display:block; margin-top:18px; width:100%; padding:8px;
+    background:linear-gradient(135deg,#7B1FA2,#00838F); border:none; border-radius:8px;
+    color:white; font-family:'DM Sans',Arial,sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer;
+  }
+
+  .member-link {
+    color:inherit; text-decoration:none;
+    border-bottom:1px dotted var(--muted);
+  }
+  .member-link:hover {
+    color:#00C8FF;
+    border-bottom-color:#00C8FF;
+  }
+
+  /* ─────────────────────────────────────────
+     SHOW ISSUES TOGGLE
+  ───────────────────────────────────────── */
+  .issues-toggle-btn {
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--surf2); border:1px solid var(--border); border-radius:6px;
+    color:var(--muted); font-size:12px; font-weight:600; padding:6px 12px;
+    cursor:pointer; font-family:'DM Sans',Arial,sans-serif;
+    transition:all 0.15s; user-select:none;
+  }
+  .issues-toggle-btn:hover { color:var(--text); border-color:var(--muted); }
+  .issues-toggle-btn.active {
+    background:rgba(255,68,68,0.12); border-color:#FF4444; color:#FF4444;
+  }
+  .issues-toggle-btn .dot {
+    width:8px; height:8px; border-radius:50%; background:#5A7A99;
+    transition:background 0.15s;
+  }
+  .issues-toggle-btn.active .dot { background:#FF4444; }
+
+  /* ─────────────────────────────────────────
+     UNIT SUMMARY CARDS
+  ───────────────────────────────────────── */
+  .unit-summary-section { }
+  .unit-summary-header {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surf3); border-bottom:1px solid var(--border2);
+    flex-wrap:wrap; gap:0;
+  }
+  .unit-summary-toggle {
+    flex:1; background:transparent; border:none; color:var(--muted);
+    font-family:'DM Sans',Arial,sans-serif; font-size:11px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.06em; padding:5px 24px;
+    text-align:left; cursor:pointer; display:flex; align-items:center; gap:8px;
+    min-width:200px;
+  }
+  .unit-summary-toggle:hover { color:var(--text); }
+
+  /* Toolbar in unit summary header */
+  .unit-cards-toolbar {
+    display:flex; align-items:center; gap:6px; padding:4px 16px 4px 0; flex-shrink:0;
+  }
+  .uc-toolbar-label { font-size:10px; color:var(--muted); font-weight:600;
+    text-transform:uppercase; letter-spacing:0.05em; }
+  .uc-toolbar-sep { width:1px; height:16px; background:var(--border); margin:0 2px; }
+  .uc-sort-btn, .uc-compact-btn {
+    background:var(--surf2); border:1px solid var(--border); color:var(--muted);
+    font-family:'DM Sans',Arial,sans-serif; font-size:10px; font-weight:600;
+    padding:3px 9px; border-radius:100px; cursor:pointer; transition:all 0.15s;
+    text-transform:uppercase; letter-spacing:0.04em; white-space:nowrap;
+  }
+  .uc-sort-btn:hover, .uc-compact-btn:hover { color:var(--text); border-color:var(--muted); }
+  .uc-sort-btn.active { background:rgba(0,200,255,0.12); border-color:#00C8FF; color:#00C8FF; }
+  .uc-compact-btn.active { background:rgba(0,200,255,0.12); border-color:#00C8FF; color:#00C8FF; }
+
+
+
+  /* Clear unit filter pill on Members tab */
+  .clear-unit-filter-btn {
+    background:rgba(0,200,255,0.1); border:1px solid #00C8FF; color:#00C8FF;
+    font-family:'DM Sans',Arial,sans-serif; font-size:10px; font-weight:700;
+    padding:3px 10px; border-radius:100px; cursor:pointer; white-space:nowrap;
+    text-transform:uppercase; letter-spacing:0.04em; transition:all 0.15s;
+  }
+  .clear-unit-filter-btn:hover { background:rgba(0,200,255,0.2); }
+
+  /* Cards wrap + group structure */
+  .unit-cards-wrap {
+    padding:12px 24px 24px; background:var(--bg);
+    min-height:200px;
+  }
+  .unit-cards-wrap.hidden { display:none; }
+
+  /* Group block inside cards wrap */
+  .uc-group-block { margin-bottom:10px; }
+
+  /* Cards row — group header card sits inline as first item */
+  .uc-group-cards {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:stretch;
+  }
+  .uc-group-cards.hidden { display:none; }
+  .uc-group-inner { display:contents; }
+  .uc-group-inner.hidden { display:none; }
+
+  /* Group header card — fixed width matching unit card, distinct tinted background */
+  .uc-group-header {
+    background:rgba(100,130,170,0.10); border:1px solid var(--border);
+    border-left:3px solid var(--border); border-radius:10px;
+    padding:14px 18px; width:220px; min-width:220px; max-width:220px; flex:none;
+    cursor:pointer; user-select:none; position:relative; overflow:hidden;
+    transition:border-color 0.15s, background 0.15s;
+    display:flex; flex-direction:column; justify-content:space-between; gap:6px;
+  }
+  .uc-group-header:hover { background:rgba(100,130,170,0.18); }
+  .uc-group-header.grp-good { border-left-color:#00E676; background:rgba(0,230,118,0.08); }
+  .uc-group-header.grp-warn { border-left-color:#FFB300; background:rgba(255,179,0,0.08); }
+  .uc-group-header.grp-bad  { border-left-color:#FF4444; background:rgba(255,68,68,0.08); }
+  .uc-group-header.grp-good:hover { background:rgba(0,230,118,0.14); }
+  .uc-group-header.grp-warn:hover { background:rgba(255,179,0,0.14); }
+  .uc-group-header.grp-bad:hover  { background:rgba(255,68,68,0.14); }
+  .uc-group-header.uc-group-active { outline:2px solid #00C8FF; outline-offset:-2px; }
+
+  .uc-group-header-top { display:flex; align-items:center; gap:6px; }
+  .uc-group-arrow { font-size:9px; color:var(--muted); transition:transform 0.2s; flex-shrink:0; }
+  .uc-group-arrow.collapsed { transform:rotate(-90deg); }
+  .uc-group-name {
+    font-size:12px; font-weight:700; color:var(--text);
+    letter-spacing:0.03em; font-family:'Syne',Arial,sans-serif; flex:1;
+  }
+  .uc-group-chips { display:flex; gap:5px; flex-wrap:wrap; }
+  .uc-group-chip {
+    font-size:9px; font-weight:600; padding:1px 7px; border-radius:100px;
+    text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .uc-group-pct-chip { background:rgba(255,255,255,0.08); }
+  .uc-group-label {
+    font-size:9px; color:var(--muted); text-transform:uppercase;
+    letter-spacing:0.06em; font-weight:600;
+  }
+
+  /* Normal card */
+  .unit-card {
+    background:var(--surf); border:1px solid var(--border); border-radius:10px;
+    padding:14px 18px; min-width:180px; flex:1 1 180px; max-width:260px;
+    cursor:pointer; transition:border-color 0.15s, background 0.15s;
+    position:relative; overflow:hidden;
+  }
+  .unit-card:hover { border-color:var(--muted); background:var(--surf2); }
+  .unit-card.active { border-color:#00C8FF; background:var(--surf2); }
+
+  /* Compact card — minimal: name token + % inline + thin bar only */
+  .unit-cards-wrap.compact .unit-card {
+    min-width:100px; max-width:140px; flex:1 1 100px;
+    padding:7px 10px 6px;
+  }
+  .unit-cards-wrap.compact .uc-group-header {
+    width:140px; min-width:140px; max-width:140px;
+    padding:7px 10px 6px;
+  }
+  .unit-cards-wrap.compact .unit-card-name {
+    font-size:10px; margin-bottom:3px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;
+  }
+  .unit-cards-wrap.compact .unit-card-stats { display:none; }
+  .unit-cards-wrap.compact .unit-card-chips { display:none; }
+  .unit-cards-wrap.compact .unit-card-bar { margin-top:0; height:3px; }
+  .unit-cards-wrap.compact .unit-card-name::after {
+    content:attr(data-pct);
+    font-size:9px; font-weight:700; margin-left:5px; opacity:0.75;
+  }
+
+  /* Coloured left accent based on compliance */
+  .unit-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+  }
+  .unit-card.uc-good::before   { background:#00E676; }
+  .unit-card.uc-warn::before   { background:#FFB300; }
+  .unit-card.uc-bad::before    { background:#FF4444; }
+
+  .unit-card-name {
+    font-family:'Syne',Arial,sans-serif; font-size:12px; font-weight:700;
+    color:var(--text); margin-bottom:6px;
+    white-space:normal; line-height:1.3;
+    word-break:break-word;
+  }
+  .unit-card-stats {
+    display:flex; gap:14px; align-items:baseline; flex-wrap:wrap;
+  }
+  .unit-card-members { font-size:11px; color:var(--muted); }
+  .unit-card-pct {
+    font-family:'Syne',Arial,sans-serif; font-size:20px; font-weight:800;
+  }
+  .unit-card-pct-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+
+  /* Mini bar */
+  .unit-card-bar {
+    margin-top:8px; height:4px; border-radius:2px; background:var(--border); overflow:hidden;
+  }
+  .unit-card-bar-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+
+  /* Issue chips */
+  .unit-card-chips { margin-top:8px; display:flex; gap:5px; flex-wrap:wrap; }
+  .unit-chip {
+    font-size:9px; font-weight:600; padding:1px 6px; border-radius:100px;
+    text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .chip-red    { background:rgba(255,68,68,0.15);  color:#FF4444; }
+  .chip-amber  { background:rgba(255,179,0,0.12);  color:#FFB300; }
+  .chip-green  { background:rgba(0,230,118,0.12);  color:#00E676; }
+
+  /* ─────────────────────────────────────────
+     PRINT / PDF STYLES
+  ───────────────────────────────────────── */
+  @media print {
+    body { background:white !important; color:black !important; font-size:9pt; }
+    .topbar, .stats-section, .unit-summary-section,
+    .filter-bar, #pasteScreen, .btn-reset, .btn-export,
+    .issues-toggle-btn, #themeToggleBtn { display:none !important; }
+    #dashboard { display:block !important; }
+    .table-wrap { max-height:none !important; overflow:visible !important; padding-bottom:0; }
+    table { font-size:8pt; }
+    thead tr.grp th, thead tr.cols th { background:#eee !important; color:#000 !important; border-top:2px solid #999 !important; }
+    .grp-col-hidden { display:none !important; }
+    td, th { border:1px solid #ccc !important; }
+    tr.row-issue  td.col-name { border-left:3px solid #c00 !important; }
+    tr.row-expiry td.col-name { border-left:3px solid #f90 !important; }
+    tr.row-ok     td.col-name { border-left:3px solid #090 !important; }
+    .exp-red    { background:#fcc !important; color:#900 !important; }
+    .exp-orange { background:#fdc !important; color:#960 !important; }
+    .exp-amber  { background:#ffc !important; color:#660 !important; }
+    .badge.b-full  { background:#cfc !important; color:#060 !important; }
+    .badge.b-prov  { background:#ffc !important; color:#660 !important; }
+    .member-link { color:#000 !important; border-bottom:none !important; }
+    .print-header { display:block !important; }
+    @page { margin:1.5cm; size:A4 landscape; }
+  }
+  .print-header {
+    display:none;
+    font-family:'Syne',Arial,sans-serif; font-size:14pt; font-weight:800;
+    margin-bottom:8px; border-bottom:2px solid #333; padding-bottom:4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     PASTE SCREEN
+════════════════════════════════════════ -->
+<div id="pasteScreen">
+  <div style="position:absolute;top:16px;right:20px">
+    <button id="themeTogglePaste" class="btn-reset" onclick="toggleTheme()" title="Toggle light/dark mode" style="background:var(--surf);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer">🌙 Dark</button>
+  </div>
+  <div class="logo">⚜ Scouts UK — Compliance Dashboard</div>
+  <h1>Paste Your Compliance Data</h1>
+  <p>Run David Breakwell's Tampermonkey script on the Scouts membership site, click Copy to Clipboard, then paste below.</p>
+  <div class="paste-box-wrap" id="pasteBoxWrap">
+    <label>Paste clipboard data here</label>
+    <div id="pasteInput" contenteditable="true"></div>
+    <p class="paste-hint">Click inside the box above and press <strong>Ctrl+V / Cmd+V</strong> — or drag and drop a <strong>.tsv</strong> file anywhere on this box.</p>
+    <p class="paste-hint" style="margin-top:8px;font-size:11px;opacity:0.7">🔒 Data entered here is processed locally in your browser and is not transmitted to any server.</p>
+  </div>
+  <input type="file" id="tsvFileInput" accept=".tsv,.txt">
+  <button id="importTsvBtn" onclick="document.getElementById('tsvFileInput').click()">📂 Import TSV file…</button>
+  <div id="snapshotsWrap" class="snapshots-section" style="max-width:640px;width:100%;margin-bottom:8px"></div>
+  <button id="loadBtn" onclick="loadData()">Load Compliance Dashboard →</button>
+  <div id="pasteError"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     DASHBOARD
+════════════════════════════════════════ -->
+<div id="dashboard">
+
+  <!-- Tab bar -->
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" onclick="switchTab('members')" id="tab-members">👥 Members</button>
+    <button class="tab-btn" onclick="switchTab('units')" id="tab-units">🗂 Unit Summary</button>
+    <button class="tab-btn" onclick="switchTab('district')" id="tab-district">🗺 District Roll-up</button>
+  </div>
+
+  <!-- TAB: Members (all existing content) -->
+  <div class="tab-panel active" id="panel-members">
+
+  <!-- Print header (hidden on screen) -->
+  <div class="print-header" id="printHeader">Scouts Compliance Dashboard</div>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">⚜</div>
+      <span class="topbar-title">Scouts Compliance</span>
+      <span class="topbar-unit" id="unitLabel">—</span>
+      <span id="dataTimestamp" style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace"></span>
+      <span id="staleWarning" style="display:none;font-size:11px;color:#FFB300;font-weight:600" title="Data is more than 7 days old — consider refreshing">⚠ Stale</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span style="font-size:11px;color:var(--muted)" id="rowCount"></span>
+      <button id="themeToggleBtn" class="btn-reset" onclick="toggleTheme()" title="Toggle light/dark mode">🌙 Dark</button>
+      <button class="btn-reset" onclick="resetDashboard()">← Load new data</button>
+    </div>
+  </div>
+
+  <!-- Stats section (built by renderStats) -->
+  <div class="stats-section">
+    <button class="stats-toggle" onclick="toggleStats()">
+      <span class="toggle-arrow" id="toggleArrow">▼</span>
+      Summary Statistics — click a box to filter
+    </button>
+    <div class="stats-row" id="statsRow"></div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <!-- Row 1: filters -->
+    <div class="filter-row">
+      <button id="clearUnitFilterBtn" class="clear-unit-filter-btn" onclick="clearUnitFilter()" style="display:none" title="Clear unit card filter">✕ Unit filter active — clear</button>
+      <input  type="text" id="fName"       placeholder="🔍 Name…"    oninput="applyFilters()">
+      <div class="ms-wrap" id="ms-wrap-role">
+        <button class="ms-btn" id="ms-btn-role" onclick="toggleMs('role')" type="button">All roles</button>
+        <div class="ms-panel" id="ms-panel-role">
+          <input class="ms-search" placeholder="🔍 Filter…" oninput="filterMsOptions('role',this.value)">
+          <div class="ms-options" id="ms-opts-role"></div>
+        </div>
+      </div>
+      <select id="fUnit" onchange="onUnitDropdownChange(this.value)"><option value="">All units</option></select>
+      <div class="ms-wrap" id="ms-wrap-team">
+        <button class="ms-btn" id="ms-btn-team" onclick="toggleMs('team')" type="button">All teams</button>
+        <div class="ms-panel" id="ms-panel-team">
+          <input class="ms-search" placeholder="🔍 Filter…" oninput="filterMsOptions('team',this.value)">
+          <div class="ms-options" id="ms-opts-team"></div>
+        </div>
+      </div>
+      <div class="ms-wrap" id="ms-wrap-status">
+        <button class="ms-btn" id="ms-btn-status" onclick="toggleMs('status')" type="button">All statuses</button>
+        <div class="ms-panel" id="ms-panel-status">
+          <input class="ms-search" placeholder="🔍 Filter…" oninput="filterMsOptions('status',this.value)">
+          <div class="ms-options" id="ms-opts-status"></div>
+        </div>
+      </div>
+      <select id="fCompliance" onchange="clearStatFilter();applyFilters()">
+        <option value="">All compliance</option>
+        <option value="ok">Fully compliant</option>
+        <option value="issues">Has issues</option>
+        <option value="expiring">Expiring soon</option>
+        <option value="dbs">DBS expiring/expired</option>
+      </select>
+      <button id="issuesToggleBtn" class="issues-toggle-btn" onclick="toggleIssuesOnly()">
+        <span class="dot"></span> Show issues only
+      </button>
+    </div>
+    <!-- Row 2: actions -->
+    <div class="filter-row">
+      <button class="btn-reset" onclick="printDashboard()" title="Print / Save as PDF">🖨 Print</button>
+      <button id="draftEmailBtn" class="btn-draft-email" onclick="openEmailModal()" title="Draft reminder email for selected members">✉ Draft email</button>
+      <button class="btn-export" id="copyEmailsBtn" onclick="copyEmails()" title="Copy email addresses of filtered members to clipboard">📋 Copy emails</button>
+      <button class="btn-export" onclick="exportCSV()">⬇ Export TSV</button>
+      <button class="btn-reset" onclick="sortByUrgency()" id="urgencyBtn" title="Sort by most urgent expiry across all modules">⚡ Sort by urgency</button>
+      <span id="memberCount">—</span>
+    </div>
+  </div>
+
+  <!-- Table — built entirely by JS from column config -->
+  <div class="table-wrap">
+    <div id="grpBand" style="height:4px;pointer-events:none;"></div>
+    <table id="mainTable">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none">No results match your filters.</div>
+  </div>
+
+  </div><!-- /panel-members -->
+
+  <!-- TAB: Unit Summary -->
+  <div class="tab-panel" id="panel-units">
+    <div class="unit-summary-section" id="unitSummarySection">
+      <div class="unit-summary-header">
+        <div class="unit-cards-toolbar" id="unitCardsToolbar" style="padding:6px 24px 6px 16px">
+          <span class="uc-toolbar-label">Sort:</span>
+          <button class="uc-sort-btn active" id="ucSortWorst" onclick="setUnitCardSort('worst')">&#9888; Worst first</button>
+          <button class="uc-sort-btn" id="ucSortAZ" onclick="setUnitCardSort('az')">A–Z</button>
+          <span class="uc-toolbar-sep"></span>
+          <button class="uc-compact-btn" id="ucCompactBtn" onclick="toggleUnitCardCompact()" title="Toggle compact view">⊟ Compact</button>
+          <span class="uc-toolbar-sep"></span>
+          <button id="clearUnitFilterBtnUnits" class="clear-unit-filter-btn" onclick="clearUnitFilter()" style="display:none">✕ Clear filter</button>
+          <span id="ucFilterHint" style="font-size:10px;color:var(--muted);font-style:italic">Click a card to filter the Members tab</span>
+        </div>
+      </div>
+      <div class="unit-cards-wrap" id="unitCardsWrap"></div>
+    </div>
+  </div><!-- /panel-units -->
+
+  <!-- TAB: District roll-up -->
+  <div class="tab-panel" id="panel-district">
+    <div class="district-wrap">
+      <table class="district-table" id="districtTable">
+        <thead id="districtThead"></thead>
+        <tbody id="districtTbody"></tbody>
+      </table>
+    </div>
+  </div><!-- /panel-district -->
+
+  <!-- Email draft modal -->
+  <div class="email-modal-overlay" id="emailModal" onclick="if(event.target===this)closeEmailModal()">
+    <div class="email-modal">
+      <h3>✉ Draft Reminder Email</h3>
+      <p class="email-modal-sub">Select members to include, then copy the generated email.</p>
+      <div class="email-select-wrap" id="emailMemberList"></div>
+      <div class="email-subject-wrap">
+        <label>Subject</label>
+        <input type="text" class="email-subject-input" id="emailSubject" value="Action Required: Outstanding Scout Compliance Modules">
+      </div>
+      <div class="email-body-wrap">
+        <label>Email body</label>
+        <textarea class="email-textarea" id="emailBody" readonly></textarea>
+      </div>
+      <div class="email-modal-btns">
+        <button class="btn-copy-email" onclick="copyEmailToClipboard()">📋 Copy to clipboard</button>
+        <button class="btn-close-email" onclick="closeEmailModal()">Close</button>
+        <span class="email-copied" id="emailCopied">✓ Copied!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard shortcuts modal -->
+  <div class="kb-modal-overlay" id="kbModal" onclick="if(event.target===this)closeKbModal()">
+    <div class="kb-modal">
+      <h3>⌨ Keyboard Shortcuts</h3>
+      <div class="kb-row"><span>Clear all filters</span><span class="kb-key">Esc</span></div>
+      <div class="kb-row"><span>Focus name search</span><span class="kb-key">/</span></div>
+      <div class="kb-row"><span>Toggle issues only</span><span class="kb-key">I</span></div>
+      <div class="kb-row"><span>Toggle light/dark mode</span><span class="kb-key">D</span></div>
+      <div class="kb-row"><span>Sort by urgency</span><span class="kb-key">U</span></div>
+      <div class="kb-row"><span>Print / Save PDF</span><span class="kb-key">P</span></div>
+      <div class="kb-row"><span>Show this help</span><span class="kb-key">?</span></div>
+      <button class="kb-close" onclick="closeKbModal()">Close</button>
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   DATA — COLUMN DEFINITIONS
+   Each column: { key, label, srcCol, type, rotate, group }
+   type: 'text'|'mono'|'num'|'icon'|'expiry'|'days'|'status'|'unit'|'name'
+   srcCol: column name as it appears in the pasted data header row
+═══════════════════════════════════════════════════════════ */
+
+// Expiry thresholds (days)
+var EXPIRY_WARN  = 90;
+var EXPIRY_SOON  = 30;
+
+var FROZEN_COLS = [
+  { key:'name',   label:'Name',    srcCol:'Name',   type:'name',  group:'name' },
+  { key:'number', label:'Mem No.', srcCol:'Number', type:'mono',  group:'name' }
+];
+
+var COLUMN_GROUPS = [
+  {
+    id: 'info',
+    label: 'Member & Role Info',
+    color: '#00C8FF',
+    cols: [
+      { key:'email',     label:'Email',      srcCol:'Email',      type:'mono',   rotate:false },
+      { key:'role',      label:'Role',        srcCol:'Role',       type:'text',   rotate:false },
+      { key:'unit',      label:'Unit',        srcCol:'Unit',       type:'unit',   rotate:false },
+      { key:'team',      label:'Team',        srcCol:'Team',       type:'text',   rotate:false },
+      { key:'status',    label:'Status',      srcCol:'Status',     type:'status', rotate:false },
+      { key:'startDate', label:'Start Date',  srcCol:'Start Date', type:'mono',   rotate:true  },
+      { key:'days',      label:'Days in Role',srcCol:['Days in Role','Days'],  type:'num',    rotate:true  }
+    ]
+  },
+  {
+    id: 'welcome',
+    label: 'Welcome Activities',
+    color: '#C080FF',
+    cols: [
+      { key:'disclosure',  label:'Disclosure',    srcCol:'Disclosure',         type:'icon', rotate:true },
+      { key:'declaration', label:'Declaration',   srcCol:'Declaration',        type:'icon', rotate:true },
+      { key:'profile',     label:'Profile',       srcCol:'Profile',            type:'icon', rotate:true },
+      { key:'references',  label:'References',    srcCol:'References',         type:'icon', rotate:true },
+      { key:'ceCheck',     label:'CE Check',      srcCol:'CE Check',           type:'icon', rotate:true },
+      { key:'welcome',     label:'Welcome Conv.', srcCol:['Welcome Conv.','Welcome'],  type:'icon', rotate:true, minWidth:'56px' },
+      { key:'growingRoots',label:'Growing Roots', srcCol:['Growing Roots','Growing Roots Learning'],  type:'icon', rotate:true, minWidth:'46px' },
+      { key:'trusteeCheck',label:'Trustee Check', srcCol:'Trustee Check',      type:'icon', rotate:true, minWidth:'46px' }
+    ]
+  },
+  {
+    id: 'critical',
+    label: 'Critical Modules',
+    color: '#FF6060',
+    cols: [
+      { key:'safeguarding', label:'Safeguarding',        srcCol:'Safeguarding',             type:'icon',   rotate:true, minWidth:'52px' },
+      { key:'safeExp',      label:'Safeguarding Expiry', srcCol:'Safeguarding Expiry',      type:'expiry', rotate:true, daysKey:'safeDays' },
+      { key:'safeDays',     label:'Safeguarding Days',   srcCol:['Safeguarding Days','Safeguarding Expiry Days'],  type:'days',   rotate:true, minWidth:'72px' },
+      { key:'safety',       label:'Safety',              srcCol:'Safety',                   type:'icon',   rotate:true },
+      { key:'safetExp',     label:'Safety Expiry',       srcCol:'Safety Expiry',            type:'expiry', rotate:true, daysKey:'safetDays' },
+      { key:'safetDays',    label:'Safety Days',         srcCol:['Safety Days','Safety Expiry Days'],              type:'days',   rotate:true },
+      { key:'firstResp',    label:'First Response',      srcCol:'First Response',           type:'icon',   rotate:true, minWidth:'52px' },
+      { key:'frExp',        label:'First Resp. Expiry',  srcCol:['First Resp. Expiry','First Response Expiry'],    type:'expiry', rotate:true, daysKey:'frDays' },
+      { key:'frDays',       label:'First Resp. Days',    srcCol:['First Resp. Days','First Response Expiry Days'], type:'days',   rotate:true }
+    ]
+  },
+  {
+    id: 'learning',
+    label: 'Learning Modules',
+    color: '#FFB300',
+    cols: [
+      { key:'whoWeAre',  label:'Who We Are',        srcCol:['Who We Are','Who We Are and What We Do'],           type:'icon', rotate:true, minWidth:'44px' },
+      { key:'inclusion', label:'Creating Inclusion', srcCol:'Creating Inclusion',                                  type:'icon', rotate:true, minWidth:'54px' },
+      { key:'dataProt',  label:'Data Protection',   srcCol:['Data Protection','Data Protection in Scouts'],       type:'icon', rotate:true, minWidth:'64px' },
+      { key:'programme', label:'Programme',          srcCol:['Programme','Delivering a Great Programme'],          type:'icon', rotate:true, minWidth:'60px' },
+      { key:'leading',   label:'Leading Vols',       srcCol:['Leading Vols','Leading Scout Volunteers'],           type:'icon', rotate:true, minWidth:'44px' },
+      { key:'trustee',   label:'Trustee Module',     srcCol:['Trustee Module','Being a Trustee in Scouts'],       type:'icon', rotate:true, minWidth:'46px' }
+    ]
+  },
+  {
+    id: 'dbs',
+    label: 'DBS',
+    color: '#00E676',
+    cols: [
+      { key:'dbs',       label:'DBS',        srcCol:'DBS',        type:'icon',       rotate:true  },
+      { key:'dbsExpiry', label:'DBS Expiry', srcCol:'DBS Expiry', type:'expiry',     rotate:false, daysKey:'dbsDays' },
+      { key:'dbsDays',   label:'DBS Days',   srcCol:'DBS Days',   type:'days',       rotate:true  },
+      { key:'dbsStatus', label:'DBS Status', srcCol:'DBS Status', type:'dbsstatus',  rotate:false }
+    ]
+  }
+];
+
+// Flat list of all non-frozen cols in order (used for rendering)
+var ALL_COLS = (function() {
+  var out = [];
+  COLUMN_GROUPS.forEach(function(g) {
+    g.cols.forEach(function(c) { out.push(Object.assign({}, c, { group: g.id })); });
+  });
+  return out;
+})();
+
+// Stats definitions
+var STAT_DEFS = [
+  { id:'all',     label:'Unique Members',   color:'c-blue',  filter:'',          pct:false },
+  { id:'ok',      label:'Fully Compliant',  color:'c-green', filter:'ok',        pct:true  },
+  { id:'exp30',   label:'Expiring <30 Days',color:'c-amber', filter:'exp30',     pct:true  },
+  { id:'exp90',   label:'Expiring <90 Days',color:'c-amber', filter:'expiring',  pct:true  },
+  { id:'iss',     label:'Action Needed',    color:'c-red',   filter:'issues',    pct:true  },
+  { id:'dbs',     label:'DBS <90 Days',     color:'c-amber', filter:'dbs',       pct:true  },
+  { id:'dbsexp',  label:'DBS Expired',      color:'c-red',   filter:'dbsexp',    pct:true  },
+  { id:'safe',    label:'Safeguarding ❌',  color:'c-red',   filter:'safe',      pct:true  },
+  { id:'safety',  label:'Safety ❌',         color:'c-red',   filter:'safety',    pct:true  },
+  { id:'fr',      label:'First Response ❌',color:'c-red',   filter:'fr',        pct:true  }
+];
+
+
+/* ═══════════════════════════════════════════════════════════
+   STATE VARIABLES
+═══════════════════════════════════════════════════════════ */
+var allRows          = [];
+var filtered         = [];
+var sortCol          = 'name';
+var sortAsc          = true;
+var activeStatFilter = '';
+var statsVisible     = true;
+var collapsedGroups  = {};  // { info: false, welcome: false, … }
+var issuesOnly       = false;  // "Show issues only" toggle
+var unitCardsVisible = true;
+var activeUnitFilter = '';     // unit name currently filtered by card click
+
+// Initialise collapsed state from group definitions
+COLUMN_GROUPS.forEach(function(g) { collapsedGroups[g.id] = false; });
+
+
+/* ═══════════════════════════════════════════════════════════
+   EXPIRY LOGIC  (centralised — change thresholds in one place)
+═══════════════════════════════════════════════════════════ */
+function isExpired(days)  { return days !== null && days !== undefined && days < 0; }
+function isExpiring(days) { return days !== null && days !== undefined && days >= 0 && days < EXPIRY_WARN; }
+function isExpiringSoon(days) { return days !== null && days !== undefined && days >= 0 && days < EXPIRY_SOON; }
+
+function getExpiryClass(days) {
+  if (days === null || days === undefined) return '';
+  if (days < 0)           return 'exp-red';
+  if (days < EXPIRY_SOON) return 'exp-orange';
+  if (days < EXPIRY_WARN) return 'exp-amber';
+  return '';
+}
+
+function getIconClass(val) {
+  if (val === '❌') return 'exp-icon-miss';
+  if (val === '⚡') return 'exp-icon-amber';
+  return '';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   PARSING
+═══════════════════════════════════════════════════════════ */
+function parseClipboard(el) {
+  // Try HTML table first (Tabulator copies as HTML)
+  var tableEl = el.querySelector('table');
+  if (tableEl) {
+    var rows = [];
+    tableEl.querySelectorAll('tr').forEach(function(tr) {
+      var cells = [];
+      tr.querySelectorAll('td,th').forEach(function(td) {
+        // Capture cell text as normal, but also stash any href on an <a> inside
+        // the cell as a __href__ prefix so the parser can pick it up for the name col
+        var link = td.querySelector('a[href]');
+        var text = td.innerText.trim();
+        if (link && link.href) {
+          cells.push('__href__' + link.href + '__' + text);
+        } else {
+          cells.push(text);
+        }
+      });
+      if (cells.length) rows.push(cells);
+    });
+    return rows;
+  }
+  // Plain text fallback
+  var raw = el.innerText.trim();
+  if (!raw) return [];
+  return raw.split('\n').map(function(r) { return r.split('\t'); });
+}
+
+function findHeaderRow(rows) {
+  // Find the row that contains 'Name' AND at least one other known column
+  // This guards against Tabulator's optional sub-header rows
+  var knownCols = ['Number', 'Email', 'Role', 'Safeguarding', 'DBS'];
+  for (var i = 0; i < Math.min(rows.length, 5); i++) {
+    var row = rows[i];
+    if (row.indexOf('Name') !== -1) {
+      // Confirm it has at least one other expected column
+      var hits = knownCols.filter(function(c) { return row.indexOf(c) !== -1; });
+      if (hits.length >= 2) return i;
+    }
+  }
+  return -1;
+}
+
+function parseRow(rawRow, headers) {
+  function v(srcCol) {
+    // Accept array of fallback names — tries each in order
+    var names = Array.isArray(srcCol) ? srcCol : [srcCol];
+    for (var a = 0; a < names.length; a++) {
+      var i = headers.indexOf(names[a]);
+      if (i !== -1 && rawRow[i] !== undefined) {
+        var val = rawRow[i].trim();
+        if (val.indexOf('__href__') === 0) {
+          var sep = val.indexOf('__', 8);
+          return sep !== -1 ? val.slice(sep + 2) : val.slice(8);
+        }
+        return val;
+      }
+    }
+    return '';
+  }
+
+  // Extract profile URL from the Name cell if present
+  function extractHref(srcCol) {
+    var i = headers.indexOf(srcCol);
+    if (i === -1 || rawRow[i] === undefined) return '';
+    var val = rawRow[i].trim();
+    if (val.indexOf('__href__') === 0) {
+      var sep = val.indexOf('__', 8);
+      return sep !== -1 ? val.slice(8, sep) : '';
+    }
+    return '';
+  }
+  function n(srcCol) {
+    var str = v(srcCol);
+    var x = parseInt(str, 10);
+    return isNaN(x) ? null : x;
+  }
+
+  var row = {};
+
+  // Frozen cols
+  FROZEN_COLS.forEach(function(col) {
+    row[col.key] = (col.type === 'num') ? n(col.srcCol) : v(col.srcCol);
+  });
+
+  // Profile URL — extracted from the hyperlink on the Name cell (if present)
+  row._profileUrl = extractHref('Name');
+
+  // Group cols
+  ALL_COLS.forEach(function(c) {
+    row[c.key] = (c.type === 'days' || c.type === 'num') ? n(c.srcCol) : v(c.srcCol);
+  });
+
+  // Computed flags
+  // Note: ✔ means "not required for this role" — we exclude these from compliance checks
+  // so leaders aren't penalised for modules that don't apply to them.
+  var welcomeKeys = ['disclosure','declaration','profile','references','ceCheck','welcome','growingRoots','trusteeCheck'];
+  row._hasIssue = welcomeKeys.some(function(k) { return row[k] === '❌'; }) ||
+                  (row.safeguarding === '❌') ||
+                  (row.safety       === '❌') ||
+                  (row.firstResp    === '❌') ||
+                  isExpired(row.dbsDays);
+
+  // For expiry: only flag if the module IS required (not ✔) and is expiring
+  row._expiring = (row.safeguarding !== '✔' && (row.safeguarding === '⚡' || isExpiring(row.safeDays)))  ||
+                  (row.safety       !== '✔' && (row.safety       === '⚡' || isExpiring(row.safetDays))) ||
+                  (row.firstResp    !== '✔' && (row.firstResp    === '⚡' || isExpiring(row.frDays)))    ||
+                  isExpiring(row.dbsDays);
+
+  // Count required vs completed modules (for future use / tooltips)
+  var allModuleKeys = ['disclosure','declaration','profile','references','ceCheck','welcome',
+                       'growingRoots','trusteeCheck','safeguarding','safety','firstResp',
+                       'whoWeAre','inclusion','dataProt','programme','leading','trustee','dbs'];
+  row._requiredCount  = allModuleKeys.filter(function(k) { return row[k] !== '✔' && row[k] !== ''; }).length;
+  row._completeCount  = allModuleKeys.filter(function(k) { return row[k] === '✅'; }).length;
+
+  return row;
+}
+
+function detectUnitName(rows) {
+  // Find the most common first word-segment of the unit field
+  // Avoid assuming a specific separator — use the longest common prefix instead
+  var counts = {};
+  rows.forEach(function(r) {
+    var u = (r.unit || '').trim();
+    // Try common separators: ' - ', ' – ', ': '
+    var sep = u.match(/\s[-–:]\s/);
+    var key = sep ? u.slice(0, u.indexOf(sep[0])).trim() : u;
+    if (key) counts[key] = (counts[key] || 0) + 1;
+  });
+  var keys = Object.keys(counts);
+  if (!keys.length) return 'Unknown';
+  keys.sort(function(a, b) { return counts[b] - counts[a]; });
+  return keys[0];
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   FILTERING
+═══════════════════════════════════════════════════════════ */
+function matchesFilters(r) {
+  var fName   = document.getElementById('fName').value.toLowerCase();
+  var fUnit   = document.getElementById('fUnit').value;
+  var fComp   = document.getElementById('fCompliance').value;
+  var aSF     = activeStatFilter;
+
+  if (fName   && r.name.toLowerCase().indexOf(fName) === -1) return false;
+  if (msAllOff.role || (msSelected.role.size > 0 && !msSelected.role.has(r.role)))     return false;
+  if (fUnit) {
+    if (fUnit.indexOf('group:') === 0) {
+      // "All" entry — match exact group name or any section of that group
+      var gName = fUnit.slice(6);
+      if (r.unit !== gName && r.unit.indexOf(gName + ' - ') !== 0) return false;
+    } else {
+      if (r.unit !== fUnit) return false;
+    }
+  }
+  if (msAllOff.team || (msSelected.team.size > 0 && !msSelected.team.has(r.team)))     return false;
+  if (msAllOff.status || (msSelected.status.size > 0 && !msSelected.status.has(r.status))) return false;
+
+  // Dropdown compliance filter (only when no stat-box filter is active)
+  if (!aSF) {
+    if (fComp === 'ok'       && (r._hasIssue || r._expiring))           return false;
+    if (fComp === 'issues'   && !r._hasIssue)                           return false;
+    if (fComp === 'expiring' && !r._expiring)                           return false;
+    if (fComp === 'dbs'      && !isExpiring(r.dbsDays) && !isExpired(r.dbsDays)) return false;
+  }
+
+  // Stat-box filters
+  if (aSF === 'ok'       && (r._hasIssue || r._expiring))               return false;
+  if (aSF === 'issues'   && !r._hasIssue)                               return false;
+  if (aSF === 'expiring' && !r._expiring)                               return false;
+  if (aSF === 'exp30'    && !(
+        isExpiringSoon(r.safeDays) || isExpiringSoon(r.safetDays) ||
+        isExpiringSoon(r.frDays)   || isExpiringSoon(r.dbsDays)
+      ))                                                                    return false;
+  if (aSF === 'dbs'      && !(isExpiring(r.dbsDays) || isExpired(r.dbsDays))) return false;
+  if (aSF === 'dbsexp'   && !isExpired(r.dbsDays))                      return false;
+  if (aSF === 'safe'     && r.safeguarding !== '❌') return false;
+  if (aSF === 'safety'   && r.safety       !== '❌') return false;
+  if (aSF === 'fr'       && r.firstResp    !== '❌') return false;
+
+  // "Show issues only" toggle
+  if (issuesOnly && !r._hasIssue && !r._expiring) return false;
+
+  // Unit card filter — may be exact unit name or 'group:GroupName'
+  if (activeUnitFilter) {
+    if (activeUnitFilter.indexOf('group:') === 0) {
+      var gKey = activeUnitFilter.slice(6);
+      if (r.unit !== gKey && r.unit.indexOf(gKey + ' - ') !== 0) return false;
+    } else {
+      if (r.unit !== activeUnitFilter) return false;
+    }
+  }
+  if (activeGroupFilter) {
+    // Match exact group: unit equals groupKey, or unit starts with groupKey + ' - '
+    var u = r.unit || '';
+    if (u !== activeGroupFilter && u.indexOf(activeGroupFilter + ' - ') !== 0) return false;
+  }
+
+  return true;
+}
+
+function applyFilters() {
+  filtered = allRows.filter(matchesFilters);
+  filtered = sortRows(filtered);
+  updateSortIndicators();
+  var filteredPeople = uniquePeopleFrom(filtered).length;
+  var totalPeople    = uniquePeopleFrom(allRows).length;
+  var isFiltered     = filtered.length !== allRows.length;
+  // Topbar row count (kept for detail)
+  var rowLabel = isFiltered
+    ? filtered.length + ' rows (' + filteredPeople + ' people) of '
+      + allRows.length + ' rows (' + totalPeople + ' people)'
+    : allRows.length + ' rows · ' + totalPeople + ' unique members';
+  document.getElementById('rowCount').textContent = rowLabel;
+  // Prominent member count pill
+  var pill = document.getElementById('memberCount');
+  if (pill) {
+    pill.textContent = isFiltered
+      ? 'Showing ' + filteredPeople + ' of ' + totalPeople + ' members'
+      : totalPeople + ' members';
+    pill.classList.toggle('is-filtered', isFiltered);
+  }
+  renderTable();
+  // Stale data warning — flag if data is more than 7 days old
+  if (dataLoadedAt) {
+    var ageMs = Date.now() - dataLoadedAt.getTime();
+    document.getElementById('staleWarning').style.display =
+      ageMs > 7 * 24 * 60 * 60 * 1000 ? '' : 'none';
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SORTING
+═══════════════════════════════════════════════════════════ */
+var NUMERIC_KEYS = (function() {
+  var out = {};
+  ALL_COLS.forEach(function(c) {
+    if (c.type === 'days' || c.type === 'num') out[c.key] = true;
+  });
+  out['days'] = true;
+  return out;
+})();
+
+function sortRows(rows) {
+  return rows.slice().sort(function(a, b) {
+    var av = a[sortCol], bv = b[sortCol];
+    if (NUMERIC_KEYS[sortCol]) {
+      // Nulls always sort to the bottom regardless of direction
+      var aN = (av !== null && av !== undefined);
+      var bN = (bv !== null && bv !== undefined);
+      if (!aN && !bN) return 0;
+      if (!aN) return 1;
+      if (!bN) return -1;
+      return sortAsc ? av - bv : bv - av;
+    }
+    av = String(av || '');
+    bv = String(bv || '');
+    return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+}
+
+function sortBy(col) {
+  sortAsc = (sortCol === col) ? !sortAsc : true;
+  sortCol = col;
+  applyFilters();
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll('#colHeaders th').forEach(function(th) {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (th.dataset.sortKey === sortCol) {
+      th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+    }
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UNIQUE PERSON AGGREGATION
+   A person appears once per role in allRows. For stats we
+   deduplicate by membership number (falling back to name),
+   taking the worst-case flags across all their roles.
+   The table still shows every row (all roles) — this is
+   only used for stat counts and percentages.
+═══════════════════════════════════════════════════════════ */
+function uniquePeopleFrom(rows) {
+  var seen  = {};
+  var order = [];
+  rows.forEach(function(r) {
+    var key = (r.number && r.number.trim()) ? r.number.trim() : r.name.trim();
+    if (!seen[key]) {
+      seen[key] = Object.assign({}, r);
+      order.push(key);
+    } else {
+      var p = seen[key];
+      // OR in worst-case compliance flags
+      if (r._hasIssue) p._hasIssue = true;
+      if (r._expiring) p._expiring = true;
+      // DBS: keep the worst (smallest) days value
+      if (r.dbsDays !== null && r.dbsDays !== undefined) {
+        if (p.dbsDays === null || p.dbsDays === undefined || r.dbsDays < p.dbsDays) {
+          p.dbsDays = r.dbsDays;
+        }
+      }
+      // Critical modules: ❌ wins over ⚡ wins over anything else
+      ['safeguarding','safety','firstResp'].forEach(function(k) {
+        if (r[k] === '❌') p[k] = '❌';
+        else if (r[k] === '⚡' && p[k] !== '❌') p[k] = '⚡';
+      });
+    }
+  });
+  return order.map(function(k) { return seen[k]; });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERING — STATS
+═══════════════════════════════════════════════════════════ */
+function computeStats() {
+  var people = uniquePeopleFrom(allRows);
+  var tot    = people.length;
+  var ok     = people.filter(function(r) { return !r._hasIssue && !r._expiring; }).length;
+  var exp    = people.filter(function(r) { return r._expiring; }).length;
+  var exp30  = people.filter(function(r) {
+    return r._expiring && (
+      isExpiringSoon(r.safeDays) || isExpiringSoon(r.safetDays) ||
+      isExpiringSoon(r.frDays)   || isExpiringSoon(r.dbsDays)
+    );
+  }).length;
+  var iss    = people.filter(function(r) { return r._hasIssue; }).length;
+  var dbsW   = people.filter(function(r) { return isExpiring(r.dbsDays); }).length;
+  var dbsE   = people.filter(function(r) { return isExpired(r.dbsDays); }).length;
+  var safe   = people.filter(function(r) { return r.safeguarding === '❌'; }).length;
+  var safety = people.filter(function(r) { return r.safety === '❌'; }).length;
+  var fr     = people.filter(function(r) { return r.firstResp === '❌'; }).length;
+  return { tot:tot, ok:ok, exp:exp, exp30:exp30, iss:iss, dbsW:dbsW, dbsE:dbsE, safe:safe, safety:safety, fr:fr };
+}
+
+function pct(n, total) {
+  if (!total) return '';
+  return Math.round(n / total * 100) + '%';
+}
+
+function renderStats() {
+  var s = computeStats();
+  var vals = {
+    all: s.tot, ok: s.ok, exp: s.exp, exp30: s.exp30, exp90: s.exp, iss: s.iss,
+    dbs: s.dbsW, dbsexp: s.dbsE, safe: s.safe, safety: s.safety, fr: s.fr
+  };
+  var row = document.getElementById('statsRow');
+  row.innerHTML = '';
+
+  STAT_DEFS.forEach(function(def) {
+    if (!def) {
+      // Divider
+      var d = document.createElement('div');
+      d.className = 'stat-divider';
+      row.appendChild(d);
+      return;
+    }
+    var val = vals[def.id];
+    var cell = document.createElement('div');
+    cell.className = 'stat-cell';
+    cell.id = 'sc-' + def.id;
+    cell.onclick = function() { statFilter(def.filter); };
+
+    var html = '<div class="stat-value ' + def.color + '">' + val + '</div>';
+    if (def.pct) {
+      html += '<div class="stat-pct ' + def.color + '">' + pct(val, s.tot) + '</div>';
+    }
+    html += '<div class="stat-label">' + def.label + '</div>';
+    cell.innerHTML = html;
+    row.appendChild(cell);
+  });
+}
+
+function updateStatHighlight() {
+  STAT_DEFS.forEach(function(def) {
+    if (!def) return;
+    var el = document.getElementById('sc-' + def.id);
+    if (el) el.classList.toggle('active', def.filter === activeStatFilter);
+  });
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERING — TABLE HEADERS (built once on load)
+═══════════════════════════════════════════════════════════ */
+function buildTableHeaders() {
+  var thead = document.getElementById('thead');
+  thead.innerHTML = '';
+
+  // ── Row 1: group band ──
+  var grpRow = document.createElement('tr');
+  grpRow.className = 'grp';
+
+  // Checkbox col spacer in group band
+  var chkGrpTh = document.createElement('th');
+  chkGrpTh.setAttribute('data-grp-th', 'name');
+  chkGrpTh.style.cssText = 'width:28px;background:var(--surf2);position:sticky;left:0;z-index:12';
+  grpRow.appendChild(chkGrpTh);
+
+  // Frozen name + number cells (never collapsible)
+  FROZEN_COLS.forEach(function(c) {
+    var th = document.createElement('th');
+    th.className = (c.key === 'name' ? 'col-name' : 'col-num');
+    th.setAttribute('data-grp-th', 'name');
+    grpRow.appendChild(th);
+  });
+
+  // One cell per column in each group
+  COLUMN_GROUPS.forEach(function(g) {
+    g.cols.forEach(function(c, i) {
+      var th = document.createElement('th');
+      th.setAttribute('data-grp-th', g.id);
+      if (i === 0) {
+        // Label cell
+        th.className = 'grp-label';
+        th.id = 'grp-' + g.id;
+        th.innerHTML =
+          '<div class="grp-inner">' +
+          '<span class="grp-arrow" id="garr-' + g.id + '">▼</span>&nbsp;' +
+          esc(g.label) +
+          '</div>';
+        th.onclick = (function(id) { return function() { toggleGroup(id); }; })(g.id);
+      }
+      grpRow.appendChild(th);
+    });
+  });
+  thead.appendChild(grpRow);
+
+  // ── Row 2: column headers ──
+  var colRow = document.createElement('tr');
+  colRow.className = 'cols';
+  colRow.id = 'colHeaders';
+
+  // Checkbox col header
+  var chkTh = document.createElement('th');
+  chkTh.style.cssText = 'width:28px;padding:4px;background:var(--surf);position:sticky;left:0;z-index:11;border-right:none;text-align:center';
+  chkTh.title = 'Select / deselect all';
+  chkTh.innerHTML = '<input type="checkbox" id="selectAllChk" onclick="toggleSelectAll(this)" title="Select / deselect all visible rows" style="cursor:pointer">';
+  colRow.appendChild(chkTh);
+
+  // Frozen — colIdx starts at 1 because checkbox td is cell 0 in every tbody row
+  var colIdx = 1;
+  FROZEN_COLS.forEach(function(c) {
+    var th = document.createElement('th');
+    th.className = (c.key === 'name' ? 'col-name' : 'col-num');
+    th.dataset.sortKey = c.key;
+    th.dataset.colIdx = colIdx;
+    if (colIdx % 2 === 0) th.classList.add('col-even');
+    th.textContent = c.label;
+    th.onclick = (function(k) { return function() { sortBy(k); }; })(c.key);
+    colRow.appendChild(th);
+    colIdx++;
+  });
+
+  // Group cols
+  ALL_COLS.forEach(function(c) {
+    var th = document.createElement('th');
+    th.setAttribute('data-grp', c.group);
+    th.dataset.sortKey = c.key;
+    th.dataset.colIdx = colIdx;
+    th.onclick = (function(k) { return function() { sortBy(k); }; })(c.key);
+    if (c.rotate) {
+      // Set rot class first, then add col-even separately so it isn't overwritten
+      th.className = 'rot';
+      if (c.minWidth) { th.style.minWidth = c.minWidth; th.style.maxWidth = c.minWidth; th.style.width = c.minWidth; }
+    }
+    if (colIdx % 2 === 0) th.classList.add('col-even');
+    if (c.rotate) {
+      th.title = c.label;
+      th.textContent = c.label;
+    } else {
+      th.textContent = c.label;
+    }
+    colRow.appendChild(th);
+    colIdx++;
+  });
+
+  thead.appendChild(colRow);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERING — TABLE BODY
+   Always renders ALL columns. CSS class grp-col-hidden hides them.
+═══════════════════════════════════════════════════════════ */
+function renderCell(col, row) {
+  var val = row[col.key];
+
+  // Determine hidden class
+  var hidden = (col.group && collapsedGroups[col.group]) ? ' grp-col-hidden' : '';
+
+  switch (col.type) {
+    case 'icon': {
+      var iconBg = getIconClass(val);
+      return '<td class="cell-icon' + hidden + (iconBg ? ' ' + iconBg : '') + '">' + esc(val) + '</td>';
+    }
+    case 'days': {
+      var ec = getExpiryClass(val);
+      return '<td class="cell-num' + hidden + (ec ? ' ' + ec : '') + '">' +
+             (val !== null && val !== undefined ? val : '') + '</td>';
+    }
+    case 'expiry': {
+      var daysVal = col.daysKey ? row[col.daysKey] : null;
+      var ec2 = getExpiryClass(daysVal);
+      return '<td class="cell-expiry' + hidden + (ec2 ? ' ' + ec2 : '') + '">' + esc(val) + '</td>';
+    }
+    case 'num': {
+      return '<td class="cell-num' + hidden + '">' +
+             (val !== null && val !== undefined ? val : '') + '</td>';
+    }
+    case 'mono': {
+      return '<td class="cell-mono' + hidden + '">' + esc(val) + '</td>';
+    }
+    case 'unit': {
+      return '<td class="cell-unit' + hidden + '">' + esc(val) + '</td>';
+    }
+    case 'status': {
+      return '<td class="' + hidden.trim() + '">' + statusBadge(val) + '</td>';
+    }
+    case 'dbsstatus': {
+      return '<td class="cell-status-text' + hidden + '">' + esc(val) + '</td>';
+    }
+    default: {
+      return '<td class="' + hidden.trim() + '">' + esc(val) + '</td>';
+    }
+  }
+}
+
+function renderTable() {
+  var tbody = document.getElementById('tbody');
+  var empty = document.getElementById('emptyState');
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  var html = '';
+  filtered.forEach(function(r) {
+    var rc = r._hasIssue ? 'row-issue' : (r._expiring ? 'row-expiry' : 'row-ok');
+    html += '<tr class="' + rc + '">';
+
+    // Checkbox for email selection
+    var isChked = selectedForEmail[r.number] ? ' checked' : '';
+    html += '<td class="cell-check" style="position:sticky;left:0;z-index:4;background:var(--surf)">' +
+            '<input type="checkbox"' + isChked + ' onchange="toggleEmailSelect(\'' + r.number + '\')" onclick="event.stopPropagation()">' +
+            '</td>';
+    // Frozen: Name (linked to Scout Digital profile if URL available)
+    var nameHtml = r._profileUrl
+      ? '<a href="' + r._profileUrl + '" target="_blank" rel="noopener" class="member-link">' + esc(r.name) + '</a>'
+      : esc(r.name);
+    html += '<td class="cell-name col-name">' + nameHtml + '</td>';
+    // Frozen: Number
+    html += '<td class="col-num">' + esc(r.number) + '</td>';
+
+    // All group columns — always emitted, hidden via CSS class
+    ALL_COLS.forEach(function(col) {
+      html += renderCell(col, r);
+    });
+
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+  updateSelectAllChk();
+}
+
+// Apply/remove grp-col-hidden from header cells after a toggle
+function applyGroupVisibility() {
+  COLUMN_GROUPS.forEach(function(g) {
+    var collapsed = collapsedGroups[g.id];
+    // Group band cells
+    document.querySelectorAll('[data-grp-th="' + g.id + '"]').forEach(function(th, i) {
+      if (i === 0) {
+        th.classList.toggle('grp-collapsed', collapsed);
+        var arr = document.getElementById('garr-' + g.id);
+        if (arr) arr.style.transform = collapsed ? 'rotate(-90deg)' : '';
+      } else {
+        th.classList.toggle('grp-col-hidden', collapsed);
+      }
+    });
+    // Col header cells
+    document.querySelectorAll('th[data-grp="' + g.id + '"]').forEach(function(th) {
+      th.classList.toggle('grp-col-hidden', collapsed);
+    });
+  });
+  // Body cells are handled by renderTable (class applied inline)
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI — GROUP TOGGLE
+═══════════════════════════════════════════════════════════ */
+function toggleGroup(grp) {
+  collapsedGroups[grp] = !collapsedGroups[grp];
+  applyGroupVisibility();
+  renderTable(); // re-render with updated hidden classes on <td>s
+  requestAnimationFrame(updateGrpBand);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI — STATS TOGGLE & FILTER
+═══════════════════════════════════════════════════════════ */
+function toggleStats() {
+  statsVisible = !statsVisible;
+  document.getElementById('statsRow').classList.toggle('hidden', !statsVisible);
+  document.getElementById('toggleArrow').classList.toggle('collapsed', !statsVisible);
+}
+
+function statFilter(filterVal) {
+  activeStatFilter = (activeStatFilter === filterVal) ? '' : filterVal;
+  updateStatHighlight();
+  applyFilters();
+}
+
+function clearStatFilter() {
+  activeStatFilter = '';
+  updateStatHighlight();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LOAD DATA
+═══════════════════════════════════════════════════════════ */
+function loadData(originalDate) {
+  var el = document.getElementById('pasteInput');
+  var rows = parseClipboard(el);
+
+  if (!rows.length) { showError('Please paste some data first.'); return; }
+
+  var headerIdx = findHeaderRow(rows);
+  if (headerIdx === -1) {
+    showError('Could not find column headers. Make sure you copied the full report output.');
+    return;
+  }
+
+  var headers  = rows[headerIdx];
+  var dataRows = rows.slice(headerIdx + 1).filter(function(r) {
+    return r.length > 5 && r[0].trim() !== '' && r[0].trim() !== 'Name';
+  });
+  if (!dataRows.length) { showError('No member rows found. Make sure the report has finished loading before copying.'); return; }
+
+  allRows = dataRows.map(function(r) { return parseRow(r, headers); });
+
+  var unitName = detectUnitName(allRows);
+  document.getElementById('unitLabel').textContent = unitName;
+  document.getElementById('printHeader').textContent = 'Scouts Compliance — ' + unitName;
+
+  // Timestamp — use original paste date if restoring from snapshot, otherwise now
+  dataLoadedAt = originalDate || new Date();
+  document.getElementById('dataTimestamp').textContent =
+    'Data as of ' + dataLoadedAt.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) +
+    ' ' + dataLoadedAt.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+  document.getElementById('staleWarning').style.display = 'none';
+
+  // Build static table structure (headers only, body built by renderTable)
+  buildTableHeaders();
+  populateDropdowns();
+  renderStats();
+  buildUnitCards();
+  applyGroupVisibility();
+  saveSnapshot();  // persist this paste to localStorage
+
+  document.getElementById('pasteError').style.display = 'none';
+  document.getElementById('pasteScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+
+  // Build the sticky colour band and keep it in sync with horizontal and vertical scroll
+  requestAnimationFrame(updateGrpBand);
+  var tw = document.querySelector('.table-wrap');
+  if (tw) tw.addEventListener('scroll', updateGrpBand);
+  window.addEventListener('scroll', updateGrpBand);
+
+  applyFilters();
+}
+
+function showError(msg) {
+  var e = document.getElementById('pasteError');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TSV FILE IMPORT — shared handler for drag-drop + file picker
+═══════════════════════════════════════════════════════════ */
+function loadTsvFile(file) {
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    // Inject plain text into pasteInput then trigger normal load
+    var el = document.getElementById('pasteInput');
+    el.innerText = text;
+    loadData();
+  };
+  reader.onerror = function() { showError('Could not read the file. Please try again.'); };
+  reader.readAsText(file);
+}
+
+// File picker
+document.getElementById('tsvFileInput').addEventListener('change', function() {
+  loadTsvFile(this.files[0]);
+  this.value = ''; // reset so same file can be re-imported
+});
+
+// Drag and drop onto the paste box
+(function() {
+  var box = document.getElementById('pasteBoxWrap');
+  box.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    box.classList.add('drag-over');
+  });
+  box.addEventListener('dragleave', function(e) {
+    if (!box.contains(e.relatedTarget)) box.classList.remove('drag-over');
+  });
+  box.addEventListener('drop', function(e) {
+    e.preventDefault();
+    box.classList.remove('drag-over');
+    var file = e.dataTransfer.files[0];
+    if (file) { loadTsvFile(file); }
+  });
+})();
+
+function resetDashboard() {
+  allRows = []; filtered = []; activeStatFilter = '';
+  COLUMN_GROUPS.forEach(function(g) { collapsedGroups[g.id] = false; });
+
+  document.getElementById('pasteInput').innerHTML = '';
+  issuesOnly = false;
+  activeUnitFilter = '';
+  unitCardsVisible = true;
+  selectedForEmail = {};
+  var draftBtn = document.getElementById('draftEmailBtn');
+  if (draftBtn) { draftBtn.classList.remove('visible'); draftBtn.textContent = '✉ Draft email'; }
+  var btn = document.getElementById('issuesToggleBtn');
+  if (btn) btn.classList.remove('active');
+  document.getElementById('fName').value = '';
+  ['fUnit','fCompliance'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  clearMsAll();
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pasteScreen').style.display = 'flex';
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DROPDOWN POPULATION
+═══════════════════════════════════════════════════════════ */
+function populateDropdowns() {
+  function unique(arr) {
+    return arr.filter(function(v, i, a) {
+      return v !== '' && v !== null && v !== undefined && a.indexOf(v) === i;
+    }).sort(function(a, b) { return String(a).localeCompare(String(b)); });
+  }
+
+  function fill(id, vals) {
+    var sel = document.getElementById(id);
+    if (!sel) return;
+    var first = sel.options[0];
+    sel.innerHTML = '';
+    sel.appendChild(first);
+    vals.forEach(function(v) {
+      var o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+  }
+
+  fillMsDropdown('role',   unique(allRows.map(function(r) { return r.role; })));
+  fillUnitDropdown();
+  fillMsDropdown('team',   unique(allRows.map(function(r) { return r.team; })));
+  fillMsDropdown('status', unique(allRows.map(function(r) { return r.status; })));
+}
+
+function fillUnitDropdown() {
+  var sel = document.getElementById('fUnit');
+  var current = sel.value;
+  sel.innerHTML = '<option value="">All units</option>';
+
+  // Collect all raw unit names
+  var rawUnits = [];
+  allRows.forEach(function(r) {
+    var u = r.unit || '';
+    if (u && rawUnits.indexOf(u) === -1) rawUnits.push(u);
+  });
+  rawUnits.sort(function(a,b){ return a.localeCompare(b); });
+
+  // Derive groups (everything before first ' - ', or the whole name)
+  var groupsSeen = [];
+  rawUnits.forEach(function(u) {
+    var sep = u.indexOf(' - ');
+    var g = sep !== -1 ? u.slice(0, sep).trim() : u;
+    if (groupsSeen.indexOf(g) === -1) groupsSeen.push(g);
+  });
+
+  // Build option list: for each group, insert "Group — All" then each unit
+  groupsSeen.forEach(function(g) {
+    // Units belonging to this group
+    var members = rawUnits.filter(function(u) {
+      return u === g || u.indexOf(g + ' - ') === 0;
+    });
+
+    // "All" option — only if the group has more than one unit entry
+    if (members.length > 1) {
+      var oAll = document.createElement('option');
+      oAll.value = 'group:' + g;
+      oAll.textContent = g + ' — All';
+      sel.appendChild(oAll);
+    }
+
+    // Each individual unit
+    members.forEach(function(u) {
+      var o = document.createElement('option');
+      o.value = u;
+      // Label group-role entries (exact group name, no section suffix)
+      if (u === g && members.length > 1) {
+        o.textContent = u + ' — Group roles';
+      } else {
+        o.textContent = u;
+      }
+      sel.appendChild(o);
+    });
+  });
+
+  // Restore selection if still valid
+  for (var i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === current) { sel.value = current; break; }
+  }
+}
+
+function onUnitDropdownChange(val) {
+  // val is either '' | 'group:GroupName' | 'exact unit name'
+  // We store it in activeUnitFilter; matchesFilters handles the group: prefix
+  activeUnitFilter = val;
+  activeGroupFilter = '';  // dropdown takes precedence over group card filter
+  syncUnitCardHighlight();
+  updateClearUnitBtn();
+  applyFilters();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI — ISSUES ONLY TOGGLE
+═══════════════════════════════════════════════════════════ */
+function toggleIssuesOnly() {
+  issuesOnly = !issuesOnly;
+  var btn = document.getElementById('issuesToggleBtn');
+  btn.classList.toggle('active', issuesOnly);
+  btn.querySelector('.dot').title = issuesOnly ? 'Showing issues only' : '';
+  applyFilters();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UNIT SUMMARY CARDS
+═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   UNIT SUMMARY CARDS — sort + compact + grouped
+═══════════════════════════════════════════════════════════ */
+var unitCardSortMode   = 'worst'; // 'worst' | 'az'
+var unitCardCompact    = false;   // compact mode flag
+var collapsedUcGroups  = {};      // which group headers are collapsed
+var activeGroupFilter  = '';      // group filter — applied on Members tab too
+
+/* ═══════════════════════════════════════════════════════════
+   UNIT SUMMARY CARDS — sort + compact + grouped + group filter
+═══════════════════════════════════════════════════════════ */
+
+function setUnitCardSort(mode) {
+  unitCardSortMode = mode;
+  document.getElementById('ucSortWorst').classList.toggle('active', mode === 'worst');
+  document.getElementById('ucSortAZ').classList.toggle('active', mode === 'az');
+  buildUnitCards();
+}
+
+function toggleUnitCardCompact() {
+  unitCardCompact = !unitCardCompact;
+  document.getElementById('ucCompactBtn').classList.toggle('active', unitCardCompact);
+  var wrap = document.getElementById('unitCardsWrap');
+  wrap.classList.toggle('compact', unitCardCompact);
+}
+
+function groupCardClick(groupKey) {
+  var clearing = (activeGroupFilter === groupKey);
+  activeGroupFilter = clearing ? '' : groupKey;
+  activeUnitFilter  = clearing ? '' : 'group:' + groupKey;
+  collapsedUcGroups = {};
+
+  // Sync fUnit dropdown
+  var sel = document.getElementById('fUnit');
+  var target = activeUnitFilter;
+  sel.value = '';
+  for (var i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === target) { sel.value = target; break; }
+  }
+
+  syncUnitCardHighlight();
+  updateClearUnitBtn();
+  applyFilters();
+  document.querySelectorAll('.uc-group-header').forEach(function(h) {
+    h.classList.toggle('uc-group-active', h.dataset.group === activeGroupFilter && activeGroupFilter !== '');
+  });
+  switchTab('members');
+}
+
+function setGroupFilter(grp) {
+  activeGroupFilter = (activeGroupFilter === grp) ? '' : grp;
+  buildUnitCards();
+}
+
+function buildGroupFilterPills(groupOrder, groupUnits, unitMap) {
+  var bar = document.getElementById('ucGroupFilterBar');
+  if (!bar) return;
+  if (groupOrder.length <= 1) { bar.innerHTML = ''; return; }
+
+  var html = '<button class="uc-group-pill uc-pill-all' + (activeGroupFilter === '' ? ' active' : '') +
+             '" onclick="setGroupFilter(\'\')">All</button>';
+
+  groupOrder.forEach(function(g) {
+    // Compute worst-pct for colour hint on pill
+    var rows = [];
+    groupUnits[g].forEach(function(u) { rows = rows.concat(unitMap[u]); });
+    var pct = unitCompliancePct(rows);
+    var col = pct >= 80 ? '' : (pct >= 50 ? 'color:#FFB300;border-color:#FFB300' : 'color:#FF4444;border-color:#FF4444');
+    var isActive = activeGroupFilter === g;
+    html += '<button class="uc-group-pill' + (isActive ? ' active' : '') + '"' +
+            (col && !isActive ? ' style="' + col + '"' : '') +
+            ' onclick="setGroupFilter(' + JSON.stringify(g) + ')">' + esc(g) + '</button>';
+  });
+  bar.innerHTML = html;
+}
+
+function buildUnitCards() {
+  var wrap = document.getElementById('unitCardsWrap');
+  wrap.innerHTML = '';
+  wrap.classList.toggle('compact', unitCardCompact);
+
+  // Group ALL rows by raw unit name
+  var unitMap = {};
+  allRows.forEach(function(r) {
+    var u = r.unit || 'Unknown';
+    if (!unitMap[u]) unitMap[u] = [];
+    unitMap[u].push(r);
+  });
+
+  // Extract group name (everything before first ' - ')
+  function extractGroup(u) {
+    var sep = u.indexOf(' - ');
+    return sep !== -1 ? u.slice(0, sep).trim() : u.trim();
+  }
+
+  // Sort unit names
+  var allUnitNames = Object.keys(unitMap).sort(function(a, b) {
+    if (unitCardSortMode === 'az') return a.localeCompare(b);
+    var pa = unitCompliancePct(unitMap[a]);
+    var pb = unitCompliancePct(unitMap[b]);
+    if (pa !== pb) return pa - pb;
+    return a.localeCompare(b);
+  });
+
+  // Auto-enable compact if >10 units (first build only — check if button not yet activated)
+  if (!unitCardCompact && allUnitNames.length > 10) {
+    unitCardCompact = true;
+    var cb = document.getElementById('ucCompactBtn');
+    if (cb) cb.classList.add('active');
+    wrap.classList.add('compact');
+  }
+
+  // Build groups map (all groups, for pills)
+  var groupOrder = [];
+  var groupUnits = {};
+  allUnitNames.forEach(function(u) {
+    var g = extractGroup(u);
+    if (!groupUnits[g]) { groupOrder.push(g); groupUnits[g] = []; }
+    groupUnits[g].push(u);
+  });
+
+  // Filter unit names by active group
+  var unitNames = activeGroupFilter
+    ? allUnitNames.filter(function(u) { return extractGroup(u) === activeGroupFilter; })
+    : allUnitNames;
+
+  // Rebuild visible groups from filtered unit names
+  var visGroupOrder = [];
+  var visGroupUnits = {};
+  unitNames.forEach(function(u) {
+    var g = extractGroup(u);
+    if (!visGroupUnits[g]) { visGroupOrder.push(g); visGroupUnits[g] = []; }
+    visGroupUnits[g].push(u);
+  });
+
+  // Short display name for a single unit card
+  function makeShortName(unitName) {
+    var sepIdx = unitName.search(/ [-\u2013] /);
+    var groupPart   = sepIdx !== -1 ? unitName.slice(0, sepIdx).trim() : unitName.trim();
+    var sectionPart = sepIdx !== -1 ? unitName.slice(sepIdx + 3).trim() : '';
+    var shortToken  = groupPart.split(/\s+/)[0] || groupPart;
+    // When group filter active, show full section name (not just first token)
+    if (activeGroupFilter) {
+      return sectionPart || groupPart;
+    }
+    return sectionPart ? shortToken + ' - ' + sectionPart : shortToken;
+  }
+
+  // Render each group
+  visGroupOrder.forEach(function(groupKey) {
+    var unitsInGroup = visGroupUnits[groupKey];
+    var safe = groupKey.replace(/[^a-z0-9]/gi, '_');
+
+    var grpRows = [];
+    unitsInGroup.forEach(function(u) { grpRows = grpRows.concat(unitMap[u]); });
+    var grpPeople = uniquePeopleFrom(grpRows);
+    var grpTot    = grpPeople.length;
+    var grpOk     = grpPeople.filter(function(p) { return !p._hasIssue && !p._expiring; }).length;
+    var grpIss    = grpPeople.filter(function(p) { return p._hasIssue; }).length;
+    var grpPct    = grpTot > 0 ? Math.round(grpOk / grpTot * 100) : 0;
+    var grpPctColor = grpPct >= 80 ? '#00E676' : (grpPct >= 50 ? '#FFB300' : '#FF4444');
+
+    var isCollapsed = !!collapsedUcGroups[groupKey];
+
+    var block = document.createElement('div');
+    block.className = 'uc-group-block';
+
+    // Cards row — always created; header card inserted as first child when multiple groups
+    block.innerHTML = '<div class="uc-group-cards' + (isCollapsed ? ' hidden' : '') + '" id="ucg-cards-' + safe + '"></div>';
+    wrap.appendChild(block);
+    var cardsContainer = block.querySelector('.uc-group-cards');
+
+    if (visGroupOrder.length > 1) {
+      var issChip = grpIss > 0
+        ? '<span class="uc-group-chip chip-red">' + grpIss + ' issue' + (grpIss!==1?'s':'') + '</span>'
+        : '<span class="uc-group-chip chip-green">All clear</span>';
+      var grpTierCls = grpPct >= 80 ? 'grp-good' : (grpPct >= 50 ? 'grp-warn' : 'grp-bad');
+      var hdr = document.createElement('div');
+      hdr.className = 'uc-group-header ' + grpTierCls;
+      hdr.title = 'Click to collapse ' + groupKey;
+      hdr.innerHTML =
+        '<div class="uc-group-header-top">' +
+          '<span class="uc-group-name">' + esc(groupKey) + '</span>' +
+        '</div>' +
+        '<div class="uc-group-chips">' +
+          '<span class="uc-group-chip uc-group-pct-chip" style="color:' + grpPctColor + '">' + grpPct + '%</span>' +
+          '<span class="uc-group-chip" style="background:var(--surf2);color:var(--muted)">' + grpTot + ' members</span>' +
+          issChip +
+        '</div>' +
+        '<div class="uc-group-label">Group</div>';
+      hdr.dataset.group = groupKey;
+      hdr.onclick = (function(gk){ return function(){ groupCardClick(gk); }; })(groupKey);
+      cardsContainer.appendChild(hdr);
+      // Inner wrapper for unit cards only — this is what gets hidden on collapse
+      var inner = document.createElement('div');
+      inner.id = 'ucg-inner-' + safe;
+      inner.className = 'uc-group-inner' + (isCollapsed ? ' hidden' : '');
+      cardsContainer.appendChild(inner);
+      cardsContainer = inner;
+    } else {
+      // Single group — no header card, cards go directly in container
+    }
+
+    unitsInGroup.forEach(function(unitName) {
+      var rows   = unitMap[unitName];
+      var people = uniquePeopleFrom(rows);
+      var tot    = people.length;
+      var ok     = people.filter(function(p) { return !p._hasIssue && !p._expiring; }).length;
+      var iss    = people.filter(function(p) { return p._hasIssue; }).length;
+      var exp    = people.filter(function(p) { return p._expiring; }).length;
+      var pctVal = tot > 0 ? Math.round(ok / tot * 100) : 0;
+
+      var tier     = pctVal >= 80 ? 'uc-good' : (pctVal >= 50 ? 'uc-warn' : 'uc-bad');
+      var barColor = pctVal >= 80 ? '#00E676' : (pctVal >= 50 ? '#FFB300' : '#FF4444');
+      var pctColor = pctVal >= 80 ? 'c-green'  : (pctVal >= 50 ? 'c-amber'  : 'c-red');
+
+      var chips = '';
+      if (iss > 0)  chips += '<span class="unit-chip chip-red">' + iss + ' issue' + (iss!==1?'s':'') + '</span>';
+      if (exp > 0)  chips += '<span class="unit-chip chip-amber">' + exp + ' expiring</span>';
+      if (!iss && !exp) chips += '<span class="unit-chip chip-green">All clear</span>';
+
+      var displayName = makeShortName(unitName);
+
+      var card = document.createElement('div');
+      card.className = 'unit-card ' + tier;
+      card.title = 'Filter to ' + unitName;
+      card.innerHTML =
+        '<div class="unit-card-name" title="' + esc(unitName) + '" data-pct="' + pctVal + '%">' + esc(displayName) + '</div>' +
+        '<div class="unit-card-stats">' +
+          '<div>' +
+            '<div class="unit-card-pct ' + pctColor + '">' + pctVal + '%</div>' +
+            '<div class="unit-card-pct-label">compliant</div>' +
+          '</div>' +
+          '<div class="unit-card-members">' + tot + ' member' + (tot!==1?'s':'') + '</div>' +
+        '</div>' +
+        '<div class="unit-card-bar"><div class="unit-card-bar-fill" style="width:' + pctVal + '%;background:' + barColor + '"></div></div>' +
+        '<div class="unit-card-chips">' + chips + '</div>';
+
+      card.onclick = (function(u) {
+        return function() { unitCardFilter(u); };
+      })(unitName);
+
+      cardsContainer.appendChild(card);
+    });
+  });
+}
+
+function unitCompliancePct(rows) {
+  var people = uniquePeopleFrom(rows);
+  if (!people.length) return 100;
+  var ok = people.filter(function(p) { return !p._hasIssue && !p._expiring; }).length;
+  return Math.round(ok / people.length * 100);
+}
+
+function syncUnitCardHighlight() {
+  document.querySelectorAll('.unit-card').forEach(function(card) {
+    card.classList.toggle('active', card.title === 'Filter to ' + activeUnitFilter);
+  });
+}
+
+function unitCardFilter(unitName) {
+  if (activeUnitFilter === unitName) {
+    // Second click — clear filter but stay on Members tab
+    activeUnitFilter = '';
+    document.getElementById('fUnit').value = '';
+  } else {
+    activeUnitFilter = unitName;
+    // Sync the Unit dropdown
+    var sel = document.getElementById('fUnit');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === unitName) { sel.selectedIndex = i; break; }
+    }
+  }
+  // Update card highlight
+  document.querySelectorAll('.unit-card').forEach(function(card) {
+    card.classList.toggle('active', card.title === 'Filter to ' + activeUnitFilter);
+  });
+  applyFilters();
+  updateClearUnitBtn();
+  // Switch to Members tab to show filtered results
+  switchTab('members');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SORT BY URGENCY
+   Computes each row's "most urgent expiry" — the smallest
+   non-null days value across safeguarding, safety, first
+   response, and DBS — then sorts ascending (most urgent first).
+   Expired (<0) always sorts to the very top.
+═══════════════════════════════════════════════════════════ */
+function urgencyScore(r) {
+  // Collect all relevant expiry-day values, ignoring nulls
+  var vals = [r.safeDays, r.safetDays, r.frDays, r.dbsDays].filter(function(v) {
+    return v !== null && v !== undefined;
+  });
+  // Also penalise rows with ❌ on critical modules (treat as -999 so they surface first)
+  var hasRedCritical = r.safeguarding === '❌' || r.safety === '❌' || r.firstResp === '❌';
+  if (hasRedCritical) return -999;
+  if (!vals.length) return 99999; // no expiry data — sort to bottom
+  return Math.min.apply(null, vals);
+}
+
+function sortByUrgency() {
+  // Clear any active sort column indicator and use custom sort
+  sortCol = '_urgency';
+  sortAsc = true;
+  filtered = allRows.filter(matchesFilters).sort(function(a, b) {
+    return urgencyScore(a) - urgencyScore(b);
+  });
+  updateSortIndicators();
+  var filteredPeople = uniquePeopleFrom(filtered).length;
+  var totalPeople    = uniquePeopleFrom(allRows).length;
+  var rowLabel = filtered.length !== allRows.length
+    ? filtered.length + ' rows (' + filteredPeople + ' people) of '
+      + allRows.length + ' rows (' + totalPeople + ' people)'
+    : allRows.length + ' rows · ' + totalPeople + ' unique members';
+  document.getElementById('rowCount').textContent = rowLabel;
+  renderTable();
+}
+
+function printDashboard() {
+  window.print();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SAVED SNAPSHOTS  (localStorage, max 3)
+═══════════════════════════════════════════════════════════ */
+var MAX_SNAPSHOTS = 3;
+
+function saveSnapshot() {
+  try {
+    var snapshots = loadSnapshots();
+    var label = document.getElementById('unitLabel').textContent || 'Snapshot';
+    var html  = document.getElementById('pasteInput').innerHTML;
+
+    // Check if we already have a snapshot for this unit — if so preserve its original created date
+    var existing = snapshots.filter(function(s) { return s.label && s.label.indexOf(label) === 0; })[0];
+    var created  = existing ? existing.created || existing.ts : Date.now();
+
+    var snap = {
+      id:      Date.now(),
+      created: created,   // original first-paste date — never changes
+      label:   label + ' — ' + new Date(created).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}),
+      html:    html,
+      ts:      Date.now()
+    };
+
+    // Remove any existing snapshot for the same unit before adding new one
+    snapshots = snapshots.filter(function(s) { return !s.label || s.label.indexOf(label) !== 0; });
+    snapshots.unshift(snap);
+    if (snapshots.length > MAX_SNAPSHOTS) snapshots = snapshots.slice(0, MAX_SNAPSHOTS);
+    localStorage.setItem('scoutsSnapshots', JSON.stringify(snapshots));
+    renderSnapshotChips();
+  } catch(e) { /* localStorage unavailable */ }
+}
+
+function loadSnapshots() {
+  try {
+    return JSON.parse(localStorage.getItem('scoutsSnapshots') || '[]');
+  } catch(e) { return []; }
+}
+
+function deleteSnapshot(id) {
+  try {
+    var snaps = loadSnapshots().filter(function(s) { return s.id !== id; });
+    localStorage.setItem('scoutsSnapshots', JSON.stringify(snaps));
+    renderSnapshotChips();
+  } catch(e) {}
+}
+
+function restoreSnapshot(id) {
+  var snaps = loadSnapshots();
+  var snap = snaps.filter(function(s) { return s.id === id; })[0];
+  if (!snap) return;
+  document.getElementById('pasteInput').innerHTML = snap.html;
+  // Pass the original created date so the dashboard shows when data was first pasted
+  loadData(new Date(snap.created || snap.ts));
+}
+
+function renderSnapshotChips() {
+  var wrap = document.getElementById('snapshotsWrap');
+  if (!wrap) return;
+  var snaps = loadSnapshots();
+  if (!snaps.length) { wrap.innerHTML = ''; return; }
+  var html = '<span class="snapshots-label">Recent:</span>';
+  snaps.forEach(function(s) {
+    html += '<span class="snapshot-chip" onclick="restoreSnapshot(' + s.id + ')" title="Restore this snapshot">' +
+            esc(s.label) +
+            '<span class="snapshot-del" onclick="event.stopPropagation();deleteSnapshot(' + s.id + ')" title="Delete">×</span>' +
+            '</span>';
+  });
+  wrap.innerHTML = html;
+}
+
+// Purge snapshots older than 7 days on every page load
+var SNAPSHOT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+function purgeExpiredSnapshots() {
+  try {
+    var snaps = loadSnapshots();
+    var now = Date.now();
+    var before = snaps.length;
+    snaps = snaps.filter(function(s) { return (now - (s.ts || 0)) < SNAPSHOT_EXPIRY_MS; });
+    if (snaps.length !== before) {
+      localStorage.setItem('scoutsSnapshots', JSON.stringify(snaps));
+    }
+  } catch(e) { /* localStorage unavailable */ }
+}
+
+// Initialise chips on page load
+purgeExpiredSnapshots();
+renderSnapshotChips();
+
+/* ═══════════════════════════════════════════════════════════
+   COPY EMAILS TO CLIPBOARD
+═══════════════════════════════════════════════════════════ */
+function copyEmails() {
+  var seen = {};
+  var emails = [];
+  filtered.forEach(function(r) {
+    var e = (r.email || '').trim();
+    if (e && !seen[e.toLowerCase()]) {
+      seen[e.toLowerCase()] = true;
+      emails.push(e);
+    }
+  });
+  if (!emails.length) {
+    var btn = document.getElementById('copyEmailsBtn');
+    btn.textContent = '⚠ No emails';
+    setTimeout(function() { btn.textContent = '📋 Copy emails'; }, 2000);
+    return;
+  }
+  var text = emails.join(', ');
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('copyEmailsBtn');
+    btn.textContent = '✓ Copied ' + emails.length + '!';
+    setTimeout(function() { btn.textContent = '📋 Copy emails'; }, 2500);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var btn = document.getElementById('copyEmailsBtn');
+    btn.textContent = '✓ Copied ' + emails.length + '!';
+    setTimeout(function() { btn.textContent = '📋 Copy emails'; }, 2500);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV EXPORT  (respects collapsed groups — skips hidden cols)
+═══════════════════════════════════════════════════════════ */
+function exportCSV() {
+  // Determine which groups are visible
+  function grpVisible(id) { return !collapsedGroups[id]; }
+
+  // Build header row
+  var headers = ['Name', 'Number'];
+  COLUMN_GROUPS.forEach(function(g) {
+    if (grpVisible(g.id)) {
+      g.cols.forEach(function(c) {
+        // Use the primary srcCol name (the original SMS column name) for round-trip compatibility
+        var srcName = Array.isArray(c.srcCol) ? c.srcCol[0] : c.srcCol;
+        headers.push(srcName);
+      });
+    }
+  });
+
+  // Build data rows
+  var rows = [headers];
+  filtered.forEach(function(r) {
+    var row = [r.name, r.number];
+    COLUMN_GROUPS.forEach(function(g) {
+      if (grpVisible(g.id)) {
+        g.cols.forEach(function(c) {
+          var v = r[c.key];
+          row.push(v !== null && v !== undefined ? v : '');
+        });
+      }
+    });
+    rows.push(row);
+  });
+
+  var csv = rows.map(function(r) {
+    return r.map(function(c) {
+      return String(c === null || c === undefined ? '' : c).replace(/\t/g, ' ');
+    }).join('\t');
+  }).join('\n');
+
+  var a = document.createElement('a');
+  a.href = 'data:text/tab-separated-values;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'scouts-compliance-' + new Date().toISOString().slice(0, 10) + '.tsv';
+  a.click();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   DISTRICT ROLL-UP TAB
+═══════════════════════════════════════════════════════════ */
+var districtSortCol = 'pct';
+var districtSortAsc = true;
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('tab-' + id).classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+  if (id === 'district') renderDistrictTable();
+  if (id === 'units') buildUnitCards();
+}
+
+function buildDistrictData() {
+  // Group all rows by their "group" (the part before the separator, or the full name)
+  var groups = {};
+  allRows.forEach(function(r) {
+    var u = r.unit || 'Unknown';
+    var sepIdx = u.search(/ [-–] /);
+    var groupKey = sepIdx !== -1 ? u.slice(0, sepIdx).trim() : u;
+    if (!groups[groupKey]) groups[groupKey] = [];
+    groups[groupKey].push(r);
+  });
+
+  return Object.keys(groups).map(function(grpName) {
+    var rows   = groups[grpName];
+    var people = uniquePeopleFrom(rows);
+    var tot    = people.length;
+    var ok     = people.filter(function(p) { return !p._hasIssue && !p._expiring; }).length;
+    var iss    = people.filter(function(p) { return p._hasIssue; }).length;
+    var exp    = people.filter(function(p) { return p._expiring; }).length;
+    var dbs    = people.filter(function(p) { return isExpired(p.dbsDays) || isExpiring(p.dbsDays); }).length;
+    var safe   = people.filter(function(p) { return p.safeguarding === '❌'; }).length;
+    var pct    = tot > 0 ? Math.round(ok / tot * 100) : 0;
+    // Count distinct sections (units)
+    var sections = {};
+    rows.forEach(function(r) { sections[r.unit] = true; });
+    // Role counts — count each unique person once per role
+    // (use all rows, not uniquePeopleFrom, so multi-role people count in each role)
+    var roleCounts = {};
+    rows.forEach(function(r) {
+      var role = (r.role || 'Unknown').trim();
+      roleCounts[role] = (roleCounts[role] || 0) + 1;
+    });
+    // Sort roles by count descending then alphabetically
+    var roleList = Object.keys(roleCounts).sort(function(a,b) {
+      return roleCounts[b] - roleCounts[a] || a.localeCompare(b);
+    }).map(function(role) { return { role:role, count:roleCounts[role] }; });
+
+    return { name:grpName, members:tot, pct:pct, ok:ok, issues:iss,
+             expiring:exp, dbs:dbs, safe:safe,
+             sections:Object.keys(sections).length, roles:roleList };
+  });
+}
+
+var dtRolesCollapsed = false;  // role columns collapsed state
+
+function toggleDtRoles() {
+  dtRolesCollapsed = !dtRolesCollapsed;
+  renderDistrictTable();
+}
+
+/* Role display config — maps fragments of real role names to short labels + sort order.
+   Checked in order; first match wins. Unmatched roles go to the end alphabetically. */
+var DISTRICT_ROLE_MAP = [
+  // Group-level roles
+  { match: /group lead volunteer|glv/i,                        label: 'GLV' },
+  { match: /team leader/i,                                     label: 'Team Leader' },
+  { match: /team member/i,                                     label: 'Team Member' },
+  { match: /non.?member|not member.*not donate|needs disclosure|nmnd/i, label: 'NMND' },
+  { match: /\bchair/i,                                         label: 'Chair' },
+  { match: /treasurer/i,                                       label: 'Treasurer' },
+  { match: /trustee/i,                                         label: 'Trustee' },
+  { match: /president/i,                                       label: 'Pres' },
+  { match: /vice.?president|vp\b/i,                            label: 'VP' },
+  { match: /carer/i,                                           label: 'Carer' },
+  { match: /retired/i,                                         label: 'Retired' },
+  { match: /local.*employ|lep\b/i,                             label: 'LEP' },
+  // District-level roles
+  { match: /district lead volunteer|dlv/i,                     label: 'DLV' },
+  { match: /14.24|youth lead/i,                                label: '14-24' },
+  { match: /network/i,                                         label: 'Network' },
+];
+
+function roleLabel(role) {
+  for (var i = 0; i < DISTRICT_ROLE_MAP.length; i++) {
+    if (DISTRICT_ROLE_MAP[i].match.test(role)) return DISTRICT_ROLE_MAP[i].label;
+  }
+  return role; // unmatched — use full name
+}
+
+function roleSortKey(label) {
+  var order = ['GLV','Team Leader','Team Member','NMND','Chair','Treasurer','Trustee',
+               'Pres','VP','Carer','Retired','LEP','DLV','14-24','Network'];
+  var idx = order.indexOf(label);
+  return idx === -1 ? order.length + label : String(idx).padStart(3,'0');
+}
+
+function renderDistrictTable() {
+  var data = buildDistrictData();
+
+  data.sort(function(a, b) {
+    var av = a[districtSortCol], bv = b[districtSortCol];
+    if (typeof av === 'string') return districtSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return districtSortAsc ? av - bv : bv - av;
+  });
+
+  // Map raw role names to short labels and aggregate across district
+  // Multiple raw roles may map to same label — sum them
+  var distRoleTotals = {};  // label -> count
+  data.forEach(function(g) {
+    g.roles.forEach(function(rc) {
+      var lbl = roleLabel(rc.role);
+      distRoleTotals[lbl] = (distRoleTotals[lbl] || 0) + rc.count;
+    });
+  });
+
+  // Also store per-group label maps
+  data.forEach(function(g) {
+    g.roleLabels = {};
+    g.roles.forEach(function(rc) {
+      var lbl = roleLabel(rc.role);
+      g.roleLabels[lbl] = (g.roleLabels[lbl] || 0) + rc.count;
+    });
+  });
+
+  var allRoles = Object.keys(distRoleTotals).sort(function(a,b) {
+    return roleSortKey(a).localeCompare(roleSortKey(b));
+  });
+
+  var hideCls  = dtRolesCollapsed ? ' dt-role-col-hidden' : '';
+  var btnLabel = dtRolesCollapsed ? '\u25b6 Roles' : '\u25c0 Hide roles';
+
+  // ── Thead ─────────────────────────────────────────────────────────────────
+  var theadHtml =
+    '<tr>' +
+      '<th onclick="sortDistrict(&quot;name&quot;)" rowspan="2">Group</th>' +
+      '<th onclick="sortDistrict(&quot;members&quot;)" rowspan="2" style="vertical-align:bottom">Members</th>' +
+      (allRoles.length > 0
+        ? '<th class="dt-role-grp-th dt-role-col' + hideCls + '" colspan="' + allRoles.length + '">Roles</th>'
+        : '') +
+      '<th class="dt-role-grp-th" rowspan="2" onclick="toggleDtRoles()" style="min-width:56px;cursor:pointer" ' +
+        'title="' + (dtRolesCollapsed ? 'Show role columns' : 'Hide role columns') + '">' +
+        btnLabel +
+      '</th>' +
+      '<th onclick="sortDistrict(&quot;pct&quot;)" rowspan="2" style="vertical-align:bottom">Compliance</th>' +
+      '<th onclick="sortDistrict(&quot;issues&quot;)" rowspan="2" style="vertical-align:bottom">Issues</th>' +
+      '<th onclick="sortDistrict(&quot;expiring&quot;)" rowspan="2" style="vertical-align:bottom">Expiring</th>' +
+      '<th onclick="sortDistrict(&quot;dbs&quot;)" rowspan="2" style="vertical-align:bottom">DBS Issues</th>' +
+      '<th onclick="sortDistrict(&quot;safe&quot;)" rowspan="2" style="vertical-align:bottom">Safeguarding \u274c</th>' +
+    '</tr>' +
+    '<tr>' +
+      allRoles.map(function(label) {
+        return '<th class="dt-role-col' + hideCls + '" style="' +
+          'background:var(--surf2);border-bottom:2px solid var(--border);' +
+          'padding:4px 6px;font-size:10px;font-weight:700;color:var(--muted);' +
+          'white-space:nowrap;text-align:center;min-width:44px;" title="' + esc(label) + '">' +
+          esc(label) + '</th>';
+      }).join('') +
+    '</tr>';
+  document.getElementById('districtThead').innerHTML = theadHtml;
+
+  // ── Tbody ─────────────────────────────────────────────────────────────────
+  var html = '';
+
+  data.forEach(function(g) {
+    var barColor = g.pct >= 80 ? '#00E676' : (g.pct >= 50 ? '#FFB300' : '#FF4444');
+    var pctColor = g.pct >= 80 ? '#00E676' : (g.pct >= 50 ? '#FFB300' : '#FF4444');
+    var issChip  = g.issues   > 0 ? '<span class="dt-chip chip-red">'   + g.issues   + ' issues</span>'   : '';
+    var expChip  = g.expiring > 0 ? '<span class="dt-chip chip-amber">' + g.expiring + ' expiring</span>' : '';
+
+    var roleCells = allRoles.map(function(label) {
+      var val = g.roleLabels[label] || 0;
+      return '<td class="dt-role-cell dt-role-col' + hideCls + (val > 0 ? ' has-val' : '') + '">' +
+        (val > 0 ? val : '<span style="color:var(--border2)">\u2013</span>') + '</td>';
+    }).join('');
+
+    html +=
+      '<tr>' +
+        '<td class="dt-name">' + esc(g.name) +
+          '<br><span style="font-size:10px;color:var(--muted)">' + g.sections + ' section' + (g.sections!==1?'s':'') + '</span>' +
+        '</td>' +
+        '<td>' + g.members + '</td>' +
+        roleCells +
+        '<td><span class="dt-bar-wrap"><span class="dt-bar-fill" style="width:' + g.pct + '%;background:' + barColor + '"></span></span>' +
+             '<span class="dt-pct" style="color:' + pctColor + '">' + g.pct + '%</span></td>' +
+        '<td>' + (issChip || '<span style="color:#00E676">\u2713</span>') + '</td>' +
+        '<td>' + (expChip || '<span style="color:#00E676">\u2713</span>') + '</td>' +
+        '<td>' + (g.dbs  > 0 ? '<span class="dt-chip chip-amber">' + g.dbs  + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+        '<td>' + (g.safe > 0 ? '<span class="dt-chip chip-red">'   + g.safe + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+      '</tr>';
+  });
+
+  // ── Totals row ─────────────────────────────────────────────────────────────
+  var totalMembers = data.reduce(function(s,g){ return s+g.members; },0);
+  var totalIss     = data.reduce(function(s,g){ return s+g.issues; },0);
+  var totalExp     = data.reduce(function(s,g){ return s+g.expiring; },0);
+  var totalDbs     = data.reduce(function(s,g){ return s+g.dbs; },0);
+  var totalSafe    = data.reduce(function(s,g){ return s+g.safe; },0);
+  var totalOk      = data.reduce(function(s,g){ return s+g.ok; },0);
+  var totalPct     = totalMembers > 0 ? Math.round(totalOk / totalMembers * 100) : 0;
+  var totBarColor  = totalPct >= 80 ? '#00E676' : (totalPct >= 50 ? '#FFB300' : '#FF4444');
+
+  var totalRoleCells = allRoles.map(function(label) {
+    var val = distRoleTotals[label] || 0;
+    return '<td class="dt-role-cell dt-role-col' + hideCls + ' has-val">' + val + '</td>';
+  }).join('');
+
+  html +=
+    '<tr class="dt-total-row">' +
+      '<td class="dt-name">District Total' +
+        '<br><span style="font-size:10px;color:var(--muted);font-weight:400">' + data.length + ' groups</span>' +
+      '</td>' +
+      '<td>' + totalMembers + '</td>' +
+      totalRoleCells +
+      '<td><span class="dt-bar-wrap"><span class="dt-bar-fill" style="width:' + totalPct + '%;background:' + totBarColor + '"></span></span>' +
+           '<span class="dt-pct" style="color:' + totBarColor + '">' + totalPct + '%</span></td>' +
+      '<td>' + (totalIss  > 0 ? '<span class="dt-chip chip-red">'   + totalIss  + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+      '<td>' + (totalExp  > 0 ? '<span class="dt-chip chip-amber">' + totalExp  + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+      '<td>' + (totalDbs  > 0 ? '<span class="dt-chip chip-amber">' + totalDbs  + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+      '<td>' + (totalSafe > 0 ? '<span class="dt-chip chip-red">'   + totalSafe + '</span>' : '<span style="color:#00E676">\u2713</span>') + '</td>' +
+    '</tr>';
+
+  document.getElementById('districtTbody').innerHTML = html;
+}
+
+function sortDistrict(col) {
+  districtSortAsc = (districtSortCol === col) ? !districtSortAsc : true;
+  districtSortCol = col;
+  renderDistrictTable();
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   EMAIL DRAFT GENERATOR
+═══════════════════════════════════════════════════════════ */
+var selectedForEmail = {};  // memberNumber → row object
+
+function toggleSelectAll(chk) {
+  filtered.forEach(function(r) {
+    if (chk.checked) {
+      selectedForEmail[r.number] = r;
+    } else {
+      delete selectedForEmail[r.number];
+    }
+  });
+  // Update all visible row checkboxes
+  document.querySelectorAll('#tbody input[type="checkbox"]').forEach(function(cb) {
+    cb.checked = chk.checked;
+  });
+  var count = Object.keys(selectedForEmail).length;
+  var btn = document.getElementById('draftEmailBtn');
+  btn.classList.toggle('visible', count > 0);
+  btn.textContent = count > 0 ? '✉ Draft email (' + count + ')' : '✉ Draft email';
+}
+
+function updateSelectAllChk() {
+  var chk = document.getElementById('selectAllChk');
+  if (!chk) return;
+  var total = filtered.length;
+  var selected = filtered.filter(function(r) { return selectedForEmail[r.number]; }).length;
+  chk.checked = selected > 0 && selected === total;
+  chk.indeterminate = selected > 0 && selected < total;
+}
+
+function toggleEmailSelect(number) {
+  var row = allRows.filter(function(r) { return r.number === number; })[0];
+  if (!row) return;
+  if (selectedForEmail[number]) {
+    delete selectedForEmail[number];
+  } else {
+    selectedForEmail[number] = row;
+  }
+  var count = Object.keys(selectedForEmail).length;
+  var btn = document.getElementById('draftEmailBtn');
+  btn.classList.toggle('visible', count > 0);
+  btn.textContent = count > 0 ? '✉ Draft email (' + count + ')' : '✉ Draft email';
+  updateSelectAllChk();
+}
+
+function openEmailModal() {
+  var selected = Object.values(selectedForEmail);
+  if (!selected.length) return;
+
+  // Build member list in modal
+  var listHtml = '';
+  selected.forEach(function(r) {
+    var issues = buildIssueList(r);
+    listHtml +=
+      '<div class="email-member-row" onclick="toggleEmailCheckbox(\'' + r.number + '\')">' +
+      '<input type="checkbox" id="echk-' + esc(r.number) + '" checked onchange="toggleEmailCheckbox(\'' + r.number + '\')" onclick="event.stopPropagation()">' +
+      '<span class="email-member-name">' + esc(r.name) + '</span>' +
+      '<span class="email-member-issues">' + esc(issues.slice(0,3).join(', ')) + (issues.length > 3 ? '…' : '') + '</span>' +
+      '</div>';
+  });
+  document.getElementById('emailMemberList').innerHTML = listHtml;
+  generateEmailBody();
+  document.getElementById('emailModal').classList.add('open');
+}
+
+function toggleEmailCheckbox(number) {
+  var chk = document.getElementById('echk-' + number);
+  if (chk) chk.checked = !chk.checked;
+  generateEmailBody();
+}
+
+function buildIssueList(r) {
+  var issues = [];
+  var moduleNames = {
+    disclosure:'Disclosure', declaration:'Declaration', profile:'Online Profile',
+    references:'References', ceCheck:'CE Check', welcome:'Welcome Conversation',
+    growingRoots:'Growing Roots', trusteeCheck:'Trustee Check',
+    safeguarding:'Safeguarding', safety:'Safety', firstResp:'First Response',
+    whoWeAre:'Who We Are', inclusion:'Creating Inclusion', dataProt:'Data Protection',
+    programme:'Great Programme', leading:'Leading Volunteers', trustee:'Trustee Module',
+    dbs:'DBS'
+  };
+  Object.keys(moduleNames).forEach(function(k) {
+    if (r[k] === '❌') issues.push(moduleNames[k] + ' (missing)');
+  });
+  if (r.safeDays  !== null && r.safeDays  < 90 && r.safeDays  >= 0) issues.push('Safeguarding expiring (' + r.safeDays  + ' days)');
+  if (r.safetDays !== null && r.safetDays < 90 && r.safetDays >= 0) issues.push('Safety expiring ('      + r.safetDays + ' days)');
+  if (r.frDays    !== null && r.frDays    < 90 && r.frDays    >= 0) issues.push('First Response expiring (' + r.frDays + ' days)');
+  if (r.dbsDays   !== null && r.dbsDays   < 0)  issues.push('DBS expired (' + Math.abs(r.dbsDays) + ' days ago)');
+  else if (r.dbsDays !== null && r.dbsDays < 90) issues.push('DBS expiring (' + r.dbsDays + ' days)');
+  return issues;
+}
+
+function generateEmailBody() {
+  var lines = [];
+  var checkedNumbers = [];
+  document.querySelectorAll('#emailMemberList input[type=checkbox]').forEach(function(chk) {
+    if (chk.checked) checkedNumbers.push(chk.id.replace('echk-', ''));
+  });
+
+  lines.push('Dear [Name],');
+  lines.push('');
+  lines.push('I hope this finds you well. I am writing to let you know that the following compliance items are outstanding or expiring soon for the members listed below. Please log in to Scouts Digital (https://membership.scouts.org.uk) to complete or renew these as soon as possible.');
+  lines.push('');
+
+  checkedNumbers.forEach(function(num) {
+    var r = selectedForEmail[num];
+    if (!r) return;
+    var issues = buildIssueList(r);
+    if (!issues.length) return;
+    lines.push(r.name + ' (' + r.number + ') — ' + r.role);
+    issues.forEach(function(iss) { lines.push('  • ' + iss); });
+    lines.push('');
+  });
+
+  lines.push("If you have any questions or need support completing any of these items, please don't hesitate to get in touch.");
+  lines.push('');
+  lines.push('Thank you for everything you do for Scouting.');
+  lines.push('');
+  lines.push('Kind regards,');
+  lines.push('[Your name]');
+  lines.push('[Your role]');
+
+  document.getElementById('emailBody').value = lines.join('\n');
+}
+
+function copyEmailToClipboard() {
+  var subject = document.getElementById('emailSubject').value;
+  var body    = document.getElementById('emailBody').value;
+  var full    = 'Subject: ' + subject + '\n\n' + body;
+  navigator.clipboard.writeText(full).then(function() {
+    var el = document.getElementById('emailCopied');
+    el.style.display = 'inline';
+    setTimeout(function() { el.style.display = 'none'; }, 2500);
+  }).catch(function() {
+    // Fallback for browsers without clipboard API
+    document.getElementById('emailBody').select();
+    document.execCommand('copy');
+  });
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModal').classList.remove('open');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', function(e) {
+  // Don't fire when typing in an input or contenteditable
+  var tag = document.activeElement ? document.activeElement.tagName : '';
+  var isEditing = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' ||
+                  document.activeElement.isContentEditable;
+
+  // Escape: always clear filters (even when in input, it blurs first)
+  if (e.key === 'Escape') {
+    document.activeElement.blur();
+    clearAllFilters();
+    closeKbModal();
+    return;
+  }
+
+  if (isEditing) return; // below shortcuts only fire when not typing
+
+  if (e.key === '/' || e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('fName').focus();
+  } else if (e.key === 'i' || e.key === 'I') {
+    toggleIssuesOnly();
+  } else if (e.key === 'd' || e.key === 'D') {
+    toggleTheme();
+  } else if (e.key === 'u' || e.key === 'U') {
+    sortByUrgency();
+  } else if (e.key === 'p' || e.key === 'P') {
+    e.preventDefault(); window.print();
+  } else if (e.key === '?') {
+    toggleKbModal();
+  }
+});
+
+function clearUnitFilter() {
+  activeUnitFilter  = '';
+  activeGroupFilter = '';
+  collapsedUcGroups = {};
+  document.getElementById('fUnit').value = '';
+  syncUnitCardHighlight();
+  document.querySelectorAll('.uc-group-header').forEach(function(h) { h.classList.remove('uc-group-active'); });
+  updateClearUnitBtn();
+  applyFilters();
+  buildUnitCards();  // rebuild so all groups reappear
+}
+
+function updateClearUnitBtn() {
+  var active = activeUnitFilter || activeGroupFilter;
+  var labelLong = activeGroupFilter
+    ? '✕ Group filter: ' + activeGroupFilter + ' — clear'
+    : '✕ Unit filter active — clear';
+  var labelShort = activeGroupFilter
+    ? '✕ Group: ' + activeGroupFilter
+    : '✕ Unit filter — clear';
+
+  // Members tab pill
+  var btn = document.getElementById('clearUnitFilterBtn');
+  if (btn) { btn.style.display = active ? '' : 'none'; btn.textContent = labelLong; }
+
+  // Units tab pill + hint
+  var btn2 = document.getElementById('clearUnitFilterBtnUnits');
+  if (btn2) { btn2.style.display = active ? '' : 'none'; btn2.textContent = labelShort; }
+  var hint = document.getElementById('ucFilterHint');
+  if (hint) hint.style.display = active ? 'none' : '';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MULTI-SELECT DROPDOWNS
+═══════════════════════════════════════════════════════════ */
+var msSelected = {
+  role:   new Set(),
+  team:   new Set(),
+  status: new Set()
+};
+// Tracks when the user has explicitly unchecked "All" (show-nothing state)
+var msAllOff = { role: false, team: false, status: false };
+
+function fillMsDropdown(key, vals) {
+  var container = document.getElementById('ms-opts-' + key);
+  if (!container) return;
+  msSelected[key].clear();
+  msAllOff[key] = false;
+  updateMsBtn(key);
+  var html = '<label class="ms-option all-opt"><input type="checkbox" id="ms-all-' + key + '" checked onchange="toggleMsAll(&quot;' + key + '&quot;,this)"> All ' + key + 's</label>';
+  vals.forEach(function(v) {
+    var safe = v.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    html += '<label class="ms-option"><input type="checkbox" value="' + safe + '" checked onchange="toggleMsItem(&quot;' + key + '&quot;,this)"> ' + safe + '</label>';
+  });
+  container.innerHTML = html;
+  syncMsAllCheck(key);
+}
+
+function filterMsOptions(key, q) {
+  var opts = document.querySelectorAll('#ms-opts-' + key + ' .ms-option:not(.all-opt)');
+  var ql = q.toLowerCase();
+  var visible = 0;
+  opts.forEach(function(el) {
+    var match = !ql || el.textContent.toLowerCase().indexOf(ql) !== -1;
+    el.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+}
+
+function toggleMsItem(key, cb) {
+  var v = cb.value;
+  if (cb.checked) {
+    msSelected[key].add(v);
+    msAllOff[key] = false;
+    // If all items are now checked, revert to "show all" mode (empty set)
+    var total = document.querySelectorAll('#ms-opts-' + key + ' .ms-option:not(.all-opt) input').length;
+    if (msSelected[key].size === total) msSelected[key].clear();
+  } else {
+    // If we're in "show all" mode (empty set), populate with all currently checked items first
+    if (msSelected[key].size === 0 && !msAllOff[key]) {
+      document.querySelectorAll('#ms-opts-' + key + ' .ms-option:not(.all-opt) input').forEach(function(c) {
+        if (c.checked) msSelected[key].add(c.value);
+      });
+    }
+    msSelected[key].delete(v);
+    if (msSelected[key].size === 0) msAllOff[key] = true;
+  }
+  syncMsAllCheck(key);
+  updateMsBtn(key);
+  applyFilters();
+}
+
+function toggleMsAll(key, cb) {
+  var cbs = document.querySelectorAll('#ms-opts-' + key + ' .ms-option:not(.all-opt) input');
+  // Clicking All when indeterminate or unchecked → select all
+  // Clicking All when checked → keep all selected (no-op, already all)
+  if (cb.checked || cb.indeterminate) {
+    // Select all — reset to no filter
+    msSelected[key].clear();
+    msAllOff[key] = false;
+    cbs.forEach(function(c) { c.checked = true; });
+    cb.indeterminate = false;
+    cb.checked = true;
+  } else {
+    // Unticking All — deselect everything
+    msSelected[key].clear();
+    msAllOff[key] = true;
+    cbs.forEach(function(c) { c.checked = false; });
+  }
+  updateMsBtn(key);
+  applyFilters();
+}
+
+function syncMsAllCheck(key) {
+  var allCb = document.getElementById('ms-all-' + key);
+  if (!allCb) return;
+  var totalCbs = document.querySelectorAll('#ms-opts-' + key + ' .ms-option:not(.all-opt) input').length;
+  var n = msSelected[key].size;
+  if (msAllOff[key]) {
+    // Nothing selected
+    allCb.checked = false;
+    allCb.indeterminate = false;
+  } else if (n === 0) {
+    // All selected (no filter)
+    allCb.checked = true;
+    allCb.indeterminate = false;
+  } else if (n < totalCbs) {
+    // Some selected — indeterminate
+    allCb.checked = false;
+    allCb.indeterminate = true;
+  } else {
+    // All individually checked — treat as All
+    allCb.checked = true;
+    allCb.indeterminate = false;
+  }
+}
+
+function updateMsBtn(key) {
+  var btn = document.getElementById('ms-btn-' + key);
+  if (!btn) return;
+  var n = msSelected[key].size;
+  var labels = { role:'roles', team:'teams', status:'statuses' };
+  var label = labels[key] || key;
+  if (!msAllOff[key] && n === 0) {
+    btn.innerHTML = 'All ' + label;
+    btn.classList.remove('active');
+  } else {
+    btn.innerHTML = n + ' ' + label + ' <span class="ms-count">' + n + '</span>';
+    btn.classList.add('active');
+  }
+}
+
+function toggleMs(key) {
+  var panel = document.getElementById('ms-panel-' + key);
+  var btn   = document.getElementById('ms-btn-'   + key);
+  var isOpen = panel.classList.contains('open');
+  document.querySelectorAll('.ms-panel').forEach(function(p){ p.classList.remove('open'); });
+  document.querySelectorAll('.ms-btn').forEach(function(b){ b.classList.remove('open'); });
+  if (!isOpen) {
+    panel.classList.add('open');
+    btn.classList.add('open');
+    var srch = panel.querySelector('.ms-search');
+    if (srch) { srch.value=''; filterMsOptions(key,''); setTimeout(function(){ srch.focus(); },50); }
+  }
+}
+
+function clearMsAll() {
+  ['role','team','status'].forEach(function(key) {
+    msSelected[key].clear();
+    msAllOff[key] = false;
+    var cbs = document.querySelectorAll('#ms-opts-' + key + ' input[type=checkbox]');
+    cbs.forEach(function(cb){ cb.checked = true; });
+    syncMsAllCheck(key);
+    updateMsBtn(key);
+  });
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ms-wrap')) {
+    document.querySelectorAll('.ms-panel').forEach(function(p){ p.classList.remove('open'); });
+    document.querySelectorAll('.ms-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  }
+});
+
+function clearAllFilters() {
+  if (document.getElementById('dashboard').style.display === 'none') return;
+  document.getElementById('fName').value = '';
+  document.getElementById('fUnit').value = '';
+  document.getElementById('fCompliance').value = '';
+  clearMsAll();
+  activeStatFilter  = '';
+  activeUnitFilter  = '';
+  activeGroupFilter = '';
+  issuesOnly = false;
+  var btn = document.getElementById('issuesToggleBtn');
+  if (btn) btn.classList.remove('active');
+  syncUnitCardHighlight();
+  updateStatHighlight();
+  updateClearUnitBtn();
+  document.querySelectorAll('.uc-group-header').forEach(function(h) { h.classList.remove('uc-group-active'); });
+  applyFilters();
+}
+
+function toggleKbModal() {
+  document.getElementById('kbModal').classList.toggle('open');
+}
+function closeKbModal() {
+  document.getElementById('kbModal').classList.remove('open');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   STICKY GROUP COLOUR BAND
+   A <div> above the table with absolutely-positioned coloured
+   segments — avoids border-collapse sticky rendering bugs.
+═══════════════════════════════════════════════════════════ */
+var GRP_COLOURS = {
+  name:     '#D4E0F0',
+  info:     '#00C8FF',
+  welcome:  '#C080FF',
+  critical: '#FF6060',
+  learning: '#FFB300',
+  dbs:      '#00E676'
+};
+
+function updateGrpBand() {
+  var band = document.getElementById('grpBand');
+  var tw   = document.querySelector('.table-wrap');
+  if (!band || !tw) return;
+
+  // position:fixed means coordinates are always relative to the viewport
+  // so we just use getBoundingClientRect() directly — no scroll offsets needed
+  var twRect = tw.getBoundingClientRect();
+
+  // Set band position fixed at top of table-wrap, full viewport width
+  band.style.position = 'fixed';
+  band.style.top      = Math.round(twRect.top) + 'px';
+  band.style.left     = '0';
+  band.style.width    = '100vw';
+  band.style.transform = '';
+
+  var html = '';
+
+  // Frozen name group
+  var nameThs = document.querySelectorAll('#colHeaders th:not([data-grp])');
+  if (nameThs.length) {
+    var r1 = nameThs[0].getBoundingClientRect();
+    var r2 = nameThs[nameThs.length-1].getBoundingClientRect();
+    html += '<span class="grp-band-seg" style="left:' + Math.round(r1.left) + 'px;width:' + Math.round(r2.right - r1.left) + 'px;background:' + GRP_COLOURS.name + '"></span>';
+  }
+
+  // Each column group
+  COLUMN_GROUPS.forEach(function(g) {
+    var color = GRP_COLOURS[g.id];
+    var ths;
+    if (collapsedGroups[g.id]) {
+      var labelTh = document.getElementById('grp-' + g.id);
+      if (!labelTh) return;
+      var r = labelTh.getBoundingClientRect();
+      html += '<span class="grp-band-seg" style="left:' + Math.round(r.left) + 'px;width:' + Math.round(r.width) + 'px;background:' + color + '"></span>';
+    } else {
+      ths = document.querySelectorAll('#colHeaders th[data-grp="' + g.id + '"]:not(.grp-col-hidden)');
+      if (!ths.length) return;
+      var r1 = ths[0].getBoundingClientRect();
+      var r2 = ths[ths.length-1].getBoundingClientRect();
+      html += '<span class="grp-band-seg" style="left:' + Math.round(r1.left) + 'px;width:' + Math.round(r2.right - r1.left) + 'px;background:' + color + '"></span>';
+    }
+  });
+
+  band.innerHTML = html;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   UI — LIGHT / DARK THEME TOGGLE
+═══════════════════════════════════════════════════════════ */
+var lightMode = true;
+var dataLoadedAt = null;  // Date object set when data is pasted
+document.body.classList.add('light'); // default to light mode
+
+function toggleTheme() {
+  lightMode = !lightMode;
+  document.body.classList.toggle('light', lightMode);
+  var label = lightMode ? '🌙 Dark' : '☀ Light';
+  var btn1 = document.getElementById('themeToggleBtn');
+  var btn2 = document.getElementById('themeTogglePaste');
+  if (btn1) btn1.textContent = label;
+  if (btn2) btn2.textContent = label;
+}
+
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function statusBadge(s) {
+  var cls = 'b-other';
+  var sl = String(s || '').toLowerCase();
+  if (sl.indexOf('full') !== -1 && sl.indexOf('provisional') === -1) cls = 'b-full';
+  else if (sl.indexOf('provisional') !== -1) cls = 'b-prov';
+  return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COLUMN HOVER HIGHLIGHT
+   Delegated listener on tbody — reads cellIndex, highlights
+   matching th in col header row and all tds in that column.
+═══════════════════════════════════════════════════════════ */
+(function() {
+  var activeColIdx = -1;
+
+  function setColHighlight(idx, on) {
+    if (idx < 0) return;
+    // Header th with matching data-col-idx
+    document.querySelectorAll('#colHeaders th[data-col-idx="' + idx + '"]').forEach(function(th) {
+      th.classList.toggle('col-hover', on);
+    });
+    // All tds at that cellIndex in tbody
+    document.querySelectorAll('#tbody tr').forEach(function(tr) {
+      var td = tr.cells[idx];
+      if (td) td.classList.toggle('col-hover', on);
+    });
+  }
+
+  function getColIdxFromHeader(el) {
+    var th = el.closest('#colHeaders th[data-col-idx]');
+    if (!th) return -1;
+    return parseInt(th.dataset.colIdx, 10);
+  }
+
+  document.addEventListener('mouseover', function(e) {
+    var idx = -1;
+    var td = e.target.closest('#tbody td');
+    if (td) {
+      idx = td.cellIndex;
+    } else {
+      idx = getColIdxFromHeader(e.target);
+    }
+    if (idx < 0 || idx === activeColIdx) return;
+    setColHighlight(activeColIdx, false);
+    activeColIdx = idx;
+    setColHighlight(activeColIdx, true);
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    var leavingBody = e.target.closest('#tbody td') && !(e.relatedTarget && e.relatedTarget.closest('#tbody td'));
+    var leavingHeader = e.target.closest('#colHeaders th') && !(e.relatedTarget && e.relatedTarget.closest('#colHeaders th, #tbody td'));
+    if (leavingBody || leavingHeader) {
+      // Only clear if not moving into the other zone
+      var goingToBody   = e.relatedTarget && e.relatedTarget.closest('#tbody td');
+      var goingToHeader = e.relatedTarget && e.relatedTarget.closest('#colHeaders th[data-col-idx]');
+      if (!goingToBody && !goingToHeader) {
+        setColHighlight(activeColIdx, false);
+        activeColIdx = -1;
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

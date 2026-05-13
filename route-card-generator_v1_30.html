@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scout Route Card Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+/* ── TOKENS ── */
+:root {
+  --ink: #1a1a2e;
+  --paper: #f5f0e8;
+  --accent: #c0392b;
+  --accent2: #2c7a4b;
+  --muted: #b8a98a;
+  --rule: #b0a896;
+  --highlight: #e8dfc8;
+  --sidebar-bg: #1a1a2e;
+  --sidebar-panel: #242238;
+  --sidebar-border: #3a3858;
+  --label-col: #c9b48e;
+  --section-col: #d4b97a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Barlow', sans-serif; background: var(--ink); color: var(--ink); min-height: 100vh; }
+
+/* ══════════════════════════════════════════════
+   UPLOAD SCREEN
+══════════════════════════════════════════════ */
+#upload-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 2rem; background: var(--ink);
+}
+.upload-logo { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:2.2rem; letter-spacing:0.08em; color:var(--paper); text-transform:uppercase; margin-bottom:0.25rem; }
+.upload-sub { font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:3rem; }
+.drop-zone {
+  width:100%; max-width:480px; border:2px dashed #4a4860; border-radius:4px;
+  padding:3.5rem 2rem; text-align:center; cursor:pointer; transition:all 0.2s; position:relative;
+}
+.drop-zone:hover, .drop-zone.drag-over { border-color:var(--accent); background:rgba(192,57,43,0.06); }
+.drop-icon { font-size:2.5rem; margin-bottom:1rem; display:block; }
+.drop-zone h2 { font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:600; color:var(--paper); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem; }
+.drop-zone p { font-size:0.85rem; color:var(--muted); margin-bottom:1.5rem; }
+.drop-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.btn-primary { font-family:'Barlow Condensed',sans-serif; font-size:0.9rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 2rem; background:var(--accent); color:white; border:none; border-radius:3px; cursor:pointer; transition:opacity 0.15s; position:relative; z-index:2; }
+.btn-primary:hover { opacity:0.88; }
+.btn-secondary { font-family:'Barlow Condensed',sans-serif; font-size:0.85rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.5rem 1.4rem; background:transparent; color:var(--paper); border:1.5px solid #4a4860; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+.btn-secondary:hover { border-color:var(--paper); }
+
+/* ══════════════════════════════════════════════
+   EDITOR SHELL
+══════════════════════════════════════════════ */
+#editor-screen { display:none; background:#242238; min-height:100vh; }
+.editor-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.75rem 1.5rem; background:var(--sidebar-bg); border-bottom:1px solid var(--sidebar-border);
+  position:sticky; top:0; z-index:20;
+}
+.editor-header .logo { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1.1rem; color:var(--paper); letter-spacing:0.08em; text-transform:uppercase; }
+.editor-header .route-name { font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--muted); }
+.editor-header .hdr-actions { display:flex; gap:0.6rem; align-items:center; }
+.page-tabs { display:flex; gap:0; background:#2a2840; border-radius:3px; overflow:hidden; }
+.page-tab { font-family:'Barlow Condensed',sans-serif; font-size:0.78rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.35rem 0.9rem; cursor:pointer; color:var(--muted); background:transparent; border:none; transition:all 0.15s; }
+.page-tab.active { background:var(--accent); color:white; }
+
+.editor-layout { display:grid; grid-template-columns:290px 1fr; min-height:calc(100vh - 50px); }
+
+/* ══════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════ */
+.sidebar {
+  background:var(--sidebar-bg); border-right:1px solid var(--sidebar-border); padding:1.25rem;
+  overflow-y:auto; max-height:calc(100vh - 50px); position:sticky; top:50px;
+}
+.sidebar h3 { font-family:'Barlow Condensed',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--section-col); margin-bottom:0.75rem; margin-top:1.25rem; border-top:1px solid var(--sidebar-border); padding-top:1rem; }
+.sidebar h3:first-child { margin-top:0; border-top:none; padding-top:0; }
+.field-group { margin-bottom:0.6rem; }
+.field-group label { display:block; font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--label-col); letter-spacing:0.08em; margin-bottom:0.25rem; text-transform:uppercase; }
+.field-group input, .field-group select, .field-group textarea {
+  width:100%; background:var(--sidebar-panel); border:1px solid var(--sidebar-border); color:var(--paper);
+  padding:0.4rem 0.6rem; font-family:'Barlow',sans-serif; font-size:0.82rem; border-radius:3px; outline:none; transition:border-color 0.15s;
+}
+.field-group textarea { resize:none; height:56px; line-height:1.4; }
+.field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color:var(--accent); }
+.field-group select option { background:#1a1a2e; }
+
+/* Recent cards on upload screen */
+.recent-card-item {
+  display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem;
+  background:var(--sidebar-panel); border:1px solid var(--sidebar-border); border-radius:3px;
+  margin-bottom:0.4rem; cursor:pointer; transition:border-color 0.15s;
+}
+.recent-card-item:hover { border-color:var(--accent); }
+.recent-card-item .rci-name { font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:0.95rem; color:var(--paper); letter-spacing:0.04em; flex:1; }
+.recent-card-item .rci-meta { font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--muted); text-align:right; line-height:1.5; }
+.recent-card-item .rci-del { font-size:0.7rem; color:var(--muted); background:none; border:none; cursor:pointer; padding:0.2rem 0.3rem; border-radius:2px; transition:color 0.1s; }
+.recent-card-item .rci-del:hover { color:var(--accent); }
+.btn-save { font-family:'Barlow Condensed',sans-serif; font-size:0.85rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.5rem 1.4rem; background:var(--accent2); color:white; border:none; border-radius:3px; cursor:pointer; transition:opacity 0.15s; }
+.btn-save:hover { opacity:0.85; }
+.save-toast { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--accent2); color:white; font-family:'DM Mono',monospace; font-size:0.75rem; padding:0.6rem 1rem; border-radius:3px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:100; }
+.save-toast.show { opacity:1; }
+/* Map panel */
+.map-panel {
+  max-width: 960px; margin: 0 auto 0;
+  border-bottom: 1px solid var(--rule);
+  background: var(--highlight);
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.map-toggle-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.4rem 1.25rem;
+  background: var(--paper); border-bottom: 1px solid var(--rule);
+  cursor: pointer; user-select: none;
+}
+.map-toggle-bar:hover { background: var(--highlight); }
+.map-toggle-label {
+  font-family: 'DM Mono', monospace; font-size: 0.6rem; color: #6b5c45;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.map-toggle-chevron {
+  font-size: 0.65rem; color: #6b5c45; transition: transform 0.2s;
+}
+.map-toggle-chevron.collapsed { transform: rotate(-90deg); }
+.map-body { overflow: hidden; transition: height 0.25s ease; }
+#route-map {
+  width: 100%; height: 400px;
+}
+.map-placeholder {
+  height: 400px; display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted);
+  background: var(--highlight);
+}
+/* Elevation fetch button */
+.elev-fetch-btn {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.75rem;
+  background: var(--accent2); color: white; border: none; border-radius: 3px;
+  cursor: pointer; transition: opacity 0.15s; white-space: nowrap;
+}
+.elev-fetch-btn:hover { opacity: 0.85; }
+.elev-fetch-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.elev-fetch-status {
+  font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted);
+  margin-left: 0.5rem;
+}
+
+.member-row { display:grid; grid-template-columns:1fr 110px; gap:0.4rem; margin-bottom:0.35rem; align-items:center; }
+.member-row .mem-num { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); width:14px; flex-shrink:0; }
+.member-inputs { display:flex; flex-direction:column; gap:0.35rem; }
+
+.pace-row { display:flex; gap:0.5rem; margin-bottom:0.6rem; align-items:center; }
+.pace-row label { font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--label-col); letter-spacing:0.08em; text-transform:uppercase; flex:1; }
+.pace-row input { width:64px; background:var(--sidebar-panel); border:1px solid var(--sidebar-border); color:var(--paper); padding:0.4rem 0.5rem; font-family:'DM Mono',monospace; font-size:0.82rem; border-radius:3px; outline:none; text-align:center; }
+.pace-row input:focus { border-color:var(--accent); }
+.pace-note { font-size:0.65rem; color:var(--label-col); margin-bottom:0.75rem; line-height:1.5; background:var(--sidebar-panel); border-left:2px solid var(--accent2); padding:0.4rem 0.6rem; border-radius:0 3px 3px 0; }
+.route-stats { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-bottom:0.75rem; }
+.stat-chip { background:var(--sidebar-panel); border:1px solid var(--sidebar-border); border-radius:3px; padding:0.45rem 0.6rem; }
+.stat-chip .val { font-family:'DM Mono',monospace; font-size:0.95rem; color:var(--paper); display:block; }
+.stat-chip .lbl { font-size:0.63rem; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; }
+.add-leg-btn { width:100%; margin-top:0.5rem; font-family:'Barlow Condensed',sans-serif; font-size:0.8rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.5rem; background:transparent; color:var(--accent2); border:1.5px dashed #2c7a4b; border-radius:3px; cursor:pointer; transition:all 0.15s; }
+.add-leg-btn:hover { background:rgba(44,122,75,0.1); }
+
+/* ══════════════════════════════════════════════
+   PREVIEW PANE
+══════════════════════════════════════════════ */
+.preview-pane { padding:2rem; overflow-y:auto; background:#242238; }
+
+/* ── SHARED CARD CHROME ── */
+.route-card {
+  background:var(--paper); max-width:960px; margin:0 auto 2rem;
+  font-family:'Barlow',sans-serif; box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.route-card + .route-card { margin-top:0; }
+.rc-header { display:flex; align-items:stretch; justify-content:space-between; border-bottom:2.5px solid var(--ink); }
+.rc-header-left { padding:0.85rem 1.25rem; flex:1; }
+.rc-title { font-family:'Barlow Condensed',sans-serif; font-size:1.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink); line-height:1.1; }
+.rc-location { font-family:'Barlow',sans-serif; font-size:0.82rem; color:var(--muted); margin-top:0.15rem; font-style:italic; }
+.rc-logo-block { text-align:right; padding:0.85rem 1.25rem; border-left:1.5px solid var(--rule); display:flex; flex-direction:column; justify-content:center; min-width:200px; }
+.rc-logo-block .big { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:700; color:var(--accent); letter-spacing:0.05em; }
+.rc-logo-block .small { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-top:0.1rem; }
+
+.rc-row { display:grid; border-bottom:1.5px solid var(--rule); }
+.rc-row.two-col { grid-template-columns:1fr 220px; }
+.rc-row.three-col { grid-template-columns:1fr 1fr 1fr; }
+.rc-row.four-col { grid-template-columns:1fr 1fr 1fr 1fr; }
+.rc-row.five-col { grid-template-columns:1fr 1fr 1fr 1fr 1fr; }
+.rc-cell { padding:0.5rem 1.25rem; border-right:1.5px solid var(--rule); }
+.rc-cell:last-child { border-right:none; }
+.rc-label { font-size:0.58rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#6b5c45; margin-bottom:0.12rem; }
+.rc-val { font-family:'DM Mono',monospace; font-size:0.84rem; color:var(--ink); min-height:1.25em; }
+
+/* Elevation */
+.elev-row { border-bottom:1px solid var(--rule); }
+.elev-header { display:flex; align-items:center; gap:0.5rem; padding:0.3rem 1.25rem 0.2rem; cursor:pointer; user-select:none; }
+.elev-header:hover { background:rgba(0,0,0,0.03); }
+.elev-label { font-size:0.55rem; font-weight:700; letter-spacing:0.12em; color:#6b5c45; text-transform:uppercase; flex:1; }
+.elev-chevron { font-size:0.6rem; color:var(--muted); transition:transform 0.2s; }
+.elev-chevron.collapsed { transform:rotate(-90deg); }
+.elev-body { overflow:hidden; transition:height 0.25s ease; }
+.elev-canvas-wrap { display:flex; padding:0 1.25rem 0.35rem; gap:0.4rem; }
+.elev-yaxis { width:32px; flex-shrink:0; position:relative; }
+.elev-yaxis canvas { display:block; }
+.elev-main { flex:1; position:relative; }
+
+/* Legs table */
+.rc-table { width:100%; border-collapse:collapse; }
+.rc-table thead tr { background:var(--highlight); border-bottom:2px solid var(--rule); }
+.rc-table th { font-size:0.57rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#6b5c45; padding:0.4rem 0.3rem; text-align:center; border-right:1px solid var(--rule); vertical-align:bottom; line-height:1.25; }
+.rc-table th:last-child { border-right:none; }
+.rc-table th.left { text-align:left; padding-left:0.5rem; }
+.rc-table td { padding:0.38rem 0.3rem; font-size:0.77rem; border-right:1px solid var(--rule); border-bottom:1px solid var(--rule); vertical-align:top; text-align:center; }
+.rc-table td:last-child { border-right:none; }
+.rc-table td.left { text-align:left; font-size:0.73rem; }
+.rc-table td.leg-num { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; background:var(--highlight); }
+.rc-table td.mono { font-family:'DM Mono',monospace; font-size:0.73rem; }
+.rc-table tr:last-child td { border-bottom:none; }
+.rc-table .totals-row td { background:var(--highlight); font-weight:600; font-family:'DM Mono',monospace; font-size:0.74rem; border-top:2px solid var(--rule); border-bottom:none; }
+
+/* Footer supervisor row */
+.rc-footer { display:grid; grid-template-columns:1fr 1fr 1fr; border-top:2px solid var(--ink); }
+.rc-footer .rc-cell { padding:0.6rem 1.25rem; }
+
+/* Editable cells */
+.editable { outline:none; cursor:text; border-radius:2px; transition:background 0.1s; }
+.editable:hover { background:rgba(192,57,43,0.07); }
+.editable:focus { background:rgba(192,57,43,0.12); box-shadow:0 0 0 2px rgba(192,57,43,0.25); }
+
+/* Delete leg button */
+.del-leg-btn { display:inline-block; width:16px; height:16px; line-height:16px; text-align:center; font-size:0.65rem; background:rgba(192,57,43,0.15); color:var(--accent); border-radius:50%; cursor:pointer; border:none; font-weight:700; transition:background 0.1s; }
+.del-leg-btn:hover { background:rgba(192,57,43,0.35); }
+.add-leg-inline-btn { display:inline-block; width:16px; height:16px; line-height:16px; text-align:center; font-size:0.75rem; background:rgba(44,122,75,0.15); color:var(--accent2); border-radius:50%; cursor:pointer; border:none; font-weight:700; transition:background 0.1s; }
+.add-leg-inline-btn:hover { background:rgba(44,122,75,0.35); }
+
+/* ══════════════════════════════════════════════
+   PAGE 2 — GROUP DETAILS
+══════════════════════════════════════════════ */
+.p2-card { background:var(--paper); max-width:960px; margin:0 auto; font-family:'Barlow',sans-serif; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.p2-header { background:var(--ink); color:var(--paper); padding:0.75rem 1.25rem; display:flex; align-items:center; justify-content:space-between; }
+.p2-header .p2-title { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
+.p2-header .p2-route { font-family:'DM Mono',monospace; font-size:0.72rem; color:rgba(255,255,255,0.55); }
+.p2-body { display:grid; grid-template-columns:1fr 1fr; }
+.p2-col { padding:1.25rem; }
+.p2-col + .p2-col { border-left:1.5px solid var(--rule); }
+.p2-section-title { font-family:'Barlow Condensed',sans-serif; font-size:0.72rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:0.75rem; padding-bottom:0.35rem; border-bottom:1.5px solid var(--rule); }
+
+/* Member table */
+.member-table { width:100%; border-collapse:collapse; margin-bottom:0.5rem; }
+.member-table th { font-size:0.6rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); text-align:left; padding:0.3rem 0.5rem; border-bottom:1.5px solid var(--rule); }
+.member-table td { padding:0.3rem 0.5rem; font-size:0.8rem; border-bottom:1px solid var(--rule); vertical-align:middle; }
+.member-table td.num-col { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem; color:var(--muted); width:24px; text-align:center; }
+.member-table tr:last-child td { border-bottom:none; }
+.member-table td.editable { min-width:80px; }
+
+/* Kit lists */
+.kit-section { margin-bottom:1.25rem; }
+.kit-title { font-family:'Barlow Condensed',sans-serif; font-size:0.95rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); margin-bottom:0.6rem; padding:0.4rem 0.75rem; border-left:4px solid var(--accent); background:var(--highlight); }
+.kit-list { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:0.2rem; }
+.kit-list li { font-size:0.8rem; color:var(--ink); padding:0.25rem 0.4rem; display:flex; align-items:center; gap:0.4rem; }
+.kit-list li::before { content:''; width:14px; height:14px; border:1.5px solid var(--rule); border-radius:2px; flex-shrink:0; display:inline-block; }
+.kit-note { font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:0.5rem; font-style:italic; }
+.emergency-note { background:var(--ink); color:var(--paper); padding:0.6rem 1.25rem; font-family:'Barlow Condensed',sans-serif; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; display:flex; align-items:center; gap:1rem; }
+.emergency-note .em-num { font-size:1.4rem; font-weight:700; color:var(--accent); font-family:'DM Mono',monospace; }
+
+/* ══════════════════════════════════════════════
+   PRINT
+══════════════════════════════════════════════ */
+@media print {
+  @page { size:A4 landscape; margin:8mm; }
+  body { background:white; }
+  #upload-screen { display:none !important; }
+  #editor-screen { display:block !important; background:white; }
+  .editor-header, .sidebar, .page-tabs { display:none !important; }
+  .editor-layout { display:block; }
+  .preview-pane { padding:0; background:white; }
+  .route-card, .p2-card { box-shadow:none; max-width:100%; margin:0; }
+  .route-card { page-break-after:always; break-after:page; }
+  .p2-card { page-break-after:avoid; break-after:avoid; }
+  .del-leg-btn { display:none !important; }
+  .add-leg-inline-btn { display:none !important; }
+  .no-print { display:none !important; }
+  .editable { background:transparent !important; box-shadow:none !important; }
+  /* Show both pages regardless of which tab is active */
+  #page1, #page2 { display:block !important; }
+  /* Hide elevation profile in print — saves space and keeps to 2 pages */
+  .elev-row { display:none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     UPLOAD SCREEN
+══════════════════════════════════════════════ -->
+<div id="upload-screen">
+  <div class="upload-logo">⚜ Scout Route Card Generator</div>
+  <div class="upload-sub">Mountain &amp; Hill Walking · UK Scouting</div>
+  <div class="drop-zone" id="drop-zone">
+    <span class="drop-icon">🗺️</span>
+    <h2>Drop your GPX file here</h2>
+    <p>Waypoints become legs automatically.<br>Also accepts .routecard.json files.</p>
+    <button class="btn-primary" onclick="document.getElementById('file-input').click(); event.stopPropagation();">Choose GPX File</button>
+    <input type="file" id="file-input" accept=".gpx">
+  </div>
+  <button class="btn-secondary" onclick="startBlank()" style="margin-top:1.25rem;border-color:#4a4860;color:var(--muted);font-size:0.8rem">✏ Fill in Manually</button>
+  <button class="btn-secondary" onclick="document.getElementById('import-input').click()" style="margin-top:0.5rem;border-color:#4a4860;color:var(--muted);font-size:0.8rem">📂 Import Route Card</button>
+  <input type="file" id="import-input" accept=".json" style="display:none">
+
+  <!-- Recent saved cards -->
+  <div id="recent-cards-section" style="width:100%;max-width:480px;margin-top:2rem;display:none">
+    <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.75rem">
+      <span>Recent Route Cards</span>
+      <span style="flex:1;height:1px;background:#3a3858;display:inline-block"></span>
+    </div>
+    <div id="recent-cards-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     EDITOR
+══════════════════════════════════════════════ -->
+<div id="editor-screen">
+  <div class="editor-header">
+    <div class="logo">⚜ Scout Route Card</div>
+    <div class="route-name" id="hdr-route-name">—</div>
+    <div class="hdr-actions">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="showPage(1)">Page 1 · Route</button>
+        <button class="page-tab" onclick="showPage(2)">Page 2 · Group</button>
+      </div>
+      <button class="btn-secondary" onclick="showUpload()">← New GPX</button>
+      <button class="btn-save" onclick="saveCurrentCard()">💾 Save</button>
+      <button class="btn-secondary" onclick="exportCard()" title="Download as .routecard.json file">⬇ Export</button>
+      <button class="btn-secondary" onclick="window.print()">🖨 Print / PDF</button>
+    </div>
+  </div>
+
+  <div class="editor-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+
+      <h3>Route Info</h3>
+      <div class="field-group">
+        <label>Route Name</label>
+        <input type="text" id="s-name" oninput="syncToCard('rc-name',this.value||'Route Name'); syncToCard('p2-route-name',this.value||'Route Name'); document.getElementById('hdr-route-name').textContent=this.value||'—'">
+      </div>
+      <div class="field-group">
+        <label>Location / Area</label>
+        <input type="text" id="s-location" placeholder="e.g. Eryri National Park" oninput="syncToCard('rc-location',this.value||'Area')">
+      </div>
+      <div class="field-group">
+        <label>Group Formation</label>
+        <input type="text" id="s-formation" placeholder="e.g. 6 Scouts, 2 Leaders" oninput="syncToCard('rc-formation',this.value)">
+      </div>
+      <div class="field-group">
+        <label>Group Contact Tel.</label>
+        <input type="text" id="s-tel" oninput="syncToCard('rc-tel',this.value)">
+      </div>
+
+      <h3>Day &amp; Timing</h3>
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" id="s-date" oninput="onDateChange()">
+      </div>
+      <div class="field-group">
+        <label>Day of Week</label>
+        <select id="s-dow" onchange="syncToCard('rc-dow',this.value)">
+          <option value="">—</option>
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+          <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Day of Venture</label>
+        <input type="text" id="s-dayn" placeholder="1st" oninput="syncToCard('rc-dayn',this.value)">
+      </div>
+      <div class="field-group">
+        <label>Setting Out Time</label>
+        <input type="time" id="s-depart" value="09:00" oninput="renderLegs()">
+      </div>
+
+      <h3>Supervisor</h3>
+      <div class="field-group">
+        <label>Name</label>
+        <input type="text" id="s-sup-name" oninput="syncToCard('rc-sup-name',this.value); syncToCard('p2-sup-name',this.value)">
+      </div>
+      <div class="field-group">
+        <label>Location</label>
+        <input type="text" id="s-sup-loc" oninput="syncToCard('rc-sup-loc',this.value)">
+      </div>
+      <div class="field-group">
+        <label>Tel.</label>
+        <input type="text" id="s-sup-tel" oninput="syncToCard('rc-sup-tel',this.value)">
+      </div>
+
+      <h3>Pace &amp; Timing</h3>
+      <div class="pace-row">
+        <label>km/hr (flat)</label>
+        <input type="number" id="pace-flat" value="4" step="0.5" min="1" max="8" oninput="renderLegs()">
+      </div>
+      <div class="pace-row">
+        <label>+ min / 10m climb</label>
+        <input type="number" id="pace-naismith" value="1" step="0.5" min="0" max="5" oninput="renderLegs()">
+      </div>
+      <div class="pace-row">
+        <label>Stop mins / leg</label>
+        <input type="number" id="stop-mins" value="3" step="1" min="0" max="120" oninput="renderLegs()">
+      </div>
+      <div class="pace-note">Based on Naismith's Rule. Adjust flat speed for group fitness and terrain.</div>
+
+      <h3>Stats</h3>
+      <div class="route-stats">
+        <div class="stat-chip"><span class="val" id="st-dist">—</span><span class="lbl">Total km</span></div>
+        <div class="stat-chip"><span class="val" id="st-asc">—</span><span class="lbl">Ascent m</span></div>
+        <div class="stat-chip"><span class="val" id="st-legs">—</span><span class="lbl">Legs</span></div>
+        <div class="stat-chip"><span class="val" id="st-time">—</span><span class="lbl">Est. time</span></div>
+      </div>
+      <button class="add-leg-btn" onclick="addLeg()">+ Add Leg</button>
+      <button class="add-leg-btn" onclick="reverseRoute()" style="margin-top:0.35rem;color:var(--accent);border-color:var(--accent)">⇅ Reverse Route</button>
+
+      <h3>Group Members</h3>
+      <div style="margin-bottom:0.3rem">
+        <div style="display:grid;grid-template-columns:1fr 100px;gap:0.3rem;margin-bottom:0.2rem;">
+          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--label-col);text-transform:uppercase;letter-spacing:0.06em;padding:0 0.1rem">Name</span>
+          <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--label-col);text-transform:uppercase;letter-spacing:0.06em;padding:0 0.1rem">Tel (optional)</span>
+        </div>
+        <div id="member-inputs"></div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- ── PREVIEW ── -->
+    <div class="preview-pane">
+
+      <!-- PAGE 1 -->
+      <div id="page1">
+
+        <!-- Map panel — screen only, not printed -->
+        <div class="map-panel no-print" id="map-panel">
+          <div class="map-toggle-bar" onclick="toggleMap()">
+            <span class="map-toggle-label">🗺 Route Map</span>
+            <span class="map-toggle-chevron" id="map-chevron">▼</span>
+          </div>
+          <div class="map-body" id="map-body">
+            <div class="map-placeholder" id="map-placeholder">Load a GPX file to see the route map</div>
+            <div id="route-map" style="display:none"></div>
+          </div>
+        </div>
+
+        <div class="route-card">
+
+          <div class="rc-header">
+            <div class="rc-header-left">
+              <div class="rc-title editable" id="rc-name" contenteditable="true">Route Name</div>
+              <div class="rc-location editable" id="rc-location" contenteditable="true">Area</div>
+            </div>
+            <div class="rc-logo-block">
+              <div class="big">⚜ SCOUT ROUTE CARD</div>
+              <div class="small">Mountain &amp; Hill Walking · UK Scouting</div>
+            </div>
+          </div>
+
+          <div class="rc-row four-col">
+            <div class="rc-cell">
+              <div class="rc-label">Date</div>
+              <div class="rc-val editable" id="rc-date" contenteditable="true">—</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Day of Week</div>
+              <div class="rc-val editable" id="rc-dow" contenteditable="true">—</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Day of Venture</div>
+              <div class="rc-val editable" id="rc-dayn" contenteditable="true">1st</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Setting Out Time</div>
+              <div class="rc-val editable" id="rc-depart" contenteditable="true">09:00</div>
+            </div>
+          </div>
+
+          <div class="rc-row two-col">
+            <div class="rc-cell">
+              <div class="rc-label">Group Formation</div>
+              <div class="rc-val editable" id="rc-formation" contenteditable="true">—</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Group Contact Tel. N°</div>
+              <div class="rc-val editable" id="rc-tel" contenteditable="true">—</div>
+            </div>
+          </div>
+
+          <!-- Elevation profile -->
+          <div class="elev-row no-print" id="elev-row">
+            <div class="elev-header" onclick="toggleElev()">
+              <div class="elev-label" id="elev-label">Elevation Profile — enter ascent per leg to populate</div>
+              <button class="elev-fetch-btn" id="elev-fetch-btn" onclick="event.stopPropagation();fetchElevation()" style="display:none" title="Uses SRTM satellite elevation data — values are approximations. Always verify ascent figures against your OS map before use.">⬇ Auto-fill Ascent</button>
+              <span class="elev-fetch-status" id="elev-fetch-status"></span>
+              <span class="elev-chevron" id="elev-chevron">▼</span>
+            </div>
+            <div class="elev-body" id="elev-body">
+              <div class="elev-canvas-wrap">
+                <div class="elev-yaxis"><canvas id="elev-yaxis" width="32" height="208"></canvas></div>
+                <div class="elev-main"><canvas id="elev-canvas" height="208" style="width:100%;display:block;"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legs table -->
+          <table class="rc-table">
+            <thead>
+              <tr>
+                <th style="width:28px">#</th>
+                <th class="left" style="width:68px">Start Grid Ref</th>
+                <th style="width:44px">Bearing°</th>
+                <th style="width:48px">Dist km</th>
+                <th style="width:62px">Ascent / Descent m</th>
+                <th style="width:50px" title="Flat walk time based on distance ÷ pace (km/hr). Adjust pace in the settings panel on the left.">Walk Time</th>
+                <th style="width:50px" title="Extra time added for climbing, per Naismith's Rule. Adjust the min/10m climb setting on the left.">Naismith</th>
+                <th style="width:46px" title="Rest stop time per leg in minutes. Adjust the global default in the settings panel on the left, or edit individual cells to override per leg.">Stops</th>
+                <th style="width:52px">Total Time</th>
+                <th style="width:52px">ETA</th>
+                <th class="left">Details of Route to be Followed</th>
+                <th style="width:68px">Escape to</th>
+                <th style="width:22px" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="legs-body"></tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td colspan="3" class="left" style="padding-left:0.6rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.08em">TOTALS</td>
+                <td id="tot-dist">—</td>
+                <td id="tot-asc">—</td>
+                <td id="tot-walk">—</td>
+                <td id="tot-naismith">—</td>
+                <td id="tot-stops">—</td>
+                <td id="tot-total">—</td>
+                <td colspan="3"></td>
+                <td class="no-print" style="text-align:center;vertical-align:middle;padding:0.38rem 0.3rem;"><button class="add-leg-inline-btn" onclick="addLeg()" title="Add leg">+</button></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="rc-footer">
+            <div class="rc-cell">
+              <div class="rc-label">Supervisor's Name</div>
+              <div class="rc-val editable" id="rc-sup-name" contenteditable="true">—</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Supervisor's Location</div>
+              <div class="rc-val editable" id="rc-sup-loc" contenteditable="true">—</div>
+            </div>
+            <div class="rc-cell">
+              <div class="rc-label">Supervisor Tel. N°</div>
+              <div class="rc-val editable" id="rc-sup-tel" contenteditable="true">—</div>
+            </div>
+          </div>
+
+        </div><!-- /route-card -->
+      </div><!-- /page1 -->
+
+      <!-- PAGE 2 -->
+      <div id="page2" style="display:none">
+        <div class="p2-card">
+
+          <div class="p2-header">
+            <div class="p2-title">⚜ Scout Route Card — Group Details &amp; Kit List</div>
+            <div class="p2-route" id="p2-route-name">Route Name</div>
+          </div>
+
+          <div class="p2-body">
+
+            <!-- LEFT COL: Members + Supervisor -->
+            <div class="p2-col">
+              <div class="p2-section-title">Group Members</div>
+              <table class="member-table">
+                <thead>
+                  <tr>
+                    <th style="width:24px">#</th>
+                    <th>Name</th>
+                    <th style="width:120px">Contact Tel.</th>
+                  </tr>
+                </thead>
+                <tbody id="p2-members-body"></tbody>
+              </table>
+
+              <div style="margin-top:1rem">
+                <div class="p2-section-title">Leader Details</div>
+                <table class="member-table" id="p2-leaders-table">
+                  <thead><tr><th style="width:24px">#</th><th>Name</th><th style="width:120px">Contact Tel.</th></tr></thead>
+                  <tbody id="p2-leaders-body"></tbody>
+                </table>
+              </div>
+
+              <div style="margin-top:1rem">
+                <div class="p2-section-title">Supervisor</div>
+                <div style="font-size:0.82rem;color:var(--ink);font-family:'DM Mono',monospace" id="p2-sup-name">—</div>
+              </div>
+            </div>
+
+            <!-- RIGHT COL: Kit lists -->
+            <div class="p2-col">
+              <div class="p2-section-title">Emergency Equipment</div>
+
+              <div class="kit-section">
+                <div class="kit-title">Each Group Member Must Carry</div>
+                <ul class="kit-list">
+                  <li>Whistle</li>
+                  <li>Torch</li>
+                  <li>Spare food</li>
+                  <li>Hot drinks</li>
+                  <li>Exposure bag</li>
+                  <li>Spare clothing</li>
+                  <li>Waterproof jacket</li>
+                  <li>Map of area</li>
+                </ul>
+              </div>
+
+              <div class="kit-section">
+                <div class="kit-title">Group Equipment (shared)</div>
+                <ul class="kit-list" style="grid-template-columns:1fr 1fr">
+                  <li>Group shelter</li>
+                  <li>Compass</li>
+                  <li>First Aid Kit</li>
+                  <li>Emergency plan</li>
+                  <li>Mobile phone</li>
+                  <li>Route card copy</li>
+                </ul>
+              </div>
+
+              <div class="kit-section">
+                <div class="kit-title" style="border-left-color:var(--accent2)">Other / Additional Kit</div>
+                <div class="editable" id="p2-other-kit" contenteditable="true" style="font-size:0.8rem;color:var(--ink);min-height:3em;padding:0.4rem;border:1px dashed var(--rule);border-radius:3px;margin-top:0.25rem">Add any additional kit requirements here…</div>
+              </div>
+
+              <div class="kit-note">✓ tick boxes when checked. All kit must be verified before setting out.</div>
+            </div>
+
+          </div><!-- /p2-body -->
+
+          <div class="emergency-note">
+            <span class="em-num">999</span>
+            <span>Emergency services · Police · Mountain Rescue</span>
+            <span style="margin-left:auto;color:rgba(255,255,255,0.5);font-size:0.65rem">In an emergency: give your OS grid reference, number in party, injuries, and current weather</span>
+          </div>
+
+        </div><!-- /p2-card -->
+      </div><!-- /page2 -->
+
+    </div><!-- /preview-pane -->
+  </div><!-- /editor-layout -->
+</div><!-- /editor-screen -->
+
+<div class="save-toast" id="save-toast">✓ Route card saved</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+let legs = [];
+let trackPts = [];
+let gpxWpts = [];
+let gpxTotalAscent = 0;
+let gpxTotalDist = 0;
+let currentPage = 1;
+
+// ════════════════════════════════════════════════════════════
+// SCREEN / PAGE CONTROL
+// ════════════════════════════════════════════════════════════
+function showUpload() {
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('editor-screen').style.display = 'none';
+  renderRecentCards();
+}
+
+function startBlank() {
+  // Reset all state to empty
+  legs = [
+    {dist:0,asc:0,bear:0,gridRef:'',details:'',escape:'',stop:null},
+    {dist:0,asc:0,bear:0,gridRef:'',details:'',escape:'',stop:null},
+    {dist:0,asc:0,bear:0,gridRef:'',details:'',escape:'',stop:null},
+  ];
+  trackPts = [];
+  gpxWpts = [];
+  gpxTotalAscent = 0;
+  gpxTotalDist = 0;
+
+  // Clear sidebar fields
+  ['s-name','s-location','s-formation','s-tel','s-date','s-sup-name','s-sup-loc','s-sup-tel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('s-dow').value = '';
+  document.getElementById('s-dayn').value = '1st';
+  document.getElementById('s-depart').value = '09:00';
+
+  // Reset card display fields
+  syncToCard('rc-name', 'Route Name');
+  syncToCard('rc-location', 'Area');
+  syncToCard('rc-formation', '');
+  syncToCard('rc-tel', '');
+  syncToCard('rc-dow', '');
+  syncToCard('rc-date', '');
+  syncToCard('rc-sup-name', '');
+  syncToCard('rc-sup-loc', '');
+  syncToCard('rc-sup-tel', '');
+  syncToCard('p2-route-name', '');
+  syncToCard('p2-sup-name', '');
+  document.getElementById('hdr-route-name').textContent = '—';
+
+  // Reset map panel to placeholder
+  const placeholder = document.getElementById('map-placeholder');
+  const mapDiv = document.getElementById('route-map');
+  if (placeholder) { placeholder.style.display = 'flex'; placeholder.textContent = 'No GPX loaded — map unavailable for manual entry'; }
+  if (mapDiv) mapDiv.style.display = 'none';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  const btn = document.getElementById('elev-fetch-btn');
+  if (btn) btn.style.display = 'none';
+
+  // Collapse the map panel — no GPX so it's not useful
+  mapCollapsed = false; // reset so toggleMap will close it
+  const mapBody = document.getElementById('map-body');
+  const mapChevron = document.getElementById('map-chevron');
+  if (mapBody) { mapBody.style.height = '0'; }
+  if (mapChevron) { mapChevron.classList.add('collapsed'); }
+  mapCollapsed = true;
+
+  buildMemberInputs();
+  renderLegs();
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('editor-screen').style.display = 'block';
+  showPage(1);
+}
+
+function showPage(n) {
+  currentPage = n;
+  document.getElementById('page1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('page2').style.display = n === 2 ? 'block' : 'none';
+  document.querySelectorAll('.page-tab').forEach((t, i) => t.classList.toggle('active', i === n - 1));
+}
+
+// ════════════════════════════════════════════════════════════
+// FILE INPUT
+// ════════════════════════════════════════════════════════════
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  if (file.name.endsWith('.json')) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const record = JSON.parse(ev.target.result);
+        if (record._format === 'scout-route-card') { restoreCard(record); showToast('✓ Imported: ' + (record.name || 'Unnamed')); }
+        else showToast('⚠ Not a valid route card file');
+      } catch(err) { showToast('⚠ Could not read file'); }
+    };
+    reader.readAsText(file);
+  } else {
+    loadFile(file);
+  }
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const parsed = parseGPX(e.target.result);
+    legs = parsed.legs;
+    trackPts = parsed.pts;
+    gpxWpts = parsed.wpts;
+    gpxTotalAscent = parsed.totalAscent;
+    gpxTotalDist = parsed.totalDist;
+    document.getElementById('s-name').value = parsed.name;
+    syncToCard('rc-name', parsed.name);
+    syncToCard('p2-route-name', parsed.name);
+    document.getElementById('hdr-route-name').textContent = parsed.name;
+    buildMemberInputs();
+    renderLegs();
+    document.getElementById('upload-screen').style.display = 'none';
+    document.getElementById('editor-screen').style.display = 'block';
+    showPage(1);
+    // Init map after screen is visible so Leaflet can measure dimensions
+    // Reset collapsed state first
+    mapCollapsed = false;
+    const body = document.getElementById('map-body');
+    const chevron = document.getElementById('map-chevron');
+    if (body) { body.style.height = ''; }
+    if (chevron) chevron.classList.remove('collapsed');
+    setTimeout(() => initMap(trackPts, gpxWpts), 100);
+  };
+  reader.readAsText(file);
+}
+
+// ════════════════════════════════════════════════════════════
+// SYNC HELPERS
+// ════════════════════════════════════════════════════════════
+function syncToCard(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val || '—';
+}
+
+function onDateChange() {
+  const v = document.getElementById('s-date').value;
+  if (!v) return;
+  const d = new Date(v);
+  syncToCard('rc-date', d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}));
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('s-dow').value = days[d.getDay()];
+  syncToCard('rc-dow', days[d.getDay()]);
+  renderLegs();
+}
+
+// ════════════════════════════════════════════════════════════
+// MEMBER INPUTS (sidebar → page 2 table)
+// ════════════════════════════════════════════════════════════
+function buildMemberInputs() {
+  const container = document.getElementById('member-inputs');
+  container.innerHTML = '';
+
+  // 6 scouts + 2 leaders = 8 max total
+  const scouts = 6, leaders = 2;
+  for (let i = 0; i < scouts; i++) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:14px 1fr 100px;gap:0.3rem;margin-bottom:0.28rem;align-items:center';
+    row.innerHTML = `
+      <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);text-align:center">${i+1}</span>
+      <input type="text" placeholder="Scout ${i+1}" data-member="${i}" data-type="scout" data-field="name"
+        style="background:var(--sidebar-panel);border:1px solid var(--sidebar-border);color:var(--paper);padding:0.3rem 0.5rem;font-size:0.78rem;border-radius:3px;outline:none;width:100%"
+        oninput="syncMember(this)">
+      <input type="text" placeholder="Tel." data-member="${i}" data-type="scout" data-field="tel"
+        style="background:var(--sidebar-panel);border:1px solid var(--sidebar-border);color:var(--paper);padding:0.3rem 0.5rem;font-size:0.78rem;border-radius:3px;outline:none;width:100%"
+        oninput="syncMember(this)">
+    `;
+    container.appendChild(row);
+  }
+
+  // Separator
+  const sep = document.createElement('div');
+  sep.style.cssText = 'margin:0.5rem 0 0.3rem;font-family:"DM Mono",monospace;font-size:0.62rem;color:var(--section-col);text-transform:uppercase;letter-spacing:0.1em';
+  sep.textContent = 'Leaders';
+  container.appendChild(sep);
+
+  for (let i = 0; i < leaders; i++) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:14px 1fr 100px;gap:0.3rem;margin-bottom:0.28rem;align-items:center';
+    row.innerHTML = `
+      <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);text-align:center">L${i+1}</span>
+      <input type="text" placeholder="Leader ${i+1}" data-member="${i}" data-type="leader" data-field="name"
+        style="background:var(--sidebar-panel);border:1px solid var(--sidebar-border);color:var(--paper);padding:0.3rem 0.5rem;font-size:0.78rem;border-radius:3px;outline:none;width:100%"
+        oninput="syncMember(this)">
+      <input type="text" placeholder="Tel." data-member="${i}" data-type="leader" data-field="tel"
+        style="background:var(--sidebar-panel);border:1px solid var(--sidebar-border);color:var(--paper);padding:0.3rem 0.5rem;font-size:0.78rem;border-radius:3px;outline:none;width:100%"
+        oninput="syncMember(this)">
+    `;
+    container.appendChild(row);
+  }
+
+  buildP2MemberTable();
+}
+
+function syncMember(input) {
+  buildP2MemberTable();
+}
+
+function buildP2MemberTable() {
+  const scoutBody = document.getElementById('p2-members-body');
+  const leaderBody = document.getElementById('p2-leaders-body');
+  if (!scoutBody || !leaderBody) return;
+
+  const scoutInputs = document.querySelectorAll('[data-type="scout"]');
+  const leaderInputs = document.querySelectorAll('[data-type="leader"]');
+
+  // Group into pairs [name, tel] per member
+  const scouts = [], leaders = [];
+  for (let i = 0; i < 6; i++) {
+    const name = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="name"]`)?.value || '';
+    const tel  = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="tel"]`)?.value || '';
+    scouts.push({ name, tel });
+  }
+  for (let i = 0; i < 2; i++) {
+    const name = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="name"]`)?.value || '';
+    const tel  = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="tel"]`)?.value || '';
+    leaders.push({ name, tel });
+  }
+
+  scoutBody.innerHTML = scouts.map((m, i) => `
+    <tr>
+      <td class="num-col">${i+1}</td>
+      <td class="editable" contenteditable="true">${m.name}</td>
+      <td class="editable" contenteditable="true">${m.tel}</td>
+    </tr>`).join('');
+
+  leaderBody.innerHTML = leaders.map((m, i) => `
+    <tr>
+      <td class="num-col">L${i+1}</td>
+      <td class="editable" contenteditable="true">${m.name}</td>
+      <td class="editable" contenteditable="true">${m.tel}</td>
+    </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// GPX PARSING
+// ════════════════════════════════════════════════════════════
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+function bearingDeg(lat1, lon1, lat2, lon2) {
+  const φ1=lat1*Math.PI/180, φ2=lat2*Math.PI/180, Δλ=(lon2-lon1)*Math.PI/180;
+  const y=Math.sin(Δλ)*Math.cos(φ2), x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+  return Math.round(((Math.atan2(y,x)*180/Math.PI)+360)%360);
+}
+
+function toOSGrid(lat, lon) {
+  const a2=6377563.396, b2=6356256.910, F0=0.9996012717;
+  const lat0=49*Math.PI/180, lon0=-2*Math.PI/180, N0=-100000, E0=400000;
+  const e2=1-(b2*b2)/(a2*a2), n2=(a2-b2)/(a2+b2);
+  const la=lat*Math.PI/180, lo=lon*Math.PI/180;
+  const sla=Math.sin(la), cla=Math.cos(la), tla=Math.tan(la);
+  const nu=a2*F0/Math.sqrt(1-e2*sla*sla);
+  const rho=a2*F0*(1-e2)/Math.pow(1-e2*sla*sla,1.5);
+  const eta2=nu/rho-1;
+  const M=b2*F0*((1+n2+5/4*n2**2+5/4*n2**3)*(la-lat0)-(3*n2+3*n2**2+21/8*n2**3)*Math.sin(la-lat0)*Math.cos(la+lat0)+(15/8*n2**2+15/8*n2**3)*Math.sin(2*(la-lat0))*Math.cos(2*(la+lat0))-35/24*n2**3*Math.sin(3*(la-lat0))*Math.cos(3*(la+lat0)));
+  const I=M+N0, II=nu/2*sla*cla, III=nu/24*sla*cla**3*(5-tla**2+9*eta2), IIIA=nu/720*sla*cla**5*(61-58*tla**2+tla**4);
+  const IV=nu*cla, V=nu/6*cla**3*(nu/rho-tla**2), VI=nu/120*cla**5*(5-18*tla**2+tla**4+14*eta2-58*tla**2*eta2);
+  const dl=lo-lon0;
+  const E=Math.round(E0+IV*dl+V*dl**3+VI*dl**5);
+  const N=Math.round(I+II*dl**2+III*dl**4+IIIA*dl**6);
+  const letters='ABCDEFGHJKLMNOPQRSTUVWXYZ';
+  const e100=Math.floor((E%500000)/100000), n100=Math.floor((N%500000)/100000);
+  const n500=Math.floor(N/500000), e500=Math.floor(E/500000);
+  const idx1=(n500===0?10:0)+e500;
+  const letter1=letters[idx1]||'S';
+  const idx2=(4-n100)*5+e100;
+  const letter2=letters[idx2]||'H';
+  const eRem=String(Math.floor((E%100000)/100)).padStart(3,'0');
+  const nRem=String(Math.floor((N%100000)/100)).padStart(3,'0');
+  return `${letter1}${letter2}${eRem}${nRem}`;
+}
+
+function parseGPX(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+  const g = name => doc.getElementsByTagName(name);
+  const nameEls = g('n');
+  const name = nameEls.length ? nameEls[0].textContent.trim() : (g('name')[0]?.textContent.trim() || 'Route');
+  const distEl = g('distance')[0];
+  const ascEl = g('elevation_ascent')[0];
+  const totalDistM = distEl ? parseFloat(distEl.textContent) : 0;
+  const totalAscent = ascEl ? parseFloat(ascEl.textContent) : 0;
+  const trkptEls = Array.from(g('trkpt'));
+  const pts = trkptEls.map(p => ({
+    lat: parseFloat(p.getAttribute('lat')),
+    lon: parseFloat(p.getAttribute('lon')),
+    ele: parseFloat(p.querySelector ? p.querySelector('ele')?.textContent || '0' : '0')
+  }));
+  const wptEls = Array.from(g('wpt'));
+  const wpts = wptEls.map(w => ({ lat: parseFloat(w.getAttribute('lat')), lon: parseFloat(w.getAttribute('lon')) }));
+  const cumDist = [0];
+  for (let i = 1; i < pts.length; i++) cumDist.push(cumDist[i-1] + haversine(pts[i-1].lat, pts[i-1].lon, pts[i].lat, pts[i].lon));
+  const trackTotal = cumDist[cumDist.length-1];
+  const scaleFactor = totalDistM > 0 ? (totalDistM/1000) / trackTotal : 1;
+  function nearestIdx(lat, lon) {
+    let best=0, bestD=Infinity;
+    pts.forEach((p,i)=>{ const d=haversine(lat,lon,p.lat,p.lon); if(d<bestD){bestD=d;best=i;} });
+    return best;
+  }
+  const wptIdxs = wpts.map(w => nearestIdx(w.lat, w.lon));
+  const builtLegs = [];
+  for (let i = 0; i < wpts.length-1; i++) {
+    const si=wptIdxs[i], ei=wptIdxs[i+1];
+    const segRaw = Math.abs(cumDist[Math.max(si,ei)] - cumDist[Math.min(si,ei)]);
+    const segDist = parseFloat((segRaw * scaleFactor).toFixed(2));
+    const segAsc = Math.round(totalAscent * (segRaw / trackTotal));
+    const bear = bearingDeg(wpts[i].lat, wpts[i].lon, wpts[i+1].lat, wpts[i+1].lon);
+    const gridRef = toOSGrid(wpts[i].lat, wpts[i].lon);
+    builtLegs.push({ dist:segDist, asc:segAsc, bear, gridRef, details:'', escape:'', stop:null });
+  }
+  return { name, legs:builtLegs, pts, wpts, totalAscent, totalDist: trackTotal * scaleFactor };
+}
+
+// ════════════════════════════════════════════════════════════
+// TIMING
+// ════════════════════════════════════════════════════════════
+const getFlat = () => { const v = parseFloat(document.getElementById('pace-flat').value); return isNaN(v) ? 4 : v; };
+const getNaismith = () => { const v = parseFloat(document.getElementById('pace-naismith').value); return isNaN(v) ? 1 : v; };
+const getStopMins = () => { const v = parseFloat(document.getElementById('stop-mins').value); return isNaN(v) ? 3 : v; };
+
+function legFlatMins(dist) { return dist / getFlat() * 60; }
+function legNaismithMins(asc) { return asc > 0 ? (asc / 10 * getNaismith()) : 0; }
+function legWalkMins(dist, asc) { return legFlatMins(dist) + legNaismithMins(asc); }
+function fmtDur(mins) { mins=Math.round(mins); const h=Math.floor(mins/60),m=mins%60; return h>0?`${h}h${String(m).padStart(2,'0')}`:`${m}m`; }
+function addMinsToTime(t, mins) {
+  if (!t || t==='—') return '—';
+  const [h,m] = t.split(':').map(Number);
+  const tot = h*60+m+Math.round(mins);
+  return `${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER LEGS
+// ════════════════════════════════════════════════════════════
+function renderLegs() {
+  const tbody = document.getElementById('legs-body');
+  tbody.innerHTML = '';
+  const depart = document.getElementById('s-depart').value || '09:00';
+  syncToCard('rc-depart', depart);
+  let cumMins=0, totDist=0, totAsc=0, totWalk=0, totNaismith=0, totStops=0, totTotal=0;
+
+  legs.forEach((leg, i) => {
+    const flatMins = legFlatMins(leg.dist);
+    const naismithMins = legNaismithMins(leg.asc);
+    const walkMins = flatMins + naismithMins;
+    const stopMins = leg.stop !== undefined && leg.stop !== null ? leg.stop : getStopMins();
+    const totalMins = walkMins + stopMins;
+    const eta = addMinsToTime(depart, cumMins + totalMins);
+    cumMins += totalMins;
+    totDist+=leg.dist; totAsc+=(leg.asc > 0 ? leg.asc : 0); totWalk+=flatMins; totNaismith+=naismithMins; totStops+=stopMins; totTotal+=totalMins;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="leg-num">${i+1}</td>
+      <td class="mono editable" contenteditable="true">${leg.gridRef}</td>
+      <td class="mono editable" contenteditable="true">${leg.bear}</td>
+      <td class="mono editable" contenteditable="true" data-leg="${i}" data-field="dist">${leg.dist.toFixed(2)}</td>
+      <td class="mono editable" contenteditable="true" data-leg="${i}" data-field="asc">${leg.asc}</td>
+      <td class="mono">${fmtDur(flatMins)}</td>
+      <td class="mono" style="color:${naismithMins>0?'var(--accent2)':'var(--muted)'}">${naismithMins>0?'+'+fmtDur(naismithMins):'—'}</td>
+      <td class="mono editable" contenteditable="true" data-leg="${i}" data-field="stop">${stopMins}</td>
+      <td class="mono">${fmtDur(totalMins)}</td>
+      <td class="mono">${eta}</td>
+      <td class="left editable" contenteditable="true" data-leg="${i}" data-field="details">${leg.details||''}</td>
+      <td class="left editable" contenteditable="true" data-leg="${i}" data-field="escape">${leg.escape||''}</td>
+      <td class="no-print" style="text-align:center;vertical-align:middle"><button class="del-leg-btn" onclick="deleteLeg(${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('blur', () => {
+      const li=parseInt(el.dataset.leg), field=el.dataset.field, val=el.textContent.trim();
+      if (field==='dist') { const v=parseFloat(val); if(!isNaN(v)) legs[li].dist=v; }
+      else if (field==='asc') { const v=parseFloat(val); if(!isNaN(v)) legs[li].asc=v; }
+      else if (field==='stop') { const v=parseFloat(val); legs[li].stop = isNaN(v) ? null : v; }
+      else if (field==='details') legs[li].details=val;
+      else if (field==='escape') legs[li].escape=val;
+      renderLegs();
+    });
+    el.addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();el.blur();} });
+  });
+
+  document.getElementById('tot-dist').textContent = totDist.toFixed(2);
+  document.getElementById('tot-asc').textContent = Math.round(totAsc);
+  document.getElementById('tot-walk').textContent = fmtDur(totWalk);
+  document.getElementById('tot-naismith').textContent = totNaismith > 0 ? '+'+fmtDur(totNaismith) : '—';
+  document.getElementById('tot-stops').textContent = fmtDur(totStops);
+  document.getElementById('tot-total').textContent = fmtDur(totTotal);
+  document.getElementById('st-dist').textContent = totDist.toFixed(1);
+  document.getElementById('st-asc').textContent = Math.round(totAsc);
+  document.getElementById('st-legs').textContent = legs.length;
+  document.getElementById('st-time').textContent = fmtDur(totTotal);
+  drawElevation();
+}
+
+function addLeg() { legs.push({dist:0,asc:0,bear:0,gridRef:'',details:'',escape:'',stop:null}); renderLegs(); }
+
+function deleteLeg(i) {
+  legs.splice(i, 1);
+  // Also remove the corresponding waypoint from gpxWpts so the map stays in sync.
+  // gpxWpts has one entry per leg start + one for the finish = legs.length + 1 entries.
+  // Deleting leg[i] removes waypoint[i] (its start point). The finish waypoint stays.
+  if (gpxWpts.length > 1) {
+    gpxWpts.splice(i, 1);
+    if (leafletMap) setTimeout(() => initMap(trackPts, gpxWpts), 50);
+  }
+  renderLegs();
+}
+
+function reverseRoute() {
+  // Reverse leg order
+  legs.reverse();
+
+  // Recalculate bearings: each leg's bearing becomes the reciprocal of the leg
+  // that previously pointed in the opposite direction.
+  // After reversing, leg[i].gridRef should come from the old leg[n-1-i] start,
+  // and the bearing should be the reciprocal (opposite direction) of what it was.
+  legs.forEach(leg => {
+    // Flip ascent/descent sign
+    leg.asc = -leg.asc;
+    // Reciprocal bearing: add 180, wrap to 0-359
+    if (leg.bear !== '' && !isNaN(leg.bear)) {
+      leg.bear = (parseInt(leg.bear) + 180) % 360;
+    }
+  });
+
+  // The grid refs need to shift: after reversing, each leg starts where the next leg used to start.
+  // Pull the grid refs in original order, reverse them, and reassign offset by 1
+  // (leg[0] start = old last waypoint, which was the end of old last leg — not stored directly)
+  // Best we can do: shift grid refs so leg[i] gets the old leg[i+1]'s gridRef
+  // We don't have the final destination's grid ref stored separately, so shift what we have.
+  const refs = legs.map(l => l.gridRef);
+  // After reversal, leg i should start at what was leg (n-1-i)'s start before reversal,
+  // which is now at index i in the reversed refs array — already correct from legs.reverse().
+  // But we need to shift by one since gridRef is the START of that leg:
+  // the start of reversed leg[0] = the old END = old leg[0]'s start (index 0 after reverse = old last)
+  // Actually the gridRefs are already in correct positions after legs.reverse() —
+  // leg[i].gridRef was the start of the old leg[n-1-i], which IS the start of the new leg[i]. ✓
+
+  renderLegs();
+  // Redraw map with reversed waypoints if available
+  if (gpxWpts.length) {
+    gpxWpts.reverse();
+    trackPts.reverse();
+    if (leafletMap) setTimeout(() => initMap(trackPts, gpxWpts), 50);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ELEVATION PROFILE
+// ════════════════════════════════════════════════════════════
+function drawElevation() {
+  const canvas = document.getElementById('elev-canvas');
+  const yaxisCanvas = document.getElementById('elev-yaxis');
+  if (!canvas) return;
+  canvas.width = canvas.parentElement.offsetWidth || 800;
+  canvas.height = 208;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const hasData = legs.length > 0 && legs.some(l => l.asc !== 0);
+  const label = document.getElementById('elev-label');
+
+  if (!hasData) {
+    if (label) label.textContent = 'Elevation Profile — enter ascent per leg to populate';
+    ctx.strokeStyle = 'rgba(44,122,75,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, H - 10); ctx.lineTo(W, H - 10); ctx.stroke();
+    if (yaxisCanvas) { const yc = yaxisCanvas.getContext('2d'); yc.clearRect(0,0,32,H); }
+    return;
+  }
+
+  if (label) label.textContent = 'Elevation Profile';
+
+  // Cumulative elevation points (n+1 for n legs)
+  const points = [0];
+  legs.forEach(leg => points.push(points[points.length - 1] + leg.asc));
+
+  const minE = Math.min(...points), maxE = Math.max(...points);
+  const range = maxE - minE || 1;
+  const n = points.length;
+
+  // Build cumulative distances array — one per waypoint boundary (same length as points)
+  const cumDists = [0];
+  legs.forEach(leg => cumDists.push(cumDists[cumDists.length - 1] + (leg.dist || 0)));
+  const totalDist = cumDists[cumDists.length - 1] || 1;
+
+  const PAD_TOP = 16, PAD_BOT = 22; // bottom: circles on baseline + km labels below
+  // X is now proportional to cumulative distance, not leg count
+  const xOfDist = d => (d / totalDist) * W;
+  const xOf = i => xOfDist(cumDists[i]);
+  const yOf = e => PAD_TOP + (1 - (e - minE) / range) * (H - PAD_TOP - PAD_BOT);
+
+  // Y-axis scale
+  if (yaxisCanvas) {
+    yaxisCanvas.height = H;
+    const yc = yaxisCanvas.getContext('2d');
+    yc.clearRect(0, 0, 32, H);
+    yc.font = '8px DM Mono,monospace';
+    yc.fillStyle = 'rgba(80,65,45,0.65)';
+    yc.textAlign = 'right';
+    const tickCount = 4;
+    for (let t = 0; t <= tickCount; t++) {
+      const val = minE + (range / tickCount) * t;
+      const y = yOf(val);
+      yc.fillText(`${Math.round(val)}m`, 30, y + 3);
+      ctx.strokeStyle = 'rgba(150,130,105,0.45)';
+      ctx.lineWidth = 0.75;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Filled area
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, 'rgba(44,122,75,0.5)');
+  grad.addColorStop(1, 'rgba(44,122,75,0.06)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(xOf(0), H - PAD_BOT);
+  points.forEach((e, i) => ctx.lineTo(xOf(i), yOf(e)));
+  ctx.lineTo(xOf(n - 1), H - PAD_BOT);
+  ctx.closePath();
+  ctx.fill();
+
+  // Profile line
+  ctx.strokeStyle = 'rgba(44,122,75,0.9)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  points.forEach((e, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(e)) : ctx.lineTo(xOf(i), yOf(e)));
+  ctx.stroke();
+
+  // Baseline
+  ctx.strokeStyle = 'rgba(176,168,150,0.5)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, H - PAD_BOT); ctx.lineTo(W, H - PAD_BOT); ctx.stroke();
+
+  // Regular km grid lines and labels
+  ctx.font = '8px DM Mono,monospace';
+  const kmStep = totalDist <= 5 ? 1 : totalDist <= 15 ? 2 : totalDist <= 30 ? 5 : 10;
+  for (let km = 0; km <= Math.ceil(totalDist); km += kmStep) {
+    if (km > totalDist) break;
+    const x = xOfDist(km);
+    // Soft vertical grid line — dashed, more visible
+    ctx.strokeStyle = 'rgba(150,130,105,0.45)';
+    ctx.lineWidth = 0.75;
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath(); ctx.moveTo(x, PAD_TOP); ctx.lineTo(x, H - PAD_BOT); ctx.stroke();
+    ctx.setLineDash([]);
+    // Km label
+    ctx.fillStyle = 'rgba(80,65,45,0.45)';
+    ctx.textAlign = km === 0 ? 'left' : 'center';
+    ctx.fillText(km === 0 ? '0' : `${km}km`, x, H - 3);
+  }
+  // Total distance label at right end
+  ctx.fillStyle = 'rgba(80,65,45,0.45)';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${totalDist.toFixed(1)}km`, W - 1, H - 3);
+
+  // Leg markers — small white circles with dark leg number, sitting on the baseline
+  const R = 7; // circle radius
+  ctx.font = 'bold 7px DM Mono,monospace';
+  for (let i = 0; i < n - 1; i++) {
+    const x = xOf(i);
+    const cy = H - PAD_BOT; // sit on the baseline
+    const legNum = i + 1;
+    // White filled circle with subtle border
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'rgba(120,95,70,0.5)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.arc(x, cy, R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // Dark number
+    ctx.fillStyle = 'rgba(50,40,30,0.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(legNum), x, cy + 3);
+  }
+
+  // Point annotations on profile
+  ctx.font = 'bold 8px DM Mono,monospace';
+
+  // Start elevation
+  const startY = yOf(points[0]);
+  ctx.fillStyle = 'rgba(80,65,45,0.85)';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${Math.round(points[0])}m`, 3, startY > (H - PAD_BOT) / 2 ? startY - 3 : startY + 10);
+
+  // Peak elevation
+  const peakIdx = points.indexOf(maxE);
+  const px = xOf(peakIdx);
+  ctx.fillStyle = 'rgba(44,100,65,0.95)';
+  ctx.textAlign = px > W * 0.8 ? 'right' : (px < W * 0.2 ? 'left' : 'center');
+  ctx.fillText(`▲ ${Math.round(maxE)}m`, px, yOf(maxE) - 4);
+
+  // End elevation
+  const endY = yOf(points[n - 1]);
+  ctx.fillStyle = 'rgba(80,65,45,0.85)';
+  ctx.textAlign = 'right';
+  ctx.fillText(`${Math.round(points[n - 1])}m`, W - 3, endY > (H - PAD_BOT) / 2 ? endY - 3 : endY + 10);
+
+  // Totals summary — top left corner
+  const totalAsc  = legs.reduce((s, l) => s + (l.asc > 0 ? l.asc : 0), 0);
+  const totalDesc = legs.reduce((s, l) => s + (l.asc < 0 ? l.asc : 0), 0);
+  ctx.font = '8px DM Mono,monospace';
+  ctx.fillStyle = 'rgba(80,65,45,0.5)';
+  ctx.textAlign = 'left';
+  let summary = `↑ ${Math.round(totalAsc)}m`;
+  if (totalDesc < 0) summary += `  ↓ ${Math.abs(Math.round(totalDesc))}m`;
+  ctx.fillText(summary, 3, PAD_TOP - 3);
+}
+
+window.addEventListener('resize', () => { if(legs.length) drawElevation(); });
+
+// ════════════════════════════════════════════════════════════
+// MAP — Leaflet / OpenTopoMap
+// ════════════════════════════════════════════════════════════
+let leafletMap = null;
+let leafletLoaded = false;
+let mapCollapsed = false;
+let elevCollapsed = false;
+
+function toggleElev() {
+  const body = document.getElementById('elev-body');
+  const chevron = document.getElementById('elev-chevron');
+  elevCollapsed = !elevCollapsed;
+  if (elevCollapsed) {
+    body.style.height = body.scrollHeight + 'px';
+    requestAnimationFrame(() => { body.style.height = '0'; });
+    chevron.classList.add('collapsed');
+  } else {
+    body.style.height = body.scrollHeight + 'px';
+    setTimeout(() => { body.style.height = ''; drawElevation(); }, 260);
+    chevron.classList.remove('collapsed');
+  }
+}
+
+function toggleMap() {
+  const body = document.getElementById('map-body');
+  const chevron = document.getElementById('map-chevron');
+  mapCollapsed = !mapCollapsed;
+  if (mapCollapsed) {
+    body.style.height = body.scrollHeight + 'px'; // set explicit height first for transition
+    requestAnimationFrame(() => { body.style.height = '0'; });
+    chevron.classList.add('collapsed');
+  } else {
+    body.style.height = body.scrollHeight + 'px';
+    setTimeout(() => { body.style.height = ''; }, 250);
+    chevron.classList.remove('collapsed');
+    // Tell Leaflet to recalculate size after reveal
+    if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 260);
+  }
+}
+
+function loadLeaflet(cb) {
+  if (leafletLoaded) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  s.onload = () => { leafletLoaded = true; cb(); };
+  document.head.appendChild(s);
+}
+
+function initMap(pts, wpts) {
+  loadLeaflet(() => {
+    const placeholder = document.getElementById('map-placeholder');
+    const mapDiv = document.getElementById('route-map');
+    placeholder.style.display = 'none';
+    mapDiv.style.display = 'block';
+
+    if (leafletMap) {
+      leafletMap.remove();
+      leafletMap = null;
+    }
+
+    leafletMap = L.map('route-map', { zoomControl: true, attributionControl: true });
+
+    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA) | © <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+      maxZoom: 17
+    }).addTo(leafletMap);
+
+    // Draw track polyline
+    if (pts.length > 1) {
+      const latLngs = pts.map(p => [p.lat, p.lon]);
+      const track = L.polyline(latLngs, {
+        color: '#c0392b', weight: 2.5, opacity: 0.85
+      }).addTo(leafletMap);
+      leafletMap.fitBounds(track.getBounds(), { padding: [16, 16] });
+    }
+    // Ensure map renders correctly after becoming visible
+    setTimeout(() => leafletMap.invalidateSize(), 50);
+
+    // Draw waypoint markers (leg starts)
+    wpts.forEach((w, i) => {
+      const isLast = i === wpts.length - 1;
+      const colour = isLast ? '#2c7a4b' : '#c0392b';
+      const label = isLast ? '▣' : String(i + 1);
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:${colour};color:white;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.4)">${label}</div>`,
+        iconSize: [20, 20], iconAnchor: [10, 10]
+      });
+      L.marker([w.lat, w.lon], { icon })
+        .bindPopup(`<b>Leg ${i + 1}</b>${isLast ? ' (Finish)' : ''}`)
+        .addTo(leafletMap);
+    });
+
+    // Show the button to auto-fill elevation
+    const btn = document.getElementById('elev-fetch-btn');
+    if (btn) btn.style.display = 'inline-block';
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// ELEVATION AUTO-FILL
+// Uses open-elevation.com (CORS-enabled, free, no key)
+// Batches requests to stay within limits
+// ════════════════════════════════════════════════════════════
+async function fetchElevation() {
+  if (!trackPts.length || !legs.length) return;
+  const btn = document.getElementById('elev-fetch-btn');
+  const status = document.getElementById('elev-fetch-status');
+  btn.disabled = true;
+  status.textContent = 'Fetching elevation…';
+
+  try {
+    // Sample track points — we need enough resolution to calculate ascent per leg
+    // but stay within API limits. Target ~200 points max, spread evenly.
+    const TARGET = 200;
+    const step = Math.max(1, Math.floor(trackPts.length / TARGET));
+    const sampled = [];
+    const sampledIdxs = [];
+    for (let i = 0; i < trackPts.length; i += step) {
+      sampled.push({ latitude: trackPts[i].lat, longitude: trackPts[i].lon });
+      sampledIdxs.push(i);
+    }
+    // Always include last point
+    const lastIdx = trackPts.length - 1;
+    if (sampledIdxs[sampledIdxs.length - 1] !== lastIdx) {
+      sampled.push({ latitude: trackPts[lastIdx].lat, longitude: trackPts[lastIdx].lon });
+      sampledIdxs.push(lastIdx);
+    }
+
+    // Batch into groups of 100 (API limit per request)
+    const BATCH = 100;
+    const elevations = [];
+    const totalBatches = Math.ceil(sampled.length / BATCH);
+
+    for (let b = 0; b < totalBatches; b++) {
+      const batch = sampled.slice(b * BATCH, (b + 1) * BATCH);
+      status.textContent = `Fetching elevation… (${b + 1}/${totalBatches})`;
+
+      // Try open-elevation.com — supports CORS with POST
+      const resp = await fetch('https://api.open-elevation.com/api/v1/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ locations: batch })
+      });
+
+      if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+      const data = await resp.json();
+      if (!data.results) throw new Error('Unexpected API response');
+      data.results.forEach(r => elevations.push(r.elevation));
+
+      // Small delay between batches to be polite to the free API
+      if (b < totalBatches - 1) await new Promise(r => setTimeout(r, 300));
+    }
+
+    // Interpolate elevations to all track points
+    const trackElevs = new Array(trackPts.length).fill(0);
+    sampledIdxs.forEach((ti, si) => { trackElevs[ti] = elevations[si]; });
+    for (let s = 0; s < sampledIdxs.length - 1; s++) {
+      const i0 = sampledIdxs[s], i1 = sampledIdxs[s + 1];
+      const e0 = trackElevs[i0], e1 = trackElevs[i1];
+      for (let i = i0 + 1; i < i1; i++) {
+        trackElevs[i] = e0 + (e1 - e0) * (i - i0) / (i1 - i0);
+      }
+    }
+
+    // Store elevations on track points
+    trackPts.forEach((p, i) => { p.ele = trackElevs[i]; });
+
+    // Compute ascent per leg
+    function nearestIdx(lat, lon) {
+      let best = 0, bestD = Infinity;
+      trackPts.forEach((p, i) => {
+        const d = Math.hypot(p.lat - lat, p.lon - lon);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+      return best;
+    }
+    const wptIdxs = gpxWpts.map(w => nearestIdx(w.lat, w.lon));
+
+    for (let i = 0; i < legs.length; i++) {
+      const si = wptIdxs[i], ei = wptIdxs[i + 1];
+      if (si === undefined || ei === undefined) continue;
+      const from = Math.min(si, ei), to = Math.max(si, ei);
+      let asc = 0, desc = 0;
+      for (let j = from + 1; j <= to; j++) {
+        const diff = trackElevs[j] - trackElevs[j - 1];
+        if (diff > 0.5) asc += diff;       // positive gain, ignore noise
+        else if (diff < -0.5) desc += diff; // negative loss, ignore noise
+      }
+      // Store net: positive if net climb, negative if net descent
+      const netElevChange = trackElevs[to] - trackElevs[from];
+      // Use total ascent for Naismith but show net change as signed value
+      // asc = gross ascent (always positive, for timing)
+      // We store net direction as the sign, magnitude as gross ascent
+      legs[i].asc = Math.round(Math.abs(netElevChange) > 5 && netElevChange < 0 ? -Math.round(Math.abs(desc)) : Math.round(asc));
+    }
+
+    renderLegs();
+    status.style.color = 'var(--accent2)';
+    status.textContent = '✓ Filled — approximation only, verify against your map before use';
+    setTimeout(() => { status.textContent = ''; status.style.color = ''; }, 8000);
+
+  } catch (e) {
+    console.error('Elevation fetch error:', e);
+    status.style.color = 'var(--accent)';
+    status.textContent = `⚠ ${e.message || 'Failed — check internet connection'}`;
+    setTimeout(() => { status.textContent = ''; status.style.color = ''; }, 6000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+const STORAGE_KEY = 'scout_route_cards';
+const MAX_SAVED = 6;
+
+function gatherSidebarState() {
+  const fields = ['s-name','s-location','s-formation','s-tel','s-date','s-dow','s-dayn','s-depart',
+                  's-sup-name','s-sup-loc','s-sup-tel','pace-flat','pace-naismith','stop-mins'];
+  const state = {};
+  fields.forEach(id => { const el = document.getElementById(id); if (el) state[id] = el.value; });
+
+  // members
+  const members = [];
+  for (let i = 0; i < 6; i++) {
+    const name = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="name"]`)?.value || '';
+    const tel  = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="tel"]`)?.value || '';
+    members.push({ name, tel });
+  }
+  const leaders = [];
+  for (let i = 0; i < 2; i++) {
+    const name = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="name"]`)?.value || '';
+    const tel  = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="tel"]`)?.value || '';
+    leaders.push({ name, tel });
+  }
+  state._members = members;
+  state._leaders = leaders;
+  state._otherKit = document.getElementById('p2-other-kit')?.textContent || '';
+  return state;
+}
+
+function saveCurrentCard() {
+  const sidebarState = gatherSidebarState();
+  const routeName = document.getElementById('s-name').value || 'Unnamed Route';
+  const savedLegs = legs.map(l => ({ ...l }));
+  const record = {
+    id: Date.now(),
+    name: routeName,
+    savedAt: new Date().toISOString(),
+    sidebarState,
+    legs: savedLegs,
+    trackPts: trackPts.map(p => ({ lat: p.lat, lon: p.lon })), // strip ele to save space
+    gpxWpts: gpxWpts.map(w => ({ lat: w.lat, lon: w.lon }))
+  };
+
+  let cards = loadAllCards();
+  // Replace existing record with same name, or prepend
+  const existingIdx = cards.findIndex(c => c.name === routeName);
+  if (existingIdx >= 0) cards.splice(existingIdx, 1);
+  cards.unshift(record);
+  if (cards.length > MAX_SAVED) cards = cards.slice(0, MAX_SAVED);
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    showToast('✓ Route card saved');
+  } catch(e) {
+    showToast('⚠ Save failed (storage full?)');
+  }
+}
+
+// ── EXPORT ──────────────────────────────────────────────────
+function exportCard() {
+  const sidebarState = gatherSidebarState();
+  const routeName = document.getElementById('s-name').value.trim() || 'Scout Route Card';
+  const record = {
+    _format: 'scout-route-card',
+    _version: 1,
+    id: Date.now(),
+    name: routeName,
+    savedAt: new Date().toISOString(),
+    sidebarState,
+    legs: legs.map(l => ({ ...l })),
+    trackPts: trackPts.map(p => ({ lat: p.lat, lon: p.lon })),
+    gpxWpts: gpxWpts.map(w => ({ lat: w.lat, lon: w.lon }))
+  };
+
+  const json = JSON.stringify(record, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = routeName.replace(/[^a-z0-9\-_ ]/gi, '').trim() || 'route-card';
+  a.href = url;
+  a.download = `${safeName}.routecard.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ Exported as ' + safeName + '.routecard.json');
+}
+
+// ── IMPORT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const importInput = document.getElementById('import-input');
+  if (importInput) {
+    importInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const record = JSON.parse(ev.target.result);
+          if (!record._format || record._format !== 'scout-route-card') {
+            showToast('⚠ Not a valid route card file');
+            return;
+          }
+          restoreCard(record);
+          showToast('✓ Route card imported: ' + (record.name || 'Unnamed'));
+        } catch(err) {
+          showToast('⚠ Could not read file — invalid JSON');
+        }
+        importInput.value = ''; // reset so same file can be re-imported
+      };
+      reader.readAsText(file);
+    });
+  }
+});
+
+function loadAllCards() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+function deleteSavedCard(id, e) {
+  e.stopPropagation();
+  let cards = loadAllCards().filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  renderRecentCards();
+}
+
+function restoreCard(record) {
+  const s = record.sidebarState;
+  // Restore sidebar fields
+  const fields = ['s-name','s-location','s-formation','s-tel','s-date','s-dow','s-dayn','s-depart',
+                  's-sup-name','s-sup-loc','s-sup-tel','pace-flat','pace-naismith','stop-mins'];
+  fields.forEach(id => { const el = document.getElementById(id); if (el && s[id] !== undefined) el.value = s[id]; });
+
+  // Sync card fields that are driven by sidebar
+  syncToCard('rc-name', s['s-name']);
+  syncToCard('rc-location', s['s-location']);
+  syncToCard('rc-formation', s['s-formation']);
+  syncToCard('rc-tel', s['s-tel']);
+  syncToCard('rc-dow', s['s-dow']);
+  syncToCard('rc-dayn', s['s-dayn']);
+  syncToCard('rc-sup-name', s['s-sup-name']);
+  syncToCard('p2-sup-name', s['s-sup-name']);
+  syncToCard('rc-sup-loc', s['s-sup-loc']);
+  syncToCard('rc-sup-tel', s['s-sup-tel']);
+  syncToCard('p2-route-name', s['s-name']);
+  document.getElementById('hdr-route-name').textContent = s['s-name'] || '—';
+  if (s['s-date']) {
+    const d = new Date(s['s-date']);
+    syncToCard('rc-date', d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}));
+  }
+  if (s['s-depart']) syncToCard('rc-depart', s['s-depart']);
+  if (s._otherKit) { const ok = document.getElementById('p2-other-kit'); if(ok) ok.textContent = s._otherKit; }
+
+  legs = record.legs.map(l => ({ ...l }));
+  buildMemberInputs();
+
+  // Restore member values after buildMemberInputs creates the inputs
+  if (s._members) s._members.forEach((m, i) => {
+    if (i >= 6) return;
+    const n = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="name"]`);
+    const t = document.querySelector(`[data-type="scout"][data-member="${i}"][data-field="tel"]`);
+    if (n) n.value = m.name;
+    if (t) t.value = m.tel;
+  });
+  if (s._leaders) s._leaders.forEach((m, i) => {
+    const n = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="name"]`);
+    const t = document.querySelector(`[data-type="leader"][data-member="${i}"][data-field="tel"]`);
+    if (n) n.value = m.name;
+    if (t) t.value = m.tel;
+  });
+  buildP2MemberTable();
+
+  renderLegs();
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('editor-screen').style.display = 'block';
+  showPage(1);
+  // Re-init map if we have track data
+  // Restore track and waypoint data for the map
+  trackPts = (record.trackPts || []).map(p => ({ lat: p.lat, lon: p.lon, ele: 0 }));
+  gpxWpts = record.gpxWpts || [];
+
+  if (trackPts.length && gpxWpts.length) {
+    // Ensure map panel is open
+    mapCollapsed = true; // force toggleMap to open it
+    const mapBody = document.getElementById('map-body');
+    const mapChevron = document.getElementById('map-chevron');
+    if (mapBody) mapBody.style.height = '';
+    if (mapChevron) mapChevron.classList.remove('collapsed');
+    mapCollapsed = false;
+    const btn = document.getElementById('elev-fetch-btn');
+    if (btn) btn.style.display = 'inline-block';
+    setTimeout(() => initMap(trackPts, gpxWpts), 100);
+  } else {
+    // No track data — collapse map panel
+    const mapBody = document.getElementById('map-body');
+    const mapChevron = document.getElementById('map-chevron');
+    if (mapBody) mapBody.style.height = '0';
+    if (mapChevron) mapChevron.classList.add('collapsed');
+    mapCollapsed = true;
+  }
+}
+
+function renderRecentCards() {
+  const cards = loadAllCards();
+  const section = document.getElementById('recent-cards-section');
+  const list = document.getElementById('recent-cards-list');
+  if (!section || !list) return;
+  if (cards.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = cards.map(c => {
+    const d = new Date(c.savedAt);
+    const dateStr = d.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    const timeStr = d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    const legCount = c.legs?.length || 0;
+    const totalDist = c.legs ? c.legs.reduce((s, l) => s + (l.dist||0), 0).toFixed(1) : '—';
+    return `<div class="recent-card-item" onclick="restoreCard(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      <div>
+        <div class="rci-name">${c.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted)">${legCount} legs · ${totalDist} km</div>
+      </div>
+      <div class="rci-meta">${dateStr}<br>${timeStr}</div>
+      <button class="rci-del" onclick="deleteSavedCard(${c.id}, event)" title="Delete">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('save-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+// Auto-select all text in any contenteditable cell when focused —
+// covers both static card fields and dynamically rendered table cells
+document.addEventListener('focusin', e => {
+  const el = e.target;
+  if (el.contentEditable === 'true') {
+    // Use setTimeout to let the browser place the cursor first, then select all
+    setTimeout(() => {
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }, 0);
+  }
+});
+// ════════════════════════════════════════════════════════════
+// Init member inputs on load so page 2 table is populated
+buildMemberInputs();
+// Show any previously saved cards on the upload screen
+renderRecentCards();
+</script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winchester District Scouts — Branching Out &amp; Wood Badge</title>
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-dark: #3d1a6e;
+  --purple-light: #7a4aab;
+  --purple-faint: #f3eeff;
+  --teal: #0d9488;
+  --teal-light: #14b8a6;
+  --teal-faint: #f0fdfa;
+  --amber: #d97706;
+  --amber-faint: #fffbeb;
+  --green: #059669;
+  --green-faint: #ecfdf5;
+  --brown: #92400e;
+  --brown-faint: #fef3c7;
+  --bg: #f8f7fc;
+  --surface: #ffffff;
+  --border: #e5e0f0;
+  --text: #1a1033;
+  --text-mid: #4b3f6b;
+  --text-muted: #8b7aaa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 60%, var(--purple-light) 100%);
+  color: white; padding: 28px 32px 32px;
+}
+.header-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: flex; align-items: flex-start; gap: 20px;
+}
+.header-logo {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+}
+.header-text { flex: 1; }
+.header-text h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.header-text .subtitle { font-size: 0.85rem; opacity: 0.72; margin-top: 3px; }
+.header-links { display: flex; gap: 8px; align-items: center; padding-top: 4px; flex-wrap: wrap; }
+.header-links a {
+  color: rgba(255,255,255,0.82); font-size: 0.76rem; text-decoration: none;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  padding: 4px 11px; border-radius: 20px; transition: all 0.15s; white-space: nowrap;
+}
+.header-links a:hover { background: rgba(255,255,255,0.22); color: white; }
+
+/* ── MAIN ── */
+.main { max-width: 1000px; margin: 0 auto; padding: 40px 32px 80px; }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+}
+.section-title-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.section-title h2 {
+  font-size: 1.25rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em;
+}
+.section-title p {
+  font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;
+}
+.section-divider {
+  border: none; border-top: 2px solid var(--border); margin: 48px 0 40px;
+}
+
+/* ── CALLOUT ── */
+.callout {
+  background: var(--purple-faint); border: 1px solid #d8c8f8;
+  border-left: 4px solid var(--purple); border-radius: 10px;
+  padding: 14px 18px; margin-bottom: 24px;
+  font-size: 0.87rem; color: var(--text-mid); line-height: 1.6;
+}
+.callout strong { color: var(--purple); }
+.callout.teal { background: var(--teal-faint); border-color: #99f6e4; border-left-color: var(--teal); }
+.callout.teal strong { color: var(--teal); }
+.callout.amber { background: var(--amber-faint); border-color: #fde68a; border-left-color: var(--amber); }
+.callout.amber strong { color: var(--amber); }
+.callout.green { background: var(--green-faint); border-color: #a7f3d0; border-left-color: var(--green); }
+.callout.green strong { color: var(--green); }
+.callout.brown { background: var(--brown-faint); border-color: #fde68a; border-left-color: var(--brown); }
+.callout.brown strong { color: var(--brown); }
+
+/* ── INTRO TEXT ── */
+.intro-text {
+  font-size: 0.92rem; color: var(--text-mid); line-height: 1.75;
+  max-width: 760px; margin-bottom: 24px;
+}
+.intro-text p { margin-bottom: 12px; }
+.intro-text p:last-child { margin-bottom: 0; }
+
+/* ── DELIVERY CARDS (how to complete) ── */
+.delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+.delivery-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 18px; display: flex; gap: 14px; align-items: flex-start;
+}
+.delivery-icon {
+  width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+}
+.delivery-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.delivery-desc { font-size: 0.81rem; color: var(--text-mid); line-height: 1.5; }
+
+/* ── WOOD BADGE TRACKS ── */
+.tracks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+.track-card {
+  background: var(--surface); border: 2px solid var(--border); border-radius: 14px;
+  padding: 22px; display: flex; flex-direction: column; gap: 14px;
+}
+.track-card.section-track { border-color: var(--teal); }
+.track-card.manager-track { border-color: var(--purple); }
+.track-header { display: flex; align-items: flex-start; gap: 12px; }
+.track-badge {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.track-badge.teal { background: var(--teal-faint); }
+.track-badge.purple { background: var(--purple-faint); }
+.track-title { font-size: 0.97rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+.track-who { font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; font-style: italic; }
+.track-modules-label {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted); margin-bottom: 8px;
+}
+.track-module-list { display: flex; flex-direction: column; gap: 6px; }
+.track-module-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.83rem; color: var(--text-mid);
+}
+.track-module-item::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal); flex-shrink: 0;
+}
+.track-card.manager-track .track-module-item::before { background: var(--purple); }
+.track-module-item.root { color: var(--text-muted); font-style: italic; }
+.track-module-item.root::before { background: var(--border); }
+.track-module-item strong { color: var(--text); font-weight: 600; }
+.track-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 7px;
+  text-decoration: none; transition: all 0.15s; align-self: flex-start; margin-top: auto;
+}
+.track-link.teal { background: var(--teal-faint); color: var(--teal); border: 1px solid #99f6e4; }
+.track-link.teal:hover { background: var(--teal); color: white; }
+.track-link.purple { background: var(--purple-faint); color: var(--purple); border: 1px solid #d8c8f8; }
+.track-link.purple:hover { background: var(--purple); color: white; }
+.track-link.muted { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; cursor: default; }
+
+/* ── HOW IT WORKS STEPS ── */
+.steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; max-width: 680px; }
+.step {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 11px; padding: 14px 16px;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--purple); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.82rem; font-weight: 700;
+}
+.step-title { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.step-desc { font-size: 0.8rem; color: var(--text-mid); line-height: 1.5; }
+
+/* ── MODULE CARDS ── */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.module-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: 13px;
+  padding: 20px; display: flex; flex-direction: column; gap: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.module-card:hover { border-color: var(--purple-light); box-shadow: 0 2px 12px rgba(91,45,142,0.08); }
+.module-card-header { display: flex; align-items: flex-start; gap: 12px; }
+.module-num {
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  background: var(--purple); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700;
+}
+.module-title { font-size: 0.95rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+.module-training {
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  margin-top: 3px;
+}
+.training-recommended { color: var(--amber); }
+.training-optional { color: var(--teal); }
+.module-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.55; }
+.module-validation-label {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-muted); margin-bottom: 5px;
+}
+.module-validation-list {
+  padding-left: 16px; display: flex; flex-direction: column; gap: 3px;
+}
+.module-validation-list li { font-size: 0.8rem; color: var(--text-mid); line-height: 1.5; }
+.module-footer { margin-top: auto; }
+.module-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.8rem; font-weight: 600; padding: 7px 14px; border-radius: 8px;
+  text-decoration: none; background: var(--purple); color: white; transition: all 0.15s;
+}
+.module-link:hover { background: var(--purple-dark); }
+.module-link.muted { background: #f3f4f6; color: #6b7280; cursor: default; }
+
+/* ── LINK BUTTON ── */
+.link-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.85rem; font-weight: 600; padding: 9px 18px; border-radius: 9px;
+  text-decoration: none; transition: all 0.15s;
+}
+.link-btn.purple { background: var(--purple); color: white; }
+.link-btn.purple:hover { background: var(--purple-dark); }
+.link-btn.teal { background: var(--teal); color: white; }
+.link-btn.teal:hover { background: #0f766e; }
+.link-btn.outline { background: var(--surface); color: var(--purple); border: 1.5px solid var(--purple); }
+.link-btn.outline:hover { background: var(--purple-faint); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+@media (max-width: 680px) {
+  .header-inner { flex-direction: column; gap: 12px; }
+  .main { padding: 24px 16px 60px; }
+  .tracks-grid { grid-template-columns: 1fr; }
+  .delivery-grid { grid-template-columns: 1fr; }
+  .module-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">🌲</div>
+    <div class="header-text">
+      <h1>Branching Out &amp; the Wood Badge</h1>
+      <div class="subtitle">Winchester District Scouts &nbsp;·&nbsp; Advanced learning &amp; development</div>
+    </div>
+    <div class="header-links">
+      <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/learning/branching-out/" target="_blank">↗ Branching Out</a>
+      <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/awards-and-recognition/wood-badge/" target="_blank">↗ Wood Badge</a>
+      <a href="https://members.hampshirescouts.org.uk/adult-learning" target="_blank">↗ Hampshire Training</a>
+      <a href="https://learn.scouts.org.uk" target="_blank">↗ My Learning</a>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — WHAT IS BRANCHING OUT?
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-title-icon" style="background:#f3eeff;">🌿</div>
+    <div>
+      <h2>What is Branching Out?</h2>
+      <p>Optional learning you can do after your first year</p>
+    </div>
+  </div>
+
+  <div class="intro-text">
+    <p>Once you've completed your Growing Roots learning and settled into your role — usually after about a year — you may want to develop your skills further. <strong>Branching Out</strong> is a collection of optional learning modules that let you do exactly that.</p>
+    <p>You can complete as many or as few modules as you like, in any order, with no time limit. There's no commitment required — you don't have to be working towards a Wood Badge to benefit from Branching Out learning. Some modules are also required for specific <strong>permits and accreditations</strong>.</p>
+  </div>
+
+  <div class="delivery-grid">
+    <div class="delivery-card">
+      <div class="delivery-icon" style="background:#ede9fe;">💻</div>
+      <div>
+        <div class="delivery-title">Online via My Learning</div>
+        <div class="delivery-desc">Some modules are available as eLearning you can complete in your own time through the TSA's My Learning platform. Look under "Explore Learning" once you're signed in.</div>
+      </div>
+    </div>
+    <div class="delivery-card">
+      <div class="delivery-icon" style="background:#dcfce7;">🤝</div>
+      <div>
+        <div class="delivery-title">Locally via Hampshire Scouts</div>
+        <div class="delivery-desc">Many modules are delivered face-to-face or through workbooks. Hampshire Scouts runs regular courses — check the training calendar for what's available and how to register.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout teal">
+    <strong>Important:</strong> Training helps but doesn't complete the job on its own. Each module has specific <strong>validation requirements</strong> — check these before deciding whether you need to attend a course. You may already have the evidence needed from your regular Scouting.
+  </div>
+
+  <div class="btn-row">
+    <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/learning/branching-out/" target="_blank" class="link-btn outline">↗ TSA Branching Out overview</a>
+    <a href="https://members.hampshirescouts.org.uk/adult-learning" target="_blank" class="link-btn teal">↗ Hampshire Scouts training calendar</a>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — THE WOOD BADGE
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-title-icon" style="background:#fef3c7;">🏅</div>
+    <div>
+      <h2>The Wood Badge</h2>
+      <p>An international award recognising your commitment to learning and development</p>
+    </div>
+  </div>
+
+  <div class="intro-text">
+    <p>The <strong>Wood Badge</strong> is an optional award you can earn by completing a specific set of Branching Out modules. It has a history stretching back to 1919, when Baden Powell gave wooden beads from the King of the Zulu nation to volunteers who had completed their training — making it one of Scouting's oldest and most recognised awards.</p>
+    <p>Completing the Wood Badge is entirely optional. There is one Wood Badge, but the modules required depend on your role — whether you're focused on programme delivery (sections) or on leading and supporting other volunteers.</p>
+  </div>
+
+  <div class="callout brown">
+    <strong>Note on transition:</strong> The Scout Association is currently developing new Branching Out learning. Some of the modules required for the Wood Badge are from the previous Adult Training Scheme and are continuing temporarily. The core process and award remain the same.
+  </div>
+
+  <p style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:14px;">Choose your track</p>
+
+  <div class="tracks-grid">
+
+    <!-- Section Wood Badge -->
+    <div class="track-card section-track">
+      <div class="track-header">
+        <div class="track-badge teal">⚜️</div>
+        <div>
+          <div class="track-title">Section Wood Badge</div>
+          <div class="track-who">For Section Team Leaders &amp; Members, and 14–24 Team Leaders &amp; Members — roles focused on programme delivery</div>
+        </div>
+      </div>
+      <div>
+        <div class="track-modules-label">Modules required</div>
+        <div class="track-module-list">
+          <div class="track-module-item root">All Growing Roots modules</div>
+          <div class="track-module-item"><strong>8</strong> — Skills of Leadership</div>
+          <div class="track-module-item"><strong>9</strong> — Working with Adults</div>
+          <div class="track-module-item"><strong>13</strong> — Growing the Section</div>
+          <div class="track-module-item"><strong>16</strong> — Residential Experiences</div>
+          <div class="track-module-item"><strong>18</strong> — Practical Skills</div>
+          <div class="track-module-item"><strong>19</strong> — International</div>
+        </div>
+      </div>
+      <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/learning/wood-badge/" target="_blank" class="track-link teal">↗ More about this track</a>
+    </div>
+
+    <!-- Manager & Supporter Wood Badge -->
+    <div class="track-card manager-track">
+      <div class="track-header">
+        <div class="track-badge purple">🌟</div>
+        <div>
+          <div class="track-title">Manager &amp; Supporter Wood Badge</div>
+          <div class="track-who">For Lead Volunteers, GLVs, Team Leaders (except Section TLs), District &amp; County Leadership — roles focused on leading volunteers</div>
+        </div>
+      </div>
+      <div>
+        <div class="track-modules-label">Modules required</div>
+        <div class="track-module-list">
+          <div class="track-module-item root">All Growing Roots modules</div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155462/description" target="_blank" style="color:var(--purple);">Achieving Results</a></div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155470/description" target="_blank" style="color:var(--purple);">Managing Time and Personal Skills</a></div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155466/description" target="_blank" style="color:var(--purple);">Enabling Change</a></div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155474/description" target="_blank" style="color:var(--purple);">Providing Direction</a></div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155497/description" target="_blank" style="color:var(--purple);">Using Resources</a></div>
+          <div class="track-module-item"><a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155505/description" target="_blank" style="color:var(--purple);">Working with People</a></div>
+        </div>
+      </div>
+      <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/learning/wood-badge/" target="_blank" class="track-link purple">↗ More about this track</a>
+    </div>
+
+  </div>
+
+  <!-- How it works -->
+  <p style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:14px;">How to earn your Wood Badge</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Assign a Wood Badge in My Learning</div>
+        <div class="step-desc">Log in to scouts.org.uk and assign either the Section or Manager &amp; Supporter Wood Badge to your profile. Choose the track that matches your role. Follow the steps below, or use the direct link.
+          <div style="margin-top:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:0.79rem;color:var(--text-mid);line-height:1.7;">
+            <strong style="color:var(--text);">How to assign your Wood Badge:</strong><br>
+            1. Sign in at <a href="https://www.scouts.org.uk" target="_blank" style="color:var(--purple);">scouts.org.uk</a> and click <strong>My Learning</strong><br>
+            2. On the My Overview page, click <strong>Wood Badges and skills</strong> <em style="color:var(--text-muted)">(on mobile, tap the menu button top-right first)</em><br>
+            3. Click the <strong>Wood Badges</strong> tab<br>
+            4. Click the <strong>+</strong> button<br>
+            5. On the Wood Badge assignment page, click <strong>+</strong> next to the track you want<br>
+            6. Click <strong>Assign Wood Badge</strong> — a confirmation message will appear
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="https://learn.scouts.org.uk/ilp/pages/competencies.jsf?menuId=119368&locale=en-GB#!/users/@self/competencies/jobprofiles" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;padding:5px 12px;border-radius:6px;text-decoration:none;background:var(--purple);color:white;">↗ Assign Wood Badge</a>
+            <a href="https://www.scouts.org.uk/volunteers/volunteer-experience/digital-tool-guides/my-learning/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;font-weight:600;padding:5px 12px;border-radius:6px;text-decoration:none;background:var(--purple-faint);color:var(--purple);border:1px solid #d8c8f8;">↗ My Learning guide (FAQ)</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Review each module's validation requirements</div>
+        <div class="step-desc">Each module has specific things you need to do or demonstrate. Check these first — you may already have evidence from your regular Scouting or from work and life experience.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Complete the learning and gather evidence</div>
+        <div class="step-desc">Attend training if needed, or work through the validation requirements in your section. Upload evidence to My Learning as you go.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Request assessment through My Learning</div>
+        <div class="step-desc">Once you've completed each module's requirements, request assessment. A Learning Assessor will review your evidence and credit the skill to your profile.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">Wood Badge awarded automatically</div>
+        <div class="step-desc">When all modules are complete, your Wood Badge is recorded automatically in My Learning and My Membership. A certificate and physical Wood Badge beads are sent via your District.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout green">
+    <strong>Winchester District Learning Assessors:</strong> All modules must be validated by a Learning Assessor. Winchester District has several — visit the <a href="https://www.paddywack.co.uk/scout_public/winchester_accreditations.html" target="_blank" style="color:var(--green);font-weight:600;">Winchester Accreditations Dashboard</a> and search for <strong>Learning Assessor</strong> to find the right person for your group.
+  </div>
+
+  <div class="btn-row" style="margin-bottom:0;">
+    <a href="https://learn.scouts.org.uk" target="_blank" class="link-btn purple">↗ Go to My Learning</a>
+    <a href="https://www.scouts.org.uk/volunteers/learning-development-and-awards/awards-and-recognition/wood-badge/" target="_blank" class="link-btn outline">↗ Wood Badge history &amp; background</a>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — SECTION WOOD BADGE MODULES
+  ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="section-title-icon" style="background:#f0fdfa;">📋</div>
+    <div>
+      <h2>Section Wood Badge Modules</h2>
+      <p>What each module involves and how validation works &nbsp;·&nbsp; Complete in any order</p>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>Pragmatic recognition:</strong> If you have relevant skills from work or life, these can often count towards a module. For example, experience managing people at work may cover much of Module 9, or running sessions that develop skills in young people can evidence Module 18. Talk to a Learning Assessor about what you can bring — you may be closer than you think.
+  </div>
+
+  <div class="module-grid">
+
+    <!-- Module 8 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">8</div>
+        <div>
+          <div class="module-title">Skills of Leadership</div>
+        </div>
+      </div>
+      <div class="module-desc">Develop your understanding of leadership styles and how to apply them in a Scouting context — planning, leading activities, and developing leadership skills in the young people you work with.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Use a systematic planning tool for a section activity</li>
+          <li>Apply a leadership model and reflect on the outcome</li>
+          <li>Lead an event or activity and evaluate your approach</li>
+          <li>Run an activity specifically designed to develop leadership skills in young people</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155454/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+    <!-- Module 9 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">9</div>
+        <div>
+          <div class="module-title">Working with Adults</div>
+        </div>
+      </div>
+      <div class="module-desc">Build skills in working alongside and communicating with other volunteers, parents, and carers — including how to support decision-making and represent your group at a wider level.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Represent your group at a District meeting</li>
+          <li>Discuss where you've helped others make decisions</li>
+          <li>Reflect on your use of verbal and non-verbal communications</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155458/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+    <!-- Module 13 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">13</div>
+        <div>
+          <div class="module-title">Growing the Section</div>
+        </div>
+      </div>
+      <div class="module-desc">Understand how to grow and develop your section — from recruiting new members and welcoming young people moving up, to contributing to the wider development of Scouting in your area.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Contribute to a recruitment event</li>
+          <li>Produce and implement a section development plan</li>
+          <li>Help with the termly moving-up or new joiners process</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155422/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+    <!-- Module 16 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">16</div>
+        <div>
+          <div class="module-title">Residential Experiences</div>
+        </div>
+      </div>
+      <div class="module-desc">Develop the skills and confidence to plan and run overnight and residential experiences for young people — from pack holidays to camps and expeditions.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Help organise a Nights Away event</li>
+          <li>Complete the Residential Experiences quiz</li>
+          <li>Discuss your experience and planning with a Training Advisor</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155426/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+    <!-- Module 18 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">18</div>
+        <div>
+          <div class="module-title">Practical Skills</div>
+        </div>
+      </div>
+      <div class="module-desc">Develop and demonstrate practical Scouting skills — and the ability to teach those skills to young people in your section.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Develop a practical skill relevant to your section</li>
+          <li>Instruct young people in two practical skills over a programme term</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155430/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+    <!-- Module 19 -->
+    <div class="module-card">
+      <div class="module-card-header">
+        <div class="module-num">19</div>
+        <div>
+          <div class="module-title">International</div>
+        </div>
+      </div>
+      <div class="module-desc">Bring an international dimension to your section's programme — helping young people develop a broader understanding of the world and Scouting's global movement.</div>
+      <div>
+        <div class="module-validation-label">Validation examples</div>
+        <ul class="module-validation-list">
+          <li>Review your termly plan to check it includes international elements</li>
+          <li>Run two internationally themed sessions with your section</li>
+        </ul>
+      </div>
+      <div class="module-footer">
+        <a href="https://learn.scouts.org.uk/ilp/pages/description.jsf?menuId=1108#/users/@self/catalogues/1700/courses/155434/description" target="_blank" class="module-link">↗ View module</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <strong>Need help deciding where to start?</strong> Talk to a Learning Assessor — they can help you review the validation requirements for each module, identify what evidence you already have, and plan a realistic path to your Wood Badge. Find your nearest Learning Assessor in the <a href="https://www.paddywack.co.uk/scout_public/winchester_accreditations.html" target="_blank" style="color:var(--purple);font-weight:600;">Winchester Accreditations Dashboard</a>.
+  </div>
+
+</div><!-- end main -->
+</body>
+</html>

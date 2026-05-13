@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winchester District – Activity Permit Holders</title>
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600&family=DM+Mono&display=swap');
+  :root {
+    --purple: #7B2D8B; --teal: #006B77;
+    --bg: #F7F5F2; --surface: #FFFFFF;
+    --border: #E0DDD8; --text: #1A1A2E; --muted: #6B6B80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header & tabs ── */
+  header { background: var(--purple); color: white; padding: 28px 40px 0; border-bottom: 4px solid var(--teal); }
+  .title-row { padding-bottom: 16px; }
+  header h1 { font-size: 1.4rem; font-weight: 600; }
+  header p { margin-top: 4px; font-size: 0.85rem; opacity: 0.75; }
+  .tabs { display: flex; gap: 0; margin-top: 12px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 9px 20px; font: inherit; font-size: 0.85rem; font-weight: 500;
+    background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75);
+    border: none; border-radius: 8px 8px 0 0; cursor: pointer;
+    transition: background 0.15s, color 0.15s; border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .tab-btn.active { background: var(--bg); color: var(--text); border-bottom-color: var(--bg); font-weight: 600; }
+
+  /* ── Panels ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Stats ── */
+  .stats { display: flex; gap: 12px; padding: 18px 40px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .stat-card {
+    flex: 1; min-width: 100px; max-width: 155px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 11px 14px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .stat-card .num { font-size: 1.65rem; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
+  .stat-card .lbl { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .c-total { border-color: var(--purple) !important; }
+  .c-total .num { color: var(--purple); }
+  .c-multi .num { color: var(--teal); }
+
+  /* ── Controls ── */
+  .controls { display: flex; gap: 12px; align-items: center; padding: 14px 40px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  input[type=text] { width: 100%; padding: 9px 14px 9px 36px; border: 1.5px solid var(--border); border-radius: 8px; font: inherit; font-size: 0.9rem; background: var(--bg); outline: none; }
+  input[type=text]:focus { border-color: var(--teal); }
+  select { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font: inherit; font-size: 0.875rem; background: var(--bg); cursor: pointer; outline: none; }
+  .btn-toggle {
+    padding: 9px 14px; border-radius: 8px; cursor: pointer;
+    font: inherit; font-size: 0.85rem; font-weight: 500;
+    border: 1.5px solid var(--teal); color: var(--teal);
+    background: transparent; white-space: nowrap; transition: background 0.15s, color 0.15s;
+  }
+  .btn-toggle.active { background: var(--teal); color: white; }
+  .btn-toggle:hover:not(.active) { background: #e6f4f5; }
+  .count { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted); white-space: nowrap; margin-left: auto; }
+
+  /* ── Tables ── */
+  .wrap { padding: 22px 40px 48px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px var(--border); font-size: 0.875rem; }
+  thead th { background: var(--text); color: white; padding: 11px 14px; text-align: left; font-weight: 500; font-size: 0.73rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; user-select: none; white-space: nowrap; }
+  thead th:hover { background: #2a2a45; }
+  thead th.no-sort { cursor: default; }
+  thead th.no-sort:hover { background: var(--text); }
+  .arr { margin-left: 4px; opacity: 0.35; }
+  th.asc .arr::after { content: "▲"; opacity: 1; }
+  th.desc .arr::after { content: "▼"; opacity: 1; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f0ede8; }
+  tbody tr.hl { background: #f0f9f9; }
+  tbody tr.hl:hover { background: #e2f3f4; }
+  td { padding: 10px 14px; vertical-align: middle; }
+  td a { color: var(--teal); text-decoration: none; font-weight: 500; }
+  td a:hover { color: var(--purple); text-decoration: underline; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 500; }
+  .b-camp   { background: #E8F5E9; color: #2E7D32; }
+  .b-indoor { background: #E3F2FD; color: #1565C0; }
+  .b-green  { background: #FFF8E1; color: #E65100; }
+  .b-exp    { background: #F3E5F5; color: #6A1B9A; }
+  .b-arch   { background: #FBE9E7; color: #BF360C; }
+  .b-climb-art { background: #EDE7F6; color: #4527A0; }
+  .b-climb-nat { background: #E8F5E9; color: #1B5E20; }
+  .b-hill   { background: #FFF3E0; color: #E65100; }
+  .wa_canoeing_open_inland { background:#E3F2FD; color:#1565C0; }
+  .wa_canoeing_river { background:#E8F5E9; color:#2E7D32; }
+  .wa_dinghy_sailing { background:#FFF8E1; color:#E65100; }
+  .wa_kayaking_open_inland { background:#F3E5F5; color:#6A1B9A; }
+  .wa_kayaking_sea { background:#E0F7FA; color:#006064; }
+  .wa_rafting_traditional { background:#FCE4EC; color:#880E4F; }
+  .wa_stand_up_paddleboarding_open_inland { background:#F1F8E9; color:#33691E; }
+  .wa_yachting { background:#E8EAF6; color:#283593; }
+  .pip { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); margin-left: 6px; vertical-align: middle; }
+  .no-res { text-align: center; padding: 40px; color: var(--muted); font-style: italic; display: none; }
+
+  /* ── Group tab ── */
+  .group-wrap { padding: 22px 40px 48px; }
+  .group-subhead { padding: 18px 40px 0; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+  .group-table { max-width: 520px; }
+  .group-table td:last-child { text-align: right; font-family: 'DM Mono', monospace; font-weight: 600; color: var(--teal); }
+  .group-table td.dc { color: var(--purple); }
+  .dist-badge { display: inline-block; padding: 1px 7px; border-radius: 20px; font-size: 0.7rem; font-weight: 500; background: #EDE7F6; color: #512DA8; margin-left: 8px; vertical-align: middle; }
+  .bar-cell { width: 160px; padding-right: 18px; }
+  .bar-bg { background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--teal); }
+  .bar-fill.dist { background: var(--purple); }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="title-row">
+      <h1>Winchester District — Activity Permit Holders</h1>
+      <p>Scout Membership System export</p>
+    </div>
+    <img src="Winchester Groups_files/Scouts_Logo_Marque_Black.png" style="height:64px;flex-shrink:0;margin-right:8px;filter:brightness(0) invert(1);" alt="Scouts logo">
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active"  onclick="switchTab('na',this)">Nights Away</button>
+    <button class="tab-btn"         onclick="switchTab('arch',this)">Archery</button>
+    <button class="tab-btn"         onclick="switchTab('water',this)">Water Activities</button>
+    <button class="tab-btn"         onclick="switchTab('climb',this)">Climbing &amp; Abseiling</button>
+    <button class="tab-btn"         onclick="switchTab('hill',this)">Hillwalking</button>
+    <button class="tab-btn"         onclick="switchTab('groups',this)">By Group</button>
+  </div>
+</header>
+
+<!-- ══════════════════ NIGHTS AWAY ══════════════════ -->
+<div class="tab-panel active" id="tab-na">
+  <div class="stats">
+    <div class="stat-card c-total"><span class="num">62</span><span class="lbl">Unique individuals</span></div>
+    <div class="stat-card" style="border-color:#2E7D3220"><span class="num" style="color:#2E7D32">48</span><span class="lbl">Campsite</span></div>
+    <div class="stat-card" style="border-color:#E6510020"><span class="num" style="color:#E65100">10</span><span class="lbl">Greenfield</span></div>
+    <div class="stat-card" style="border-color:#1565C020"><span class="num" style="color:#1565C0">5</span><span class="lbl">Indoor</span></div>
+    <div class="stat-card" style="border-color:#6A1B9A20"><span class="num" style="color:#6A1B9A">4</span><span class="lbl">Lightweight exp.</span></div>
+    <div class="stat-card c-multi"><span class="num">5</span><span class="lbl">Multi-category</span></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="na-q" placeholder="Search by name or unit…" oninput="naFilter()">
+    </div>
+    <select id="na-cat" onchange="naFilter()">
+      <option value="">All categories</option>
+      <option>Campsite</option><option>Indoor</option>
+      <option>Greenfield</option><option>Lightweight expedition</option>
+    </select>
+    <button class="btn-toggle" id="na-multi-btn" onclick="naToggleMulti()">🔀 Multiple categories only</button>
+    <span class="count" id="na-cnt"></span>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th onclick="naSort(0)">Member Name<span class="arr"></span></th>
+        <th onclick="naSort(1)">Unit<span class="arr"></span></th>
+        <th onclick="naSort(2)">County<span class="arr"></span></th>
+        <th onclick="naSort(3)">Permit Category<span class="arr"></span></th>
+        <th onclick="naSort(4)">Permit Type<span class="arr"></span></th>
+      </tr></thead>
+      <tbody id="na-tb"></tbody>
+    </table>
+    <div class="no-res" id="na-nr">No matching records found.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ ARCHERY ══════════════════ -->
+<div class="tab-panel" id="tab-arch">
+  <div class="stats">
+    <div class="stat-card c-total"><span class="num">17</span><span class="lbl">Unique individuals</span></div>
+    <div class="stat-card" style="border-color:#BF360C20"><span class="num" style="color:#BF360C">17</span><span class="lbl">without compound bows</span></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="arch-q" placeholder="Search by name or unit…" oninput="archFilter()">
+    </div>
+    <select id="arch-type" onchange="archFilter()">
+      <option value="">All permit types</option>
+      <option>Leadership</option><option>Supervisory</option>
+    </select>
+    <span class="count" id="arch-cnt"></span>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th onclick="archSort(0)">Member Name<span class="arr"></span></th>
+        <th onclick="archSort(1)">Unit<span class="arr"></span></th>
+        <th onclick="archSort(2)">County<span class="arr"></span></th>
+        <th onclick="archSort(3)">Permit Category<span class="arr"></span></th>
+        <th onclick="archSort(4)">Permit Type<span class="arr"></span></th>
+      </tr></thead>
+      <tbody id="arch-tb"></tbody>
+    </table>
+    <div class="no-res" id="arch-nr">No matching records found.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ WATER ACTIVITIES ══════════════════ -->
+<div class="tab-panel" id="tab-water">
+  <div class="stats">
+    <div class="stat-card c-total"><span class="num">11</span><span class="lbl">Unique individuals</span></div>
+    <div class="stat-card" style="border-color:#1565C020">
+      <span class="num" style="color:#1565C0">3</span>
+      <span class="lbl">Canoeing</span>
+    </div>
+    <div class="stat-card" style="border-color:#2E7D3220">
+      <span class="num" style="color:#2E7D32">4</span>
+      <span class="lbl">Canoeing River</span>
+    </div>
+    <div class="stat-card" style="border-color:#E6510020">
+      <span class="num" style="color:#E65100">1</span>
+      <span class="lbl">Dinghy Sailing</span>
+    </div>
+    <div class="stat-card" style="border-color:#6A1B9A20">
+      <span class="num" style="color:#6A1B9A">3</span>
+      <span class="lbl">Kayaking</span>
+    </div>
+    <div class="stat-card" style="border-color:#00606420">
+      <span class="num" style="color:#006064">3</span>
+      <span class="lbl">Kayaking Sea</span>
+    </div>
+    <div class="stat-card" style="border-color:#880E4F20">
+      <span class="num" style="color:#880E4F">1</span>
+      <span class="lbl">Rafting</span>
+    </div>
+    <div class="stat-card" style="border-color:#33691E20">
+      <span class="num" style="color:#33691E">1</span>
+      <span class="lbl">SUP</span>
+    </div>
+    <div class="stat-card" style="border-color:#28359320">
+      <span class="num" style="color:#283593">2</span>
+      <span class="lbl">Yachting</span>
+    </div>
+    <div class="stat-card c-multi"><span class="num">5</span><span class="lbl">Multi-activity</span></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="water-q" placeholder="Search by name or unit…" oninput="waterFilter()">
+    </div>
+    <select id="water-act" onchange="waterFilter()">
+      <option value="">All activities</option>
+      <option>Canoeing Open Inland</option><option>Canoeing River</option><option>Dinghy Sailing</option><option>Kayaking Open Inland</option><option>Kayaking Sea</option><option>Rafting (Traditional)</option><option>Stand Up Paddleboarding Open Inland</option><option>Yachting</option>
+    </select>
+    <button class="btn-toggle" id="water-multi-btn" onclick="waterToggleMulti()">🔀 Multiple activities only</button>
+    <span class="count" id="water-cnt"></span>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th onclick="waterSort(0)">Member Name<span class="arr"></span></th>
+        <th onclick="waterSort(1)">Unit<span class="arr"></span></th>
+        <th onclick="waterSort(2)">County<span class="arr"></span></th>
+        <th onclick="waterSort(3)">Activity<span class="arr"></span></th>
+        <th onclick="waterSort(4)">Level<span class="arr"></span></th>
+        <th onclick="waterSort(5)">Permit Type<span class="arr"></span></th>
+      </tr></thead>
+      <tbody id="water-tb"></tbody>
+    </table>
+    <div class="no-res" id="water-nr">No matching records found.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ CLIMBING & ABSEILING ══════════════════ -->
+<div class="tab-panel" id="tab-climb">
+  <div class="stats">
+    <div class="stat-card c-total"><span class="num">10</span><span class="lbl">Unique individuals</span></div>
+    <div class="stat-card" style="border-color:#4527A020"><span class="num" style="color:#4527A0">9</span><span class="lbl">Artificial Top Rope</span></div><div class="stat-card" style="border-color:#4527A020"><span class="num" style="color:#4527A0">1</span><span class="lbl">Natural Top Rope</span></div>
+    <div class="stat-card c-multi"><span class="num">0</span><span class="lbl">Multi-category</span></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="climb-q" placeholder="Search by name or unit…" oninput="climbFilter()">
+    </div>
+    <select id="climb-cat" onchange="climbFilter()">
+      <option value="">All categories</option>
+      <option>Artificial Top Rope</option><option>Natural Top Rope</option>
+    </select>
+    <button class="btn-toggle" id="climb-multi-btn" onclick="climbToggleMulti()">🔀 Multiple categories only</button>
+    <span class="count" id="climb-cnt"></span>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th onclick="climbSort(0)">Member Name<span class="arr"></span></th>
+        <th onclick="climbSort(1)">Unit<span class="arr"></span></th>
+        <th onclick="climbSort(2)">County<span class="arr"></span></th>
+        <th onclick="climbSort(3)">Permit Category<span class="arr"></span></th>
+        <th onclick="climbSort(4)">Permit Type<span class="arr"></span></th>
+      </tr></thead>
+      <tbody id="climb-tb"></tbody>
+    </table>
+    <div class="no-res" id="climb-nr">No matching records found.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ HILLWALKING ══════════════════ -->
+<div class="tab-panel" id="tab-hill">
+  <div class="stats">
+    <div class="stat-card c-total"><span class="num">13</span><span class="lbl">Unique individuals</span></div>
+    <div class="stat-card" style="border-color:#E6510020"><span class="num" style="color:#E65100">1</span><span class="lbl">Terrain 1 Summer</span></div><div class="stat-card" style="border-color:#E6510020"><span class="num" style="color:#E65100">12</span><span class="lbl">Terrain 2 Summer</span></div><div class="stat-card" style="border-color:#E6510020"><span class="num" style="color:#E65100">1</span><span class="lbl">Terrain 2 Winter</span></div>
+    <div class="stat-card c-multi"><span class="num">1</span><span class="lbl">Multi-category</span></div>
+  </div>
+  <div class="controls">
+    <div class="search-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="hill-q" placeholder="Search by name or unit…" oninput="hillFilter()">
+    </div>
+    <select id="hill-cat" onchange="hillFilter()">
+      <option value="">All categories</option>
+      <option>Terrain 1 Summer</option><option>Terrain 2 Summer</option><option>Terrain 2 Winter</option>
+    </select>
+    <button class="btn-toggle" id="hill-multi-btn" onclick="hillToggleMulti()">🔀 Multiple categories only</button>
+    <span class="count" id="hill-cnt"></span>
+  </div>
+  <div class="wrap">
+    <table>
+      <thead><tr>
+        <th onclick="hillSort(0)">Member Name<span class="arr"></span></th>
+        <th onclick="hillSort(1)">Unit<span class="arr"></span></th>
+        <th onclick="hillSort(2)">County<span class="arr"></span></th>
+        <th onclick="hillSort(3)">Permit Category<span class="arr"></span></th>
+        <th onclick="hillSort(4)">Permit Type<span class="arr"></span></th>
+      </tr></thead>
+      <tbody id="hill-tb"></tbody>
+    </table>
+    <div class="no-res" id="hill-nr">No matching records found.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ BY GROUP ══════════════════ -->
+<div class="tab-panel" id="tab-groups">
+  <p class="group-subhead">Nights Away permit holders only. Sections rolled up to parent group.</p>
+  <div class="group-wrap">
+    <table class="group-table">
+      <thead><tr>
+        <th class="no-sort">Group</th>
+        <th class="no-sort bar-cell">Coverage</th>
+        <th class="no-sort" style="text-align:right">Unique holders</th>
+      </tr></thead>
+      <tbody id="group-tb"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ── Shared utilities ──────────────────────────────────────────
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function makeTable({
+  data, multiSet, tbId, nrId, cntId,
+  rowFn,        // fn(row, isMulti) -> <tr> HTML string
+  sortKeys,     // array of key names matching column order
+  thPrefix,     // prefix for th IDs e.g. 'na'
+}) {
+  let cur=[...data], sc=-1, sa=true, showMulti=false;
+  function render(r) {
+    const tb=document.getElementById(tbId), nr=document.getElementById(nrId);
+    if(!r.length){tb.innerHTML='';nr.style.display='block';}
+    else{nr.style.display='none';tb.innerHTML=r.map(x=>rowFn(x,multiSet.has(x.name))).join('');}
+    document.getElementById(cntId).textContent=r.length+' records';
+  }
+  function filter(q,filterFn) {
+    cur=data.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))
+      &&(!showMulti||multiSet.has(r.name))&&filterFn(r));
+    sc>=0?applySort():render(cur);
+  }
+  function applySort() {
+    const k=sortKeys[sc];
+    cur.sort((a,b)=>sa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));
+    render(cur);
+  }
+  function sort(c) {
+    const ths=document.querySelectorAll('#tab-'+thPrefix+' thead th');
+    ths.forEach(t=>t.classList.remove('asc','desc'));
+    sc===c?sa=!sa:(sc=c,sa=true);
+    ths[c].classList.add(sa?'asc':'desc');
+    applySort();
+  }
+  function toggleMulti(btnId) {
+    showMulti=!showMulti;
+    document.getElementById(btnId).classList.toggle('active',showMulti);
+  }
+  render(data);
+  return {filter,sort,toggleMulti,get cur(){return cur;}};
+}
+
+// ── Nights Away ───────────────────────────────────────────────
+const NA_D  = [{"name": "Alex Wardle", "url": "https://membership.scouts.org.uk/#/membersearch/b669842a-f701-09d0-47dd-ce96ed196601/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Andrew Knowles", "url": "https://membership.scouts.org.uk/#/membersearch/1f429823-9d52-354b-8362-2fc84f0b5db1/viewmember", "unit": "12th Winchester (Green Jackets)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Beccy Shaw", "url": "https://membership.scouts.org.uk/#/membersearch/1ffa187c-6f22-e73a-bb32-612165721fa6/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Bruce Martin", "url": "https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Chris Murray", "url": "https://membership.scouts.org.uk/#/membersearch/497c0fe2-4727-9d65-a7a9-f74a99f44c8d/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Christine Cook", "url": "https://membership.scouts.org.uk/#/membersearch/bd540e6b-9b07-a26c-7c1c-2cefc71c715c/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Colin Freemantle", "url": "https://membership.scouts.org.uk/#/membersearch/ca3bf853-6a6d-51bf-867f-00507abaadf7/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Dan Clarke", "url": "https://membership.scouts.org.uk/#/membersearch/dc2f4b7a-a61a-25af-e845-660d9ad9b577/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Dan Kitchen", "url": "https://membership.scouts.org.uk/#/membersearch/71072a3b-1556-a9c9-6e3b-efdfa898956d/viewmember", "unit": "Winchester - Explorer Scouts Jupiter", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Darren Cuell", "url": "https://membership.scouts.org.uk/#/membersearch/a710c358-ea6a-6c0d-1a20-3a51c50f0b09/viewmember", "unit": "12th Winchester (Green Jackets)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Dave Kesby", "url": "https://membership.scouts.org.uk/#/membersearch/7633d11c-43d0-19b3-0453-d99dcd5ca8f0/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "David Ashby", "url": "https://membership.scouts.org.uk/#/membersearch/ab69d8f4-0999-35fd-0a7a-4e4596414fc6/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "David Henderson", "url": "https://membership.scouts.org.uk/#/membersearch/cbe20a46-cc42-108d-aed1-d1ccd05d24d3/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Dean Upton", "url": "https://membership.scouts.org.uk/#/membersearch/1356311a-a912-c736-534e-d67082ff65b0/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Donna Brien", "url": "https://membership.scouts.org.uk/#/membersearch/f454ab5b-8215-d4c8-8409-55ba8e66a24d/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Doug Tilney", "url": "https://membership.scouts.org.uk/#/membersearch/4b76e6ec-af5e-cc3c-d0fc-41f2122e7401/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Helen Howell", "url": "https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Henrietta Lucas", "url": "https://membership.scouts.org.uk/#/membersearch/f00eb268-1c55-a516-f53c-4c17f4460062/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "James Buckland", "url": "https://membership.scouts.org.uk/#/membersearch/67c31b98-cd91-bb0e-0a9a-38fbede625cd/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "James Elliott", "url": "https://membership.scouts.org.uk/#/membersearch/8915e549-ee11-445a-c94c-8832a8c6bbf2/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "James Lee", "url": "https://membership.scouts.org.uk/#/membersearch/126a2e09-7a26-d0f6-9eec-d26dad1a3b5c/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Janet Quantick", "url": "https://membership.scouts.org.uk/#/membersearch/96cffc78-fc51-7254-d155-29e653c1f89d/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Jay Ferguson", "url": "https://membership.scouts.org.uk/#/membersearch/abc2de86-5ece-98b3-5da4-4ac9453e0717/viewmember", "unit": "14th Winchester (Wonston & Micheldever)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Jim Fraser", "url": "https://membership.scouts.org.uk/#/membersearch/0cccb208-8cef-6cb1-7391-ffb75770972c/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Jim Fraser", "url": "https://membership.scouts.org.uk/#/membersearch/0cccb208-8cef-6cb1-7391-ffb75770972c/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Lightweight expedition", "type": "Supervisory"}, {"name": "Joanne Pike", "url": "https://membership.scouts.org.uk/#/membersearch/af4e33fd-c968-5fff-3f03-62d115819e7b/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "John Easton", "url": "https://membership.scouts.org.uk/#/membersearch/eef3dda6-a50e-b25c-9966-6ebb7783079a/viewmember", "unit": "17th WINCHESTER (CANDOVER VALLEY)", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Jon Faulkner", "url": "https://membership.scouts.org.uk/#/membersearch/24b0f3c0-9d5a-4044-0a59-24376c9101d1/viewmember", "unit": "7th Winchester (St Cross)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Kama Miller-Gambie", "url": "https://membership.scouts.org.uk/#/membersearch/3abb2441-ed5d-0464-d9c3-022b81f13aff/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Karen Williams", "url": "https://membership.scouts.org.uk/#/membersearch/e4bfb325-7040-b024-27f3-31ad0fdf915e/viewmember", "unit": "7th Winchester (St Cross)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Lisa Beusmans", "url": "https://membership.scouts.org.uk/#/membersearch/1323b3bf-8186-a621-3bb6-27d46c0bba6f/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Lisa Gibbons", "url": "https://membership.scouts.org.uk/#/membersearch/e265442e-2398-ca2b-c1fb-45d0818e12b8/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Lisa Gibbons", "url": "https://membership.scouts.org.uk/#/membersearch/e265442e-2398-ca2b-c1fb-45d0818e12b8/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Indoor", "type": "Supervisory"}, {"name": "Mark Weston-Smith", "url": "https://membership.scouts.org.uk/#/membersearch/56dd7e93-3ca9-7136-9d18-0fc0c691cbe5/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Martin Southgate", "url": "https://membership.scouts.org.uk/#/membersearch/0ab960d6-e18e-6ab0-2b8f-51dcdc61149a/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Martyn Inglis", "url": "https://membership.scouts.org.uk/#/membersearch/f1d52f0e-faf1-1e15-056e-347f3ae1b993/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Matt Barker", "url": "https://membership.scouts.org.uk/#/membersearch/1a12bdc4-bdf5-cca9-14ab-a52021329046/viewmember", "unit": "11th Winchester (Fulflood)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Matt Sugden", "url": "https://membership.scouts.org.uk/#/membersearch/a8a15c89-4380-28ee-48bf-e5fce1d29914/viewmember", "unit": "14th Winchester (Wonston & Micheldever)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Maxine Holland", "url": "https://membership.scouts.org.uk/#/membersearch/e9a4e06b-296b-28a5-e971-73c4132116cc/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Melanie Grigorian", "url": "https://membership.scouts.org.uk/#/membersearch/9c481c2c-e579-ab02-74c7-1709b188640c/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Michael Reynolds", "url": "https://membership.scouts.org.uk/#/membersearch/18692b7b-2320-04b5-35f3-884376f5919d/viewmember", "unit": "11th Winchester (Fulflood)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Mike Goulding", "url": "https://membership.scouts.org.uk/#/membersearch/e34de01f-70f7-9e69-9ac4-7618b60bc4dd/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Mike Goulding", "url": "https://membership.scouts.org.uk/#/membersearch/e34de01f-70f7-9e69-9ac4-7618b60bc4dd/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Indoor", "type": "Supervisory"}, {"name": "Nick Warner", "url": "https://membership.scouts.org.uk/#/membersearch/1c406bbe-1d0d-d4a8-6029-6dcebed6d4e0/viewmember", "unit": "Winchester - Explorer Scouts Trident", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Pamela Payne", "url": "https://membership.scouts.org.uk/#/membersearch/0d0387c9-ca8b-34ca-d35b-19ca2589ae10/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Paul Dique", "url": "https://membership.scouts.org.uk/#/membersearch/c48ef124-0cc9-483d-358d-3b28f5991902/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Paul Duncan", "url": "https://membership.scouts.org.uk/#/membersearch/8c79fc02-2acd-ea45-0df6-c5787106c722/viewmember", "unit": "12th Winchester (Green Jackets)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Paula Sharpe", "url": "https://membership.scouts.org.uk/#/membersearch/b17a2f8d-cf70-d287-774b-7c5411c1abdf/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Peter Turner", "url": "https://membership.scouts.org.uk/#/membersearch/a15fe1ff-2b1f-f7d4-b176-85332dbb0e1b/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Lightweight expedition", "type": "Supervisory"}, {"name": "Richard Hurrell", "url": "https://membership.scouts.org.uk/#/membersearch/0d53d8c8-b85e-3681-3501-fdc7746e3217/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Indoor", "type": "Supervisory"}, {"name": "Richard Hurrell", "url": "https://membership.scouts.org.uk/#/membersearch/0d53d8c8-b85e-3681-3501-fdc7746e3217/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Lightweight expedition", "type": "Supervisory"}, {"name": "Richard Mendelsohn", "url": "https://membership.scouts.org.uk/#/membersearch/431345ff-020b-ee41-cb65-1a7ae3c68bdb/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Lightweight expedition", "type": "Supervisory"}, {"name": "Richard Webster", "url": "https://membership.scouts.org.uk/#/membersearch/be72f0d6-dc7f-5bb3-7cea-f463e91f250d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Richard Webster", "url": "https://membership.scouts.org.uk/#/membersearch/be72f0d6-dc7f-5bb3-7cea-f463e91f250d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Indoor", "type": "Supervisory"}, {"name": "Rob James", "url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Ross Owen", "url": "https://membership.scouts.org.uk/#/membersearch/6b3c74e3-16bd-5002-23c6-1acb29754644/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Roy Naismith", "url": "https://membership.scouts.org.uk/#/membersearch/e18bc8b4-9c13-ac14-ea23-750a27987b9a/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Sarah Lodge", "url": "https://membership.scouts.org.uk/#/membersearch/ae1217fb-a2ff-fd01-9abc-d1a3264edd1e/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Simon Lee", "url": "https://membership.scouts.org.uk/#/membersearch/c451bf2f-5a54-a5e7-3d12-6c9625a3d67d/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Stacey Burrage", "url": "https://membership.scouts.org.uk/#/membersearch/a88162a5-7928-a55b-b8c0-ca20cce3cd50/viewmember", "unit": "12th Winchester (Green Jackets)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Steven Boardman", "url": "https://membership.scouts.org.uk/#/membersearch/809e7cd4-2b78-72f1-cf79-9146749f2853/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Greenfield", "type": "Supervisory"}, {"name": "Susan Bowdery", "url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Tommy O'Sullivan", "url": "https://membership.scouts.org.uk/#/membersearch/67a5637b-22da-710a-cde7-7bf34b6145a1/viewmember", "unit": "11th Winchester (Fulflood)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Tracy Dique", "url": "https://membership.scouts.org.uk/#/membersearch/cff266a8-e143-9902-0b8c-02ecf80f9a19/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Vic Bolton", "url": "https://membership.scouts.org.uk/#/membersearch/d61d0ca8-048c-e23d-28ad-ec08d02dc141/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}, {"name": "Vicky Cole", "url": "https://membership.scouts.org.uk/#/membersearch/af447f52-fac2-f0ea-5a07-877039057675/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Indoor", "type": "Supervisory"}, {"name": "Will Adeney", "url": "https://membership.scouts.org.uk/#/membersearch/6477cd3c-2dfb-181c-a10b-65738cd842f9/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Campsite", "type": "Supervisory"}];
+const NA_M  = new Set(["Jim Fraser", "Lisa Gibbons", "Mike Goulding", "Richard Hurrell", "Richard Webster"]);
+function naBadge(c) {
+  const m={'campsite':'b-camp','indoor':'b-indoor','greenfield':'b-green'};
+  return 'badge '+(m[c.toLowerCase()]||'b-exp');
+}
+let naCtrl, naShowMulti=false, nasc=-1, nasa=true, naCur=[...NA_D];
+function naRender(r) {
+  const tb=document.getElementById('na-tb'),nr=document.getElementById('na-nr');
+  if(!r.length){tb.innerHTML='';nr.style.display='block';}
+  else{nr.style.display='none';tb.innerHTML=r.map(x=>{
+    const iM=NA_M.has(x.name);
+    return `<tr class="${iM?'hl':''}"><td><a href="${esc(x.url)}" target="_blank">${esc(x.name)}</a>${iM?'<span class="pip"></span>':''}</td><td>${esc(x.unit)}</td><td>${esc(x.county)}</td><td><span class="${naBadge(x.category)}">${esc(x.category)}</span></td><td>${esc(x.type)}</td></tr>`;
+  }).join('');}
+  document.getElementById('na-cnt').textContent=r.length+' records';
+}
+function naFilter() {
+  const q=document.getElementById('na-q').value.toLowerCase();
+  const cat=document.getElementById('na-cat').value.toLowerCase();
+  naCur=NA_D.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))&&(!cat||r.category.toLowerCase()===cat)&&(!naShowMulti||NA_M.has(r.name)));
+  nasc>=0?naApplySort():naRender(naCur);
+}
+function naToggleMulti(){naShowMulti=!naShowMulti;document.getElementById('na-multi-btn').classList.toggle('active',naShowMulti);naFilter();}
+function naSort(c){const ths=document.querySelectorAll('#tab-na thead th');ths.forEach(t=>t.classList.remove('asc','desc'));nasc===c?nasa=!nasa:(nasc=c,nasa=true);ths[c].classList.add(nasa?'asc':'desc');naApplySort();}
+function naApplySort(){const k=['name','unit','county','category','type'][nasc];naCur.sort((a,b)=>nasa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));naRender(naCur);}
+naRender(NA_D);
+
+// ── Archery ───────────────────────────────────────────────────
+const ARCH_D = [{"name": "Adrian Lodge", "url": "https://membership.scouts.org.uk/#/membersearch/da723f64-90e2-abff-97d9-307125081fce/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Andrew Masham", "url": "https://membership.scouts.org.uk/#/membersearch/4f5eecaa-0f48-1dd5-99b9-e6ec15d570f6/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Beccy Shaw", "url": "https://membership.scouts.org.uk/#/membersearch/1ffa187c-6f22-e73a-bb32-612165721fa6/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Becky Wallis", "url": "https://membership.scouts.org.uk/#/membersearch/154b6eb0-c5a5-cef7-ebd2-231734811d62/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Chris Floyd", "url": "https://membership.scouts.org.uk/#/membersearch/0ab6b75c-68d7-bbf2-3ec8-228d7bead2f2/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "David Ashby", "url": "https://membership.scouts.org.uk/#/membersearch/ab69d8f4-0999-35fd-0a7a-4e4596414fc6/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Doug Tilney", "url": "https://membership.scouts.org.uk/#/membersearch/4b76e6ec-af5e-cc3c-d0fc-41f2122e7401/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Gareth Floyd", "url": "https://membership.scouts.org.uk/#/membersearch/7e376e23-b670-14ce-dfa1-62d029636576/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "John Halford", "url": "https://membership.scouts.org.uk/#/membersearch/2057b9b1-6868-7268-0ce3-682be5794d36/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Mark Weston-Smith", "url": "https://membership.scouts.org.uk/#/membersearch/56dd7e93-3ca9-7136-9d18-0fc0c691cbe5/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Martyn Inglis", "url": "https://membership.scouts.org.uk/#/membersearch/f1d52f0e-faf1-1e15-056e-347f3ae1b993/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Peter Turner", "url": "https://membership.scouts.org.uk/#/membersearch/a15fe1ff-2b1f-f7d4-b176-85332dbb0e1b/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Richard Tate", "url": "https://membership.scouts.org.uk/#/membersearch/2d9246ff-4cc9-38b8-408a-580271116c50/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Ross Owen", "url": "https://membership.scouts.org.uk/#/membersearch/6b3c74e3-16bd-5002-23c6-1acb29754644/viewmember", "unit": "9th Winchester (Colden Common)", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Sarah Lodge", "url": "https://membership.scouts.org.uk/#/membersearch/ae1217fb-a2ff-fd01-9abc-d1a3264edd1e/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Sean Coleman", "url": "https://membership.scouts.org.uk/#/membersearch/bc472c7f-eb5d-3f1d-e176-c2251e839209/viewmember", "unit": "8th Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Leadership"}, {"name": "Steven Boardman", "url": "https://membership.scouts.org.uk/#/membersearch/809e7cd4-2b78-72f1-cf79-9146749f2853/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "without compound bows", "type": "Supervisory"}];
+let archsc=-1, archsa=true, archCur=[...ARCH_D];
+function archRender(r) {
+  const tb=document.getElementById('arch-tb'),nr=document.getElementById('arch-nr');
+  if(!r.length){tb.innerHTML='';nr.style.display='block';}
+  else{nr.style.display='none';tb.innerHTML=r.map(x=>`<tr><td><a href="${esc(x.url)}" target="_blank">${esc(x.name)}</a></td><td>${esc(x.unit)}</td><td>${esc(x.county)}</td><td><span class="badge b-arch">${esc(x.category)}</span></td><td>${esc(x.type)}</td></tr>`).join('');}
+  document.getElementById('arch-cnt').textContent=r.length+' records';
+}
+function archFilter() {
+  const q=document.getElementById('arch-q').value.toLowerCase();
+  const tp=document.getElementById('arch-type').value.toLowerCase();
+  archCur=ARCH_D.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))&&(!tp||r.type.toLowerCase()===tp));
+  archsc>=0?archApplySort():archRender(archCur);
+}
+function archSort(c){const ths=document.querySelectorAll('#tab-arch thead th');ths.forEach(t=>t.classList.remove('asc','desc'));archsc===c?archsa=!archsa:(archsc=c,archsa=true);ths[c].classList.add(archsa?'asc':'desc');archApplySort();}
+function archApplySort(){const k=['name','unit','county','category','type'][archsc];archCur.sort((a,b)=>archsa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));archRender(archCur);}
+archRender(ARCH_D);
+
+// ── Water ─────────────────────────────────────────────────────
+const WATER_D = [{"name": "Christine Cook", "url": "https://membership.scouts.org.uk/#/membersearch/bd540e6b-9b07-a26c-7c1c-2cefc71c715c/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Sea"}, {"name": "Colin Freemantle", "url": "https://membership.scouts.org.uk/#/membersearch/ca3bf853-6a6d-51bf-867f-00507abaadf7/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Open Inland"}, {"name": "Colin Freemantle", "url": "https://membership.scouts.org.uk/#/membersearch/ca3bf853-6a6d-51bf-867f-00507abaadf7/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Sea"}, {"name": "David Bannister", "url": "https://membership.scouts.org.uk/#/membersearch/c05540eb-6b74-45c5-fb30-5de4995a6a97/viewmember", "unit": "12th Winchester (Green Jackets)", "county": "Hampshire", "category": "B2", "type": "Leadership", "activity": "Yachting"}, {"name": "Julian Pearce", "url": "https://membership.scouts.org.uk/#/membersearch/1a2d13e6-65d3-938c-c388-ec2c75f7b668/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing Open Inland"}, {"name": "Julian Pearce", "url": "https://membership.scouts.org.uk/#/membersearch/1a2d13e6-65d3-938c-c388-ec2c75f7b668/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing River"}, {"name": "Mark Weston-Smith", "url": "https://membership.scouts.org.uk/#/membersearch/56dd7e93-3ca9-7136-9d18-0fc0c691cbe5/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing River"}, {"name": "Matthew Wilkinson", "url": "https://membership.scouts.org.uk/#/membersearch/b781efe6-ab16-7709-51ab-2ece6afcb700/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing Open Inland"}, {"name": "Matthew Wilkinson", "url": "https://membership.scouts.org.uk/#/membersearch/b781efe6-ab16-7709-51ab-2ece6afcb700/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing River"}, {"name": "Neil Mcleod", "url": "https://membership.scouts.org.uk/#/membersearch/dbff0374-80c9-a5e2-d587-31e8c9b0a04d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing Open Inland"}, {"name": "Neil Mcleod", "url": "https://membership.scouts.org.uk/#/membersearch/dbff0374-80c9-a5e2-d587-31e8c9b0a04d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Canoeing River"}, {"name": "Neil Mcleod", "url": "https://membership.scouts.org.uk/#/membersearch/dbff0374-80c9-a5e2-d587-31e8c9b0a04d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Open Inland"}, {"name": "Nick Elborough", "url": "https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember", "unit": "11th Winchester (Fulflood)", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Stand Up Paddleboarding Open Inland"}, {"name": "Phill Horne", "url": "https://membership.scouts.org.uk/#/membersearch/225c7b95-1786-e4de-d7e2-0461f72087b0/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "B2", "type": "Leadership", "activity": "Dinghy Sailing"}, {"name": "Remus Sawyerr", "url": "https://membership.scouts.org.uk/#/membersearch/ca876788-93e7-6f3a-2d64-14b8719e300f/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B2", "type": "Leadership", "activity": "Yachting"}, {"name": "Robin Cook", "url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Open Inland"}, {"name": "Robin Cook", "url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B1", "type": "Leadership", "activity": "Kayaking Sea"}, {"name": "Robin Cook", "url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "B1", "type": "Supervisory", "activity": "Rafting (Traditional)"}];
+const WATER_M = new Set(["Colin Freemantle", "Julian Pearce", "Matthew Wilkinson", "Neil Mcleod", "Robin Cook"]);
+function waBadge(act) {
+  const m = {
+    "Canoeing Open Inland": "wa_canoeing_open_inland",
+    "Canoeing River": "wa_canoeing_river",
+    "Dinghy Sailing": "wa_dinghy_sailing",
+    "Kayaking Open Inland": "wa_kayaking_open_inland",
+    "Kayaking Sea": "wa_kayaking_sea",
+    "Rafting (Traditional)": "wa_rafting_traditional",
+    "Stand Up Paddleboarding Open Inland": "wa_stand_up_paddleboarding_open_inland",
+    "Yachting": "wa_yachting",
+  };
+  return 'badge ' + (m[act] || 'b-exp');
+}
+let watersc=-1, watersa=true, waterCur=[...WATER_D], waterShowMulti=false;
+function waterRender(r) {
+  const tb=document.getElementById('water-tb'),nr=document.getElementById('water-nr');
+  if(!r.length){tb.innerHTML='';nr.style.display='block';}
+  else{nr.style.display='none';tb.innerHTML=r.map(x=>{
+    const iM=WATER_M.has(x.name);
+    return `<tr class="${iM?'hl':''}"><td><a href="${esc(x.url)}" target="_blank">${esc(x.name)}</a>${iM?'<span class="pip"></span>':''}</td><td>${esc(x.unit)}</td><td>${esc(x.county)}</td><td><span class="${waBadge(x.activity)}">${esc(x.activity)}</span></td><td>${esc(x.category)}</td><td>${esc(x.type)}</td></tr>`;
+  }).join('');}
+  document.getElementById('water-cnt').textContent=r.length+' records';
+}
+function waterFilter() {
+  const q=document.getElementById('water-q').value.toLowerCase();
+  const act=document.getElementById('water-act').value.toLowerCase();
+  waterCur=WATER_D.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))&&(!act||r.activity.toLowerCase()===act)&&(!waterShowMulti||WATER_M.has(r.name)));
+  watersc>=0?waterApplySort():waterRender(waterCur);
+}
+function waterToggleMulti(){waterShowMulti=!waterShowMulti;document.getElementById('water-multi-btn').classList.toggle('active',waterShowMulti);waterFilter();}
+function waterSort(c){const ths=document.querySelectorAll('#tab-water thead th');ths.forEach(t=>t.classList.remove('asc','desc'));watersc===c?watersa=!watersa:(watersc=c,watersa=true);ths[c].classList.add(watersa?'asc':'desc');waterApplySort();}
+function waterApplySort(){const k=['name','unit','county','activity','category','type'][watersc];waterCur.sort((a,b)=>watersa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));waterRender(waterCur);}
+waterRender(WATER_D);
+
+// ── Climbing ──────────────────────────────────────────────────
+const CLIMB_D = [{"name": "Chris Floyd", "url": "https://membership.scouts.org.uk/#/membersearch/0ab6b75c-68d7-bbf2-3ec8-228d7bead2f2/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Supervisory"}, {"name": "Gareth Floyd", "url": "https://membership.scouts.org.uk/#/membersearch/7e376e23-b670-14ce-dfa1-62d029636576/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Supervisory"}, {"name": "Giles Gooding", "url": "https://membership.scouts.org.uk/#/membersearch/d5c64299-4af2-f624-5856-64bc17125b89/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}, {"name": "Greg Arding", "url": "https://membership.scouts.org.uk/#/membersearch/44ea4462-28d4-231d-6d6e-f3d05e1cdd15/viewmember", "unit": "1st Winchester (Weeke & Harestock)", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}, {"name": "John Halford", "url": "https://membership.scouts.org.uk/#/membersearch/2057b9b1-6868-7268-0ce3-682be5794d36/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}, {"name": "PED/ PETE Burke", "url": "https://membership.scouts.org.uk/#/membersearch/77d29785-b89a-4815-d5bc-fb7c2b1f7ac7/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Natural Top Rope", "type": "Leadership"}, {"name": "Peter Turner", "url": "https://membership.scouts.org.uk/#/membersearch/a15fe1ff-2b1f-f7d4-b176-85332dbb0e1b/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}, {"name": "Richard Tate", "url": "https://membership.scouts.org.uk/#/membersearch/2d9246ff-4cc9-38b8-408a-580271116c50/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Supervisory"}, {"name": "Tim Nealon", "url": "https://membership.scouts.org.uk/#/membersearch/0d6ade53-d395-44c6-9bfa-703e2830e77d/viewmember", "unit": "14th Winchester (Wonston & Micheldever)", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}, {"name": "Vanessa Slawson", "url": "https://membership.scouts.org.uk/#/membersearch/bf9f7988-7dba-80e1-84ce-5201aedfa385/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Artificial Top Rope", "type": "Leadership"}];
+const CLIMB_M = new Set([]);
+let climbsc=-1, climbsa=true, climbCur=[...CLIMB_D], climbShowMulti=false;
+function climbBadge(c){return c.toLowerCase().includes('artificial')?'badge b-climb-art':'badge b-climb-nat';}
+function climbRender(r) {
+  const tb=document.getElementById('climb-tb'),nr=document.getElementById('climb-nr');
+  if(!r.length){tb.innerHTML='';nr.style.display='block';}
+  else{nr.style.display='none';tb.innerHTML=r.map(x=>{
+    const iM=CLIMB_M.has(x.name);
+    return `<tr class="${iM?'hl':''}"><td><a href="${esc(x.url)}" target="_blank">${esc(x.name)}</a>${iM?'<span class="pip"></span>':''}</td><td>${esc(x.unit)}</td><td>${esc(x.county)}</td><td><span class="${climbBadge(x.category)}">${esc(x.category)}</span></td><td>${esc(x.type)}</td></tr>`;
+  }).join('');}
+  document.getElementById('climb-cnt').textContent=r.length+' records';
+}
+function climbFilter() {
+  const q=document.getElementById('climb-q').value.toLowerCase();
+  const cat=document.getElementById('climb-cat').value.toLowerCase();
+  climbCur=CLIMB_D.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))&&(!cat||r.category.toLowerCase()===cat)&&(!climbShowMulti||CLIMB_M.has(r.name)));
+  climbsc>=0?climbApplySort():climbRender(climbCur);
+}
+function climbToggleMulti(){climbShowMulti=!climbShowMulti;document.getElementById('climb-multi-btn').classList.toggle('active',climbShowMulti);climbFilter();}
+function climbSort(c){const ths=document.querySelectorAll('#tab-climb thead th');ths.forEach(t=>t.classList.remove('asc','desc'));climbsc===c?climbsa=!climbsa:(climbsc=c,climbsa=true);ths[c].classList.add(climbsa?'asc':'desc');climbApplySort();}
+function climbApplySort(){const k=['name','unit','county','category','type'][climbsc];climbCur.sort((a,b)=>climbsa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));climbRender(climbCur);}
+climbRender(CLIMB_D);
+
+// ── Hillwalking ───────────────────────────────────────────────
+const HILL_D = [{"name": "Adrian Went", "url": "https://membership.scouts.org.uk/#/membersearch/72b78e80-1575-77bd-5499-478b18c7a827/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Leadership"}, {"name": "Andrew Shire", "url": "https://membership.scouts.org.uk/#/membersearch/fa18a702-15ba-f628-4424-ad9355f08588/viewmember", "unit": "11th Winchester (Fulflood)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Leadership"}, {"name": "Christine Cook", "url": "https://membership.scouts.org.uk/#/membersearch/bd540e6b-9b07-a26c-7c1c-2cefc71c715c/viewmember", "unit": "3rd Winchester (The Worthies)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "David Henderson", "url": "https://membership.scouts.org.uk/#/membersearch/cbe20a46-cc42-108d-aed1-d1ccd05d24d3/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Terrain 1 Summer", "type": "Leadership"}, {"name": "Jim Fraser", "url": "https://membership.scouts.org.uk/#/membersearch/0cccb208-8cef-6cb1-7391-ffb75770972c/viewmember", "unit": "6th Winchester (Abbotts Barton and Hyde)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "Jonathan Green", "url": "https://membership.scouts.org.uk/#/membersearch/0be74694-b6b7-3394-3126-dd9977034333/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Leadership"}, {"name": "PED/ PETE Burke", "url": "https://membership.scouts.org.uk/#/membersearch/77d29785-b89a-4815-d5bc-fb7c2b1f7ac7/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "Peter Turner", "url": "https://membership.scouts.org.uk/#/membersearch/a15fe1ff-2b1f-f7d4-b176-85332dbb0e1b/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "Phil Wilson", "url": "https://membership.scouts.org.uk/#/membersearch/85a4f5be-aa8b-ba47-b1c3-d0073d6f5826/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Leadership"}, {"name": "Richard Hurrell", "url": "https://membership.scouts.org.uk/#/membersearch/0d53d8c8-b85e-3681-3501-fdc7746e3217/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "Richard Hurrell", "url": "https://membership.scouts.org.uk/#/membersearch/0d53d8c8-b85e-3681-3501-fdc7746e3217/viewmember", "unit": "Winchester - Explorer Scouts Excalibur", "county": "Hampshire", "category": "Terrain 2 Winter", "type": "Supervisory"}, {"name": "Richard Mendelsohn", "url": "https://membership.scouts.org.uk/#/membersearch/431345ff-020b-ee41-cb65-1a7ae3c68bdb/viewmember", "unit": "Winchester", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}, {"name": "Rob Grigorian", "url": "https://membership.scouts.org.uk/#/membersearch/1ec56586-ea2f-e12e-73c4-9d5f38809fef/viewmember", "unit": "Winchester - Explorer Scouts Mercury", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Leadership"}, {"name": "Rob James", "url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember", "unit": "5th Winchester (Compton & Shawford)", "county": "Hampshire", "category": "Terrain 2 Summer", "type": "Supervisory"}];
+const HILL_M = new Set(["Richard Hurrell"]);
+let hillsc=-1, hillsa=true, hillCur=[...HILL_D], hillShowMulti=false;
+function hillRender(r) {
+  const tb=document.getElementById('hill-tb'),nr=document.getElementById('hill-nr');
+  if(!r.length){tb.innerHTML='';nr.style.display='block';}
+  else{nr.style.display='none';tb.innerHTML=r.map(x=>{
+    const iM=HILL_M.has(x.name);
+    return `<tr class="${iM?'hl':''}"><td><a href="${esc(x.url)}" target="_blank">${esc(x.name)}</a>${iM?'<span class="pip"></span>':''}</td><td>${esc(x.unit)}</td><td>${esc(x.county)}</td><td><span class="badge b-hill">${esc(x.category)}</span></td><td>${esc(x.type)}</td></tr>`;
+  }).join('');}
+  document.getElementById('hill-cnt').textContent=r.length+' records';
+}
+function hillFilter() {
+  const q=document.getElementById('hill-q').value.toLowerCase();
+  const cat=document.getElementById('hill-cat').value.toLowerCase();
+  hillCur=HILL_D.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.unit.toLowerCase().includes(q))&&(!cat||r.category.toLowerCase()===cat)&&(!hillShowMulti||HILL_M.has(r.name)));
+  hillsc>=0?hillApplySort():hillRender(hillCur);
+}
+function hillToggleMulti(){hillShowMulti=!hillShowMulti;document.getElementById('hill-multi-btn').classList.toggle('active',hillShowMulti);hillFilter();}
+function hillSort(c){const ths=document.querySelectorAll('#tab-hill thead th');ths.forEach(t=>t.classList.remove('asc','desc'));hillsc===c?hillsa=!hillsa:(hillsc=c,hillsa=true);ths[c].classList.add(hillsa?'asc':'desc');hillApplySort();}
+function hillApplySort(){const k=['name','unit','county','category','type'][hillsc];hillCur.sort((a,b)=>hillsa?a[k].toLowerCase().localeCompare(b[k].toLowerCase()):b[k].toLowerCase().localeCompare(a[k].toLowerCase()));hillRender(hillCur);}
+hillRender(HILL_D);
+
+// ── By Group ──────────────────────────────────────────────────
+const GRP = [{"group": "Winchester", "count": 20, "is_district": true}, {"group": "5th Winchester (Compton & Shawford)", "count": 8, "is_district": false}, {"group": "1st Winchester (Weeke & Harestock)", "count": 7, "is_district": false}, {"group": "3rd Winchester (The Worthies)", "count": 6, "is_district": false}, {"group": "6th Winchester (Abbotts Barton and Hyde)", "count": 6, "is_district": false}, {"group": "9th Winchester (Colden Common)", "count": 5, "is_district": false}, {"group": "12th Winchester (Green Jackets)", "count": 4, "is_district": false}, {"group": "8th Winchester", "count": 3, "is_district": false}, {"group": "11th Winchester (Fulflood)", "count": 3, "is_district": false}, {"group": "14th Winchester (Wonston & Micheldever)", "count": 2, "is_district": false}, {"group": "7th Winchester (St Cross)", "count": 2, "is_district": false}, {"group": "17th WINCHESTER (CANDOVER VALLEY)", "count": 1, "is_district": false}];
+const MAX_G = 20;
+(function(){
+  const tb=document.getElementById('group-tb');
+  const sorted=[...GRP].sort((a,b)=>{if(a.is_district&&!b.is_district)return -1;if(!a.is_district&&b.is_district)return 1;return b.count-a.count;});
+  tb.innerHTML=sorted.map(g=>{
+    const pct=Math.round(g.count/MAX_G*100);
+    return `<tr><td>${esc(g.group)}${g.is_district?'<span class="dist-badge">district</span>':''}</td><td class="bar-cell"><div class="bar-bg"><div class="bar-fill${g.is_district?' dist':''}" style="width:${pct}%"></div></div></td><td class="${g.is_district?'dc':''}">${g.count}</td></tr>`;
+  }).join('');
+})();
+</script>
+</body>
+</html>

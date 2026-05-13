@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMS Profile URL Extractor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-dark: #3d1a6e;
+  --purple-light: #7a4aab;
+  --teal: #0d9488;
+  --bg: #f8f7fc;
+  --surface: #ffffff;
+  --border: #e5e0f0;
+  --text: #1a1033;
+  --text-mid: #4b3f6b;
+  --text-muted: #8b7aaa;
+  --green: #059669;
+  --red: #dc2626;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header {
+  background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 60%, var(--purple-light) 100%);
+  color: white; padding: 24px 32px;
+}
+.header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+.header p { font-size: 0.85rem; opacity: 0.75; margin-top: 4px; }
+
+.main { max-width: 900px; margin: 0 auto; padding: 32px; }
+
+.instructions {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 24px; margin-bottom: 24px;
+}
+.instructions h2 { font-size: 0.95rem; font-weight: 600; color: var(--purple); margin-bottom: 10px; }
+.instructions ol { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.instructions li { font-size: 0.87rem; color: var(--text-mid); line-height: 1.5; }
+.instructions code {
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 4px; font-size: 0.82rem; color: var(--purple);
+}
+
+.paste-area-wrap { margin-bottom: 24px; }
+.paste-area-wrap label { display: block; font-size: 0.87rem; font-weight: 600; color: var(--text-mid); margin-bottom: 8px; }
+
+.paste-target {
+  width: 100%; min-height: 120px; max-height: 120px;
+  border: 2px dashed var(--border); border-radius: 12px;
+  background: var(--surface); padding: 20px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.87rem; color: var(--text-muted);
+  cursor: text; outline: none; transition: border-color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; line-height: 1.6;
+  position: relative;
+}
+.paste-target.has-content {
+  align-items: flex-start; justify-content: flex-start;
+  text-align: left; color: var(--text);
+  max-height: 160px; overflow-y: auto;
+}
+.paste-target:focus { border-color: var(--purple); }
+.paste-target.dragover { border-color: var(--teal); background: #f0fdfb; }
+
+.btn-row { display: flex; gap: 12px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 20px; border-radius: 8px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 0.87rem; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-primary { background: var(--purple); color: white; }
+.btn-primary:hover { background: var(--purple-dark); }
+.btn-primary:disabled { background: var(--text-muted); cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--text-mid); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+.btn-download { background: var(--green); color: white; }
+.btn-download:hover { background: #047857; }
+.btn-download:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+.status {
+  font-size: 0.85rem; color: var(--text-muted); padding: 8px 14px;
+  border-radius: 8px; background: var(--surface); border: 1px solid var(--border);
+}
+.status.ok { color: var(--green); border-color: #a7f3d0; background: #ecfdf5; }
+.status.warn { color: #92400e; border-color: #fde68a; background: #fffbeb; }
+.status.err { color: var(--red); border-color: #fecaca; background: #fef2f2; }
+
+.results-section { display: none; }
+.results-section.visible { display: block; }
+
+.summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px;
+}
+.summary-card .val { font-size: 1.8rem; font-weight: 700; color: var(--purple); line-height: 1; }
+.summary-card .lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
+.summary-card.green .val { color: var(--green); }
+.summary-card.warn .val { color: #d97706; }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; max-height: 480px; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+thead th {
+  background: var(--purple); color: white; padding: 10px 14px; text-align: left;
+  font-weight: 600; font-size: 0.78rem; letter-spacing: 0.03em;
+  position: sticky; top: 0; z-index: 2;
+}
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f5f2fc; }
+td { padding: 9px 14px; vertical-align: middle; }
+td.name-cell { font-weight: 500; }
+td.num-cell { font-family: monospace; font-size: 0.82rem; color: var(--text-mid); }
+td.url-cell { font-size: 0.75rem; color: var(--teal); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.url-cell.missing { color: var(--text-muted); font-style: italic; }
+.no-url-badge {
+  display: inline-block; padding: 1px 7px; border-radius: 20px;
+  background: #fef3c7; color: #92400e; font-size: 0.72rem; font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>SMS Profile URL Extractor</h1>
+  <p>One-shot tool — paste your SMS member list, download a membership number → profile URL CSV</p>
+</div>
+
+<div class="main">
+
+  <div class="instructions">
+    <h2>How to use this tool</h2>
+    <ol>
+      <li>In the Scout Membership System, open the member list for Winchester District</li>
+      <li>Select all rows (<code>Ctrl+A</code> or <code>Cmd+A</code>) and copy (<code>Ctrl+C</code> or <code>Cmd+C</code>)</li>
+      <li>Click in the paste area below and paste (<code>Ctrl+V</code> or <code>Cmd+V</code>)</li>
+      <li>Click <strong>Extract URLs</strong> — the tool will find all profile links</li>
+      <li>Download the CSV and share it for use in the Accreditations dashboard</li>
+    </ol>
+  </div>
+
+  <div class="paste-area-wrap">
+    <label>Paste SMS member list here</label>
+    <div
+      class="paste-target"
+      id="pasteTarget"
+      contenteditable="true"
+      tabindex="0"
+    >Click here, then paste your copied SMS data (Ctrl+V / Cmd+V)</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="extractBtn" onclick="extract()">Extract URLs</button>
+    <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+    <button class="btn btn-download" id="downloadBtn" onclick="downloadCSV()" disabled>Download CSV</button>
+    <span class="status" id="status">Ready — paste your SMS data above then click Extract</span>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="val" id="statTotal">0</div>
+        <div class="lbl">Total rows parsed</div>
+      </div>
+      <div class="summary-card green">
+        <div class="val" id="statWithUrl">0</div>
+        <div class="lbl">Profile URLs found</div>
+      </div>
+      <div class="summary-card warn">
+        <div class="val" id="statNoUrl">0</div>
+        <div class="lbl">No URL (plain text)</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Membership No.</th>
+            <th>Profile URL</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let extractedRows = [];
+
+const pasteTarget = document.getElementById('pasteTarget');
+
+// Track whether there's real content
+pasteTarget.addEventListener('input', () => {
+  pasteTarget.classList.toggle('has-content', pasteTarget.innerText.trim().length > 0);
+});
+
+// Clear placeholder on focus
+pasteTarget.addEventListener('focus', () => {
+  if (pasteTarget.innerText.trim() === 'Click here, then paste your copied SMS data (Ctrl+V / Cmd+V)') {
+    pasteTarget.innerText = '';
+  }
+});
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status' + (type ? ' ' + type : '');
+}
+
+function extract() {
+  extractedRows = [];
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  // Try to get HTML from the paste area (rich paste preserves links)
+  const html = pasteTarget.innerHTML;
+  const text = pasteTarget.innerText.trim();
+
+  if (!text) {
+    setStatus('Nothing pasted yet — paste your SMS data first.', 'err');
+    return;
+  }
+
+  // Parse as HTML to find hyperlinks
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  // Look for table rows
+  const tableRows = doc.querySelectorAll('tr');
+
+  let parsed = [];
+
+  if (tableRows.length > 0) {
+    // Rich HTML table paste
+    tableRows.forEach(tr => {
+      const cells = tr.querySelectorAll('td, th');
+      if (cells.length < 2) return;
+
+      // Find the name cell — look for one containing an <a href> with membersearch/viewmember
+      let name = '', memberNum = '', profileUrl = '';
+
+      cells.forEach((td, i) => {
+        const link = td.querySelector('a[href]');
+        const cellText = td.innerText.trim();
+
+        // Detect membership number column — 10-digit number
+        if (/^\d{10}$/.test(cellText)) {
+          memberNum = cellText;
+        }
+
+        // Detect name cell with profile URL
+        if (link && link.href && (link.href.includes('viewmember') || link.href.includes('membersearch'))) {
+          name = cellText;
+          profileUrl = link.href;
+        } else if (!profileUrl && i === 0 && cellText && !/^\d/.test(cellText)) {
+          // Fallback: first non-numeric cell is probably the name
+          name = cellText;
+        }
+      });
+
+      if (memberNum || name) {
+        parsed.push({ name, memberNum, profileUrl });
+      }
+    });
+  }
+
+  // Fallback: plain text tab-separated
+  if (parsed.length === 0) {
+    const lines = text.split('\n').filter(l => l.trim());
+    lines.forEach(line => {
+      const cols = line.split('\t');
+      // Look for a 10-digit membership number in any column
+      let name = cols[0]?.trim() || '';
+      let memberNum = '';
+      cols.forEach(c => {
+        if (/^\d{10}$/.test(c.trim())) memberNum = c.trim();
+      });
+      if (name || memberNum) {
+        parsed.push({ name, memberNum, profileUrl: '' });
+      }
+    });
+  }
+
+  // Deduplicate by membership number (keep first occurrence)
+  const seen = new Set();
+  parsed = parsed.filter(r => {
+    if (!r.memberNum) return true; // keep nameless ones for visibility
+    if (seen.has(r.memberNum)) return false;
+    seen.add(r.memberNum);
+    return true;
+  });
+
+  // Filter out header rows
+  parsed = parsed.filter(r => r.name !== 'Name' && r.memberNum !== 'Number');
+
+  extractedRows = parsed;
+
+  const withUrl = parsed.filter(r => r.profileUrl).length;
+  const noUrl = parsed.filter(r => !r.profileUrl).length;
+
+  document.getElementById('statTotal').textContent = parsed.length;
+  document.getElementById('statWithUrl').textContent = withUrl;
+  document.getElementById('statNoUrl').textContent = noUrl;
+
+  // Render table
+  parsed.forEach(r => {
+    const tr = document.createElement('tr');
+    const urlCell = r.profileUrl
+      ? `<td class="url-cell"><a href="${r.profileUrl}" target="_blank" title="${r.profileUrl}">${r.profileUrl}</a></td>`
+      : `<td class="url-cell missing"><span class="no-url-badge">no URL</span></td>`;
+    tr.innerHTML = `
+      <td class="name-cell">${r.name || '—'}</td>
+      <td class="num-cell">${r.memberNum || '—'}</td>
+      ${urlCell}
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('resultsSection').classList.add('visible');
+
+  if (withUrl === 0) {
+    setStatus('No profile URLs found — the paste may be plain text only. Try copying directly from the SMS member table.', 'warn');
+    document.getElementById('downloadBtn').disabled = true;
+  } else if (noUrl > 0) {
+    setStatus(`Found ${withUrl} profile URLs. ${noUrl} rows had no URL (may be non-clickable rows). Download when ready.`, 'warn');
+    document.getElementById('downloadBtn').disabled = false;
+  } else {
+    setStatus(`All ${withUrl} rows have profile URLs. Ready to download.`, 'ok');
+    document.getElementById('downloadBtn').disabled = false;
+  }
+}
+
+function downloadCSV() {
+  const withUrl = extractedRows.filter(r => r.profileUrl && r.memberNum);
+  if (!withUrl.length) {
+    setStatus('No rows with both a membership number and URL to export.', 'err');
+    return;
+  }
+
+  const lines = ['membership_number,profile_url'];
+  withUrl.forEach(r => {
+    lines.push(`${r.memberNum},${r.profileUrl}`);
+  });
+
+  const csv = lines.join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'sms_profile_urls.csv';
+  a.click();
+}
+
+function clearAll() {
+  pasteTarget.innerText = 'Click here, then paste your copied SMS data (Ctrl+V / Cmd+V)';
+  pasteTarget.classList.remove('has-content');
+  document.getElementById('tableBody').innerHTML = '';
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('downloadBtn').disabled = true;
+  extractedRows = [];
+  setStatus('Ready — paste your SMS data above then click Extract', '');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winchester District — Accreditations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<style>
+:root {
+  --purple: #5b2d8e;
+  --purple-dark: #3d1a6e;
+  --purple-light: #7a4aab;
+  --teal: #0d9488;
+  --teal-light: #14b8a6;
+  --teal-dark: #0f766e;
+  --gold: #d97706;
+  --bg: #f8f7fc;
+  --surface: #ffffff;
+  --border: #e5e0f0;
+  --text: #1a1033;
+  --text-mid: #4b3f6b;
+  --text-muted: #8b7aaa;
+  --badge-multi: #7c3aed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header {
+  background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple) 60%, var(--purple-light) 100%);
+  color: white; padding: 0;
+}
+.header-inner {
+  max-width: 1200px; margin: 0 auto; padding: 24px 32px 0;
+  display: flex; align-items: center; gap: 20px; justify-content: space-between;
+}
+.header-logo {
+  width: 52px; height: 52px; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.header-text { flex: 1; }
+.header-text h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.header-text .subtitle { font-size: 0.85rem; opacity: 0.75; margin-top: 2px; }
+.header-links { display: flex; gap: 10px; align-items: center; padding-top: 4px; }
+.header-links a {
+  color: rgba(255,255,255,0.85); font-size: 0.78rem; text-decoration: none;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  padding: 5px 12px; border-radius: 20px; transition: all 0.15s; white-space: nowrap;
+}
+.header-links a:hover { background: rgba(255,255,255,0.22); color: white; }
+.header-tabs { max-width: 1200px; margin: 0 auto; padding: 16px 32px 0; display: flex; gap: 4px; }
+.tab-btn {
+  background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7);
+  padding: 8px 20px; border-radius: 8px 8px 0 0;
+  font-family: 'DM Sans', sans-serif; font-size: 0.87rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.tab-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+.tab-btn.active { background: var(--bg); color: var(--purple); font-weight: 600; }
+.export-note {
+  max-width: 1200px; margin: 0 auto; padding: 6px 32px;
+  font-size: 0.72rem; color: rgba(255,255,255,0.5); text-align: right;
+}
+
+.main { max-width: 1200px; margin: 0 auto; padding: 28px 32px 48px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-card .stat-value { font-size: 2rem; font-weight: 700; color: var(--purple); line-height: 1; }
+.stat-card .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card.teal .stat-value { color: var(--teal); }
+.stat-card.gold .stat-value { color: var(--gold); }
+
+.controls {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 16px;
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 16px; height: 16px; }
+.search-wrap input {
+  width: 100%; padding: 8px 12px 8px 34px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.87rem; color: var(--text);
+  background: var(--bg); outline: none; transition: border-color 0.15s;
+}
+.search-wrap input:focus { border-color: var(--purple); }
+select {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.87rem; color: var(--text);
+  background: var(--bg); outline: none; cursor: pointer; min-width: 160px;
+}
+select:focus { border-color: var(--purple); }
+.toggle-multi {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.87rem;
+  font-weight: 500; color: var(--text-mid); transition: all 0.15s; white-space: nowrap; user-select: none;
+}
+.toggle-multi:hover { border-color: var(--text-mid); }
+.toggle-multi.active { background: var(--text-mid); color: white; border-color: var(--text-mid); }
+.results-count { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+.clear-btn {
+  padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; color: var(--text-muted); transition: all 0.15s;
+}
+.clear-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+thead th {
+  background: var(--purple); color: white; padding: 11px 14px; text-align: left;
+  font-weight: 600; font-size: 0.8rem; letter-spacing: 0.03em;
+  cursor: pointer; user-select: none; white-space: nowrap;
+  position: sticky; top: 0; z-index: 2;
+}
+thead th:hover { background: var(--purple-light); }
+thead th.sorted-asc::after { content: ' ↑'; }
+thead th.sorted-desc::after { content: ' ↓'; }
+thead th.roles-col { text-align: center; width: 60px; }
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: #f5f2fc; }
+tbody tr.multi-highlight { background: #fafafa; }
+tbody tr.multi-highlight:hover { background: #f5f2fc; }
+
+td { padding: 10px 14px; vertical-align: middle; }
+td.name-cell { font-weight: 600; color: var(--text); }
+td.acc-cell { color: var(--teal-dark); font-weight: 500; }
+td.unit-cell { font-size: 0.82rem; color: var(--text-mid); }
+td.team-cell { font-size: 0.78rem; color: var(--text-muted); }
+td.roles-col { text-align: center; }
+
+/* Subtle pill — muted grey-blue, only visible when >1 */
+.roles-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e8e4f0;
+  color: var(--text-mid);
+  min-width: 28px;
+  text-align: center;
+}
+.roles-pill.single { background: transparent; color: var(--text-muted); font-weight: 400; }
+
+.acc-chip { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+.chip-assessor { background: #ecfdf5; color: #065f46; }
+.chip-support   { background: #eff6ff; color: #1e40af; }
+.chip-training  { background: #fef3c7; color: #92400e; }
+.chip-approver  { background: #fce7f3; color: #9d174d; }
+.chip-admin     { background: #f3f4f6; color: #374151; }
+
+.no-results { padding: 48px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+
+/* BY GROUP */
+.group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.group-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.group-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.group-badge {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--purple), var(--purple-light));
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem; flex-shrink: 0;
+}
+.group-name { font-weight: 600; font-size: 0.9rem; color: var(--text); line-height: 1.3; }
+.group-acc-list { display: flex; flex-direction: column; gap: 6px; }
+.group-acc-row { display: flex; align-items: center; justify-content: space-between; }
+.group-acc-name { font-size: 0.82rem; color: var(--text-mid); }
+.group-acc-bar-wrap { flex: 1; margin: 0 10px; height: 6px; background: var(--border); border-radius: 3px; }
+.group-acc-bar { height: 6px; border-radius: 3px; }
+.group-acc-count { font-size: 0.82rem; font-weight: 600; color: var(--text); min-width: 18px; text-align: right; }
+.group-total { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
+.group-total span { font-weight: 600; color: var(--purple); }
+
+@media (max-width: 768px) {
+  .main { padding: 16px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .header-inner { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-text">
+      <h1>Winchester District — Accreditations</h1>
+      <div class="subtitle">District S10001168 &nbsp;·&nbsp; Hampshire Scouts</div>
+    </div>
+    <div class="header-links">
+      <a href="https://membership.scouts.org.uk/#/dataexplorer/0bc4a979-a548-f011-877a-6045bddfc0d0" target="_blank">↗ Scout Membership System</a>
+    </div>
+    <img src="Winchester Groups_files/Scouts_Logo_Marque_Black.png" style="height:60px;flex-shrink:0;filter:brightness(0) invert(1);" alt="Scouts logo">
+  </div>
+  <div class="header-tabs">
+    <button class="tab-btn active" onclick="switchTab('all', this)">All Accreditations</button>
+    <button class="tab-btn" onclick="switchTab('groups', this)">By Group</button>
+  </div>
+  <div class="export-note">Data exported 30 April 2026</div>
+</div>
+
+<div class="main">
+
+  <div class="tab-panel active" id="tab-all">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">62</div>
+        <div class="stat-label">Accredited Volunteers</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="stat-value">116</div>
+        <div class="stat-label">Total Accreditations</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-value">27</div>
+        <div class="stat-label">Multiple Roles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">9</div>
+        <div class="stat-label">Accreditation Types</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchInput" placeholder="Search name, unit, accreditation…" oninput="filterTable()">
+      </div>
+      <select id="accFilter" onchange="filterTable()">
+        <option value="">All accreditations</option>
+      </select>
+      <select id="unitFilter" onchange="filterTable()">
+        <option value="">All units</option>
+      </select>
+      <button class="toggle-multi" id="multiToggle" onclick="toggleMulti()">
+        ⊕ Multiple roles only
+      </button>
+      <span class="results-count" id="resultsCount"></span>
+      <button class="clear-btn" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Name</th>
+            <th class="roles-col" onclick="sortTable(1)" title="Number of distinct accreditations held"># Roles</th>
+            <th onclick="sortTable(2)">Unit</th>
+            <th onclick="sortTable(3)">Accreditation</th>
+            <th onclick="sortTable(4)">Team</th>
+            <th onclick="sortTable(5)">Email</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="no-results" id="noResults" style="display:none">No results match your filters.</div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-groups">
+    <div class="group-grid" id="groupGrid"></div>
+  </div>
+
+</div>
+
+<script>
+const RAW = {"rows": [{"first": "Bruce", "last": "Martin", "membership": "122201", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "winchesterdesc@gmail.com", "phone": "1962847674", "team": "Programme Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember"}, {"first": "Darren", "last": "Cuell", "membership": "12088358", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "darrencuell@gmail.com", "phone": "1962621672", "team": "Programme Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a710c358-ea6a-6c0d-1a20-3a51c50f0b09/viewmember"}, {"first": "Darren", "last": "Whitt", "membership": "179439", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "darren@8thwinchester.org.uk", "phone": "7753868281", "team": "Programme Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/2249639f-9c6c-36d3-10d3-e69b8479a4a5/viewmember"}, {"first": "Donna", "last": "Brien", "membership": "901340", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "brien.donna@gmail.com", "phone": "1962897816", "team": "Programme Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f454ab5b-8215-d4c8-8409-55ba8e66a24d/viewmember"}, {"first": "Martyn", "last": "Inglis", "membership": "103712", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "mfminglis@gmail.com", "phone": "7715322151", "team": "Programme Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f1d52f0e-faf1-1e15-056e-347f3ae1b993/viewmember"}, {"first": "Paul", "last": "Dique", "membership": "69460", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "adcwinchestercubs@btinternet.com", "phone": "7940796887", "team": "Programme Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c48ef124-0cc9-483d-358d-3b28f5991902/viewmember"}, {"first": "Rob", "last": "James", "membership": "275008", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "robertalanjames@yahoo.co.uk", "phone": "7717498987", "team": "Programme Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember"}, {"first": "Susan", "last": "Bowdery", "membership": "932895", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "susanbowdery@hotmail.co.uk", "phone": "7936355696", "team": "Programme Team", "acc_count": 5, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember"}, {"first": "Tracy", "last": "Dique", "membership": "144164", "unit": "Winchester", "accreditation": "Assessor - Nights away (Campsite)", "email": "tracyappleyard258@btinternet.com", "phone": "7812815976", "team": "Programme Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/cff266a8-e143-9902-0b8c-02ecf80f9a19/viewmember"}, {"first": "Chris", "last": "Floyd", "membership": "82172", "unit": "Winchester", "accreditation": "Assessor - Nights away (Greenfield)", "email": "pinsent.activities@outlook.com", "phone": "1962713863", "team": "Programme Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/0ab6b75c-68d7-bbf2-3ec8-228d7bead2f2/viewmember"}, {"first": "Doug", "last": "Tilney", "membership": "69757", "unit": "Winchester", "accreditation": "Assessor - Nights away (Greenfield)", "email": "dougtilney@hotmail.co.uk", "phone": "7740554834", "team": "Programme Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/4b76e6ec-af5e-cc3c-d0fc-41f2122e7401/viewmember"}, {"first": "Martyn", "last": "Inglis", "membership": "103712", "unit": "Winchester", "accreditation": "Assessor - Nights away (Greenfield)", "email": "mfminglis@gmail.com", "phone": "7715322151", "team": "Programme Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f1d52f0e-faf1-1e15-056e-347f3ae1b993/viewmember"}, {"first": "Nick", "last": "Elborough", "membership": "678191", "unit": "Winchester", "accreditation": "Data Lead", "email": "11thWinchesterScout@gmail.com", "phone": "7711078353", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember"}, {"first": "Ailsa", "last": "Hall", "membership": "2000004037", "unit": "11th Winchester (Fulflood)", "accreditation": "Disclosure Support Volunteer", "email": "ailsahall65@gmail.com", "phone": "7968535865", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d2892856-b8d3-447e-b3cd-5621265c017b/viewmember"}, {"first": "Alexa", "last": "Comb", "membership": "12163723", "unit": "11th Winchester (Fulflood)", "accreditation": "Disclosure Support Volunteer", "email": "alexajcomb@gmail.com", "phone": "7817162013", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/3f81060a-53cf-ec6f-6359-33784803bbdc/viewmember"}, {"first": "Alison", "last": "Marsh", "membership": "11828843", "unit": "11th Winchester (Fulflood)", "accreditation": "Disclosure Support Volunteer", "email": "ali@alimarsh.co.uk", "phone": "7971962102", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/4d487da4-3f7c-6cf1-8e04-0157e91a81b6/viewmember"}, {"first": "David", "last": "Bannister", "membership": "11936608", "unit": "12th Winchester (Green Jackets)", "accreditation": "Disclosure Support Volunteer", "email": "GSL12thRGJ@outlook.com", "phone": "1962853494", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c05540eb-6b74-45c5-fb30-5de4995a6a97/viewmember"}, {"first": "Kath", "last": "Ellis", "membership": "931880", "unit": "14th Winchester (Wonston & Micheldever)", "accreditation": "Disclosure Support Volunteer", "email": "kath.ellis@14thwinchester.org.uk", "phone": "7968524694", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/206fba78-6b71-e930-98b0-8d9cc72e5620/viewmember"}, {"first": "Susie", "last": "Jarvis", "membership": "12088632", "unit": "14th Winchester (Wonston & Micheldever)", "accreditation": "Disclosure Support Volunteer", "email": "susie.jarvis@14thwinchester.org.uk", "phone": "7719483022", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5f6ac54f-2ad4-25ad-a032-e745106c4670/viewmember"}, {"first": "Jenny", "last": "Herrington", "membership": "12096905", "unit": "1st Winchester (Weeke & Harestock)", "accreditation": "Disclosure Support Volunteer", "email": "jenny.herrington@1stwinchesterscouts.org.uk", "phone": "7824643404", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/92abafe7-18f2-080d-f5fd-1d296a607bab/viewmember"}, {"first": "Mike", "last": "Wilson", "membership": "553534", "unit": "1st Winchester (Weeke & Harestock)", "accreditation": "Disclosure Support Volunteer", "email": "mike.wilson@1stwinchesterscouts.org.uk", "phone": "7730571998", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c88759d4-ba21-449f-49c8-b5e730f505c1/viewmember"}, {"first": "Louise", "last": "Crockett", "membership": "12275232", "unit": "3rd Winchester (The Worthies)", "accreditation": "Disclosure Support Volunteer", "email": "loubylou@gmail.com", "phone": "7835043101", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/7ed72566-4077-a00f-0fc3-93aeed161a56/viewmember"}, {"first": "Robin", "last": "Cook", "membership": "57607", "unit": "3rd Winchester (The Worthies)", "accreditation": "Disclosure Support Volunteer", "email": "dc.winchester@hampshirescouts.org.uk", "phone": "7803959758", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember"}, {"first": "Hannah", "last": "Fletcher", "membership": "12158454", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Disclosure Support Volunteer", "email": "hanathome@yahoo.co.uk", "phone": "7501008290", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/fa3ea140-0893-2021-5551-96e4076c639b/viewmember"}, {"first": "Mike", "last": "Goulding", "membership": "12132576", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Disclosure Support Volunteer", "email": "mikedgoulding@gmail.com", "phone": "7540057726", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/e34de01f-70f7-9e69-9ac4-7618b60bc4dd/viewmember"}, {"first": "Richard", "last": "Webster", "membership": "12142318", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Disclosure Support Volunteer", "email": "rewebster@gmail.com", "phone": "7738755345", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/be72f0d6-dc7f-5bb3-7cea-f463e91f250d/viewmember"}, {"first": "Rob", "last": "James", "membership": "275008", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Disclosure Support Volunteer", "email": "robertalanjames@yahoo.co.uk", "phone": "7717498987", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember"}, {"first": "Abi", "last": "Pounds", "membership": "12230371", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "digestive_2001@yahoo.co.uk", "phone": "7920100519", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/94605668-cb6c-41bf-86a3-d02b95395c92/viewmember"}, {"first": "Amanda", "last": "Denton", "membership": "12262606", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "millydenton@gmail.com", "phone": "7515123124", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5df72e70-e498-1c02-c88f-994197042354/viewmember"}, {"first": "Cathy", "last": "Seago", "membership": "12262597", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "cathyseago@yahoo.com", "phone": "7813965905", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/98d7ea54-d8be-ddb9-cb50-73ecb90ca736/viewmember"}, {"first": "Ledina", "last": "Hido-Evans", "membership": "12123117", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "Ledina@gmail.com", "phone": "7729967514", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/187c25d5-5f1f-6cdc-657e-081b0c076d65/viewmember"}, {"first": "Lucinda", "last": "Wingate-Saul", "membership": "12262595", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "lucinda_wingatesaul@hotmail.com", "phone": "7708539089", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f85ddb80-ac3e-65ce-91c6-8dee06490a5a/viewmember"}, {"first": "Lyndsey", "last": "Briody", "membership": "12214700", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "lyndseymcavoy@yahoo.com", "phone": "7901556838", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/b2ae2d95-aad4-be0b-4913-21e69094d642/viewmember"}, {"first": "Michael", "last": "May", "membership": "12150806", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "michaelrmay1898@gmail.com", "phone": "7912174523", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/efe55f44-c224-b4ad-6368-6603f7b19c33/viewmember"}, {"first": "Milda", "last": "Smith", "membership": "12140488", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "milda_n@hotmail.com", "phone": "7827814097", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/60c96c82-796a-621c-afea-0f00b674d477/viewmember"}, {"first": "Robert", "last": "Slinn", "membership": "2000003570", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "robertslinn@yahoo.com", "phone": "7813456524", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/481ff9ee-3be9-4fc1-b447-08696c4b902b/viewmember"}, {"first": "Sarah", "last": "Bayley", "membership": "932878", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "sarahmccleery007@hotmail.com", "phone": "7889409766", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a82ba1b6-21cd-7e64-898c-c6c44bcec78b/viewmember"}, {"first": "Susan", "last": "Bowdery", "membership": "932895", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "susanbowdery@hotmail.co.uk", "phone": "7936355696", "team": "Leadership Team", "acc_count": 5, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember"}, {"first": "Tim", "last": "Harrold", "membership": "12165103", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "hathi@slax.uk", "phone": "7789401608", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ab30df70-c002-61ff-6b4f-52542eaab50b/viewmember"}, {"first": "Vic", "last": "Bolton", "membership": "12139706", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Disclosure Support Volunteer", "email": "vicbolton@gmail.com", "phone": "7775725808", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d61d0ca8-048c-e23d-28ad-ec08d02dc141/viewmember"}, {"first": "Fay", "last": "Edwards", "membership": "12239841", "unit": "7th Winchester (St Cross)", "accreditation": "Disclosure Support Volunteer", "email": "fayedwards1981@hotmail.com", "phone": "7766103626", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c3b0f6a5-4168-1125-c429-76b5b1006b87/viewmember"}, {"first": "Karen", "last": "Williams", "membership": "12161967", "unit": "7th Winchester (St Cross)", "accreditation": "Disclosure Support Volunteer", "email": "karenlouisewilliams@gmail.com", "phone": "7801440873", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/e4bfb325-7040-b024-27f3-31ad0fdf915e/viewmember"}, {"first": "Lynne", "last": "Barnes", "membership": "12147809", "unit": "7th Winchester (St Cross)", "accreditation": "Disclosure Support Volunteer", "email": "barnes_lynne@yahoo.com", "phone": "7903984563", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ac4b1255-214b-dcfb-a28c-fecd66b7ade6/viewmember"}, {"first": "Andrew", "last": "Masham", "membership": "12193398", "unit": "8th Winchester", "accreditation": "Disclosure Support Volunteer", "email": "andrew@8thwinchester.org.uk", "phone": "7825627923", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/4f5eecaa-0f48-1dd5-99b9-e6ec15d570f6/viewmember"}, {"first": "Darren", "last": "Whitt", "membership": "179439", "unit": "8th Winchester", "accreditation": "Disclosure Support Volunteer", "email": "darren@8thwinchester.org.uk", "phone": "7753868281", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/2249639f-9c6c-36d3-10d3-e69b8479a4a5/viewmember"}, {"first": "Sean", "last": "Coleman", "membership": "12148255", "unit": "8th Winchester", "accreditation": "Disclosure Support Volunteer", "email": "Sean@8thwinchester.org.uk", "phone": "7525811372", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/bc472c7f-eb5d-3f1d-e176-c2251e839209/viewmember"}, {"first": "Laura", "last": "Jones", "membership": "12162635", "unit": "9th Winchester (Colden Common)", "accreditation": "Disclosure Support Volunteer", "email": "laura.lkjones@gmail.com", "phone": "7810798588", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/6505fdcf-bef0-42b5-be35-c66c3ac521c8/viewmember"}, {"first": "Paula", "last": "Sharpe", "membership": "208332", "unit": "9th Winchester (Colden Common)", "accreditation": "Disclosure Support Volunteer", "email": "psharpe76@gmail.com", "phone": "7870205740", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/b17a2f8d-cf70-d287-774b-7c5411c1abdf/viewmember"}, {"first": "Suzanne", "last": "Hill", "membership": "12168089", "unit": "9th Winchester (Colden Common)", "accreditation": "Disclosure Support Volunteer", "email": "smjhill@outlook.com", "phone": "7570770629", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/fc5eddd4-39ce-a7bb-a525-52eaf76b6392/viewmember"}, {"first": "Bruce", "last": "Martin", "membership": "122201", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "winchesterdesc@gmail.com", "phone": "1962847674", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember"}, {"first": "David", "last": "Bannister", "membership": "11936608", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "GSL12thRGJ@outlook.com", "phone": "1962853494", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c05540eb-6b74-45c5-fb30-5de4995a6a97/viewmember"}, {"first": "Donna", "last": "Brien", "membership": "901340", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "brien.donna@gmail.com", "phone": "1962897816", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f454ab5b-8215-d4c8-8409-55ba8e66a24d/viewmember"}, {"first": "Helen", "last": "Howell", "membership": "12017590", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "h.e.howell.09@gmail.com", "phone": "7714215023", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember"}, {"first": "Helen", "last": "Howell", "membership": "12017590", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "h.e.howell.09@gmail.com", "phone": "7714215023", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember"}, {"first": "Laurence", "last": "Mallinson", "membership": "12030724", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "laurence.mallinson@14thWinchester.org.uk", "phone": "7775508940", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/223d999d-eb9e-5394-fd72-d8d5f8257db3/viewmember"}, {"first": "Louise", "last": "Crockett", "membership": "12275232", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "loubylou@gmail.com", "phone": "7835043101", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/7ed72566-4077-a00f-0fc3-93aeed161a56/viewmember"}, {"first": "Mike", "last": "Wilson", "membership": "553534", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "mike.wilson@1stwinchesterscouts.org.uk", "phone": "7730571998", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c88759d4-ba21-449f-49c8-b5e730f505c1/viewmember"}, {"first": "Nick", "last": "Elborough", "membership": "678191", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "11thWinchesterScout@gmail.com", "phone": "7711078353", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember"}, {"first": "Paula", "last": "Sharpe", "membership": "208332", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "psharpe76@gmail.com", "phone": "7870205740", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/b17a2f8d-cf70-d287-774b-7c5411c1abdf/viewmember"}, {"first": "Rob", "last": "James", "membership": "275008", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "robertalanjames@yahoo.co.uk", "phone": "7717498987", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember"}, {"first": "Robin", "last": "Cook", "membership": "57607", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "dc.winchester@hampshirescouts.org.uk", "phone": "7803959758", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember"}, {"first": "Stacey", "last": "Burrage", "membership": "12051053", "unit": "Winchester", "accreditation": "Disclosure Support Volunteer", "email": "12thwinchesterGLV@gmail.com", "phone": "7939053470", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a88162a5-7928-a55b-b8c0-ca20cce3cd50/viewmember"}, {"first": "Robin", "last": "Cook", "membership": "57607", "unit": "Winchester", "accreditation": "Leadership Support", "email": "dc.winchester@hampshirescouts.org.uk", "phone": "7803959758", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember"}, {"first": "Bruce", "last": "Martin", "membership": "122201", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "winchesterdesc@gmail.com", "phone": "1962847674", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember"}, {"first": "Colin", "last": "Freemantle", "membership": "717673", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "scouts_colin@freemantle.biz", "phone": "7581175812", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ca3bf853-6a6d-51bf-867f-00507abaadf7/viewmember"}, {"first": "Darren", "last": "Cuell", "membership": "12088358", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "darrencuell@gmail.com", "phone": "1962621672", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a710c358-ea6a-6c0d-1a20-3a51c50f0b09/viewmember"}, {"first": "Darren", "last": "Whitt", "membership": "179439", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "darren@8thwinchester.org.uk", "phone": "7753868281", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/2249639f-9c6c-36d3-10d3-e69b8479a4a5/viewmember"}, {"first": "Dawn", "last": "Inglis", "membership": "5389", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "dinglisathome@gmail.com", "phone": "7715322152", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/03f3d7c3-eba8-1276-97f9-5c71d84aacba/viewmember"}, {"first": "Donna", "last": "Brien", "membership": "901340", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "brien.donna@gmail.com", "phone": "1962897816", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/f454ab5b-8215-d4c8-8409-55ba8e66a24d/viewmember"}, {"first": "Helen", "last": "Howell", "membership": "12017590", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "h.e.howell.09@gmail.com", "phone": "7714215023", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember"}, {"first": "Jay", "last": "Ferguson", "membership": "12069081", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "llophabmd@yahoo.co.uk", "phone": "7768290529", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/abc2de86-5ece-98b3-5da4-4ac9453e0717/viewmember"}, {"first": "Jenny", "last": "Barker", "membership": "25646", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "jennyabwin@btinternet.com", "phone": "1962712559", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ffb38a8c-6e82-ae08-1b1f-bd3737224a06/viewmember"}, {"first": "Mike", "last": "Wilson", "membership": "553534", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "mike.wilson@1stwinchesterscouts.org.uk", "phone": "7730571998", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c88759d4-ba21-449f-49c8-b5e730f505c1/viewmember"}, {"first": "Nick", "last": "Elborough", "membership": "678191", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "11thWinchesterScout@gmail.com", "phone": "7711078353", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember"}, {"first": "Paul", "last": "Dique", "membership": "69460", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "adcwinchestercubs@btinternet.com", "phone": "7940796887", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c48ef124-0cc9-483d-358d-3b28f5991902/viewmember"}, {"first": "Rob", "last": "James", "membership": "275008", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "robertalanjames@yahoo.co.uk", "phone": "7717498987", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember"}, {"first": "Sarah", "last": "Bayley", "membership": "932878", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "sarahmccleery007@hotmail.com", "phone": "7889409766", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a82ba1b6-21cd-7e64-898c-c6c44bcec78b/viewmember"}, {"first": "Sarah", "last": "Lodge", "membership": "11929460", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "sarah.lodge@1stwinchesterscouts.org.uk", "phone": "1962881978", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ae1217fb-a2ff-fd01-9abc-d1a3264edd1e/viewmember"}, {"first": "Susan", "last": "Bowdery", "membership": "932895", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "susanbowdery@hotmail.co.uk", "phone": "7936355696", "team": "Volunteering Development Team", "acc_count": 5, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember"}, {"first": "Terenia", "last": "James", "membership": "275010", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "tereniajames@yahoo.co.uk", "phone": "7587141163", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a43474a6-2629-474a-0c0c-56415a95baf1/viewmember"}, {"first": "Tracy", "last": "Dique", "membership": "144164", "unit": "Winchester", "accreditation": "Learning Assessor", "email": "tracyappleyard258@btinternet.com", "phone": "7812815976", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/cff266a8-e143-9902-0b8c-02ecf80f9a19/viewmember"}, {"first": "Paul", "last": "Dique", "membership": "69460", "unit": "Winchester", "accreditation": "Nights Away Approver", "email": "adcwinchestercubs@btinternet.com", "phone": "7940796887", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c48ef124-0cc9-483d-358d-3b28f5991902/viewmember"}, {"first": "Robin", "last": "Cook", "membership": "57607", "unit": "Winchester", "accreditation": "Nights Away Approver", "email": "dc.winchester@hampshirescouts.org.uk", "phone": "7803959758", "team": "Leadership Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember"}, {"first": "Alexa", "last": "Comb", "membership": "12163723", "unit": "11th Winchester (Fulflood)", "accreditation": "Recruiter", "email": "alexajcomb@gmail.com", "phone": "7817162013", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/3f81060a-53cf-ec6f-6359-33784803bbdc/viewmember"}, {"first": "Michelle", "last": "Birnage", "membership": "12287910", "unit": "11th Winchester (Fulflood)", "accreditation": "Recruiter", "email": "m.birnage@gmail.com", "phone": "7979505212", "team": "Leadership Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/71f32cda-d120-ce5d-58ca-e7253f80c53a/viewmember"}, {"first": "Hannah", "last": "Fletcher", "membership": "12158454", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Recruiter", "email": "hanathome@yahoo.co.uk", "phone": "7501008290", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/fa3ea140-0893-2021-5551-96e4076c639b/viewmember"}, {"first": "Mike", "last": "Goulding", "membership": "12132576", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Recruiter", "email": "mikedgoulding@gmail.com", "phone": "7540057726", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/e34de01f-70f7-9e69-9ac4-7618b60bc4dd/viewmember"}, {"first": "Richard", "last": "Webster", "membership": "12142318", "unit": "5th Winchester (Compton & Shawford)", "accreditation": "Recruiter", "email": "rewebster@gmail.com", "phone": "7738755345", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/be72f0d6-dc7f-5bb3-7cea-f463e91f250d/viewmember"}, {"first": "Abi", "last": "Pounds", "membership": "12230371", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Recruiter", "email": "digestive_2001@yahoo.co.uk", "phone": "7920100519", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/94605668-cb6c-41bf-86a3-d02b95395c92/viewmember"}, {"first": "Susan", "last": "Bowdery", "membership": "932895", "unit": "6th Winchester (Abbotts Barton and Hyde)", "accreditation": "Recruiter", "email": "susanbowdery@hotmail.co.uk", "phone": "7936355696", "team": "Leadership Team", "acc_count": 5, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember"}, {"first": "Karen", "last": "Williams", "membership": "12161967", "unit": "7th Winchester (St Cross)", "accreditation": "Recruiter", "email": "karenlouisewilliams@gmail.com", "phone": "7801440873", "team": "Leadership Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/e4bfb325-7040-b024-27f3-31ad0fdf915e/viewmember"}, {"first": "Sean", "last": "Coleman", "membership": "12148255", "unit": "8th Winchester", "accreditation": "Recruiter", "email": "Sean@8thwinchester.org.uk", "phone": "7525811372", "team": "Leadership Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/bc472c7f-eb5d-3f1d-e176-c2251e839209/viewmember"}, {"first": "Louise", "last": "Crockett", "membership": "12275232", "unit": "Winchester", "accreditation": "Recruiter", "email": "loubylou@gmail.com", "phone": "7835043101", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/7ed72566-4077-a00f-0fc3-93aeed161a56/viewmember"}, {"first": "Beccy", "last": "Shaw", "membership": "12024040", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "beccyscottuk@gmail.com", "phone": "7813946163", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/1ffa187c-6f22-e73a-bb32-612165721fa6/viewmember"}, {"first": "Bruce", "last": "Martin", "membership": "122201", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "winchesterdesc@gmail.com", "phone": "1962847674", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember"}, {"first": "Colin", "last": "Freemantle", "membership": "717673", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "scouts_colin@freemantle.biz", "phone": "7581175812", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ca3bf853-6a6d-51bf-867f-00507abaadf7/viewmember"}, {"first": "Darren", "last": "Cuell", "membership": "12088358", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "darrencuell@gmail.com", "phone": "1962621672", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a710c358-ea6a-6c0d-1a20-3a51c50f0b09/viewmember"}, {"first": "Dave", "last": "Kesby", "membership": "743847", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "david.kesby@1stwinchesterscouts.org.uk", "phone": "7932121446", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/7633d11c-43d0-19b3-0453-d99dcd5ca8f0/viewmember"}, {"first": "David", "last": "Ashby", "membership": "561041", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "davidashby2@yahoo.co.uk", "phone": "7925508363", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/ab69d8f4-0999-35fd-0a7a-4e4596414fc6/viewmember"}, {"first": "Dawn", "last": "Inglis", "membership": "5389", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "dinglisathome@gmail.com", "phone": "7715322152", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/03f3d7c3-eba8-1276-97f9-5c71d84aacba/viewmember"}, {"first": "Helen", "last": "Howell", "membership": "12017590", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "h.e.howell.09@gmail.com", "phone": "7714215023", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember"}, {"first": "John", "last": "Easton", "membership": "952695", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "johnpeaston@gmail.com", "phone": "7734325183", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/eef3dda6-a50e-b25c-9966-6ebb7783079a/viewmember"}, {"first": "Lisa", "last": "Beusmans", "membership": "11842271", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "ljbeusmans@gmail.com", "phone": "7894392538", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/1323b3bf-8186-a621-3bb6-27d46c0bba6f/viewmember"}, {"first": "Louise", "last": "Crockett", "membership": "12275232", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "loubylou@gmail.com", "phone": "7835043101", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/7ed72566-4077-a00f-0fc3-93aeed161a56/viewmember"}, {"first": "Mike", "last": "Goulding", "membership": "12132576", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "mikedgoulding@gmail.com", "phone": "7540057726", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/e34de01f-70f7-9e69-9ac4-7618b60bc4dd/viewmember"}, {"first": "Mike", "last": "Wilson", "membership": "553534", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "mike.wilson@1stwinchesterscouts.org.uk", "phone": "7730571998", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/c88759d4-ba21-449f-49c8-b5e730f505c1/viewmember"}, {"first": "Nick", "last": "Elborough", "membership": "678191", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "11thWinchesterScout@gmail.com", "phone": "7711078353", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember"}, {"first": "Paul", "last": "Duncan", "membership": "12160718", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "pjd27@hotmail.co.uk", "phone": "7816954219", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/8c79fc02-2acd-ea45-0df6-c5787106c722/viewmember"}, {"first": "Paula", "last": "Sharpe", "membership": "208332", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "psharpe76@gmail.com", "phone": "7870205740", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/b17a2f8d-cf70-d287-774b-7c5411c1abdf/viewmember"}, {"first": "Rob", "last": "James", "membership": "275008", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "robertalanjames@yahoo.co.uk", "phone": "7717498987", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember"}, {"first": "Robin", "last": "Cook", "membership": "57607", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "dc.winchester@hampshirescouts.org.uk", "phone": "7803959758", "team": "Volunteering Development Team", "acc_count": 4, "profile_url": "https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember"}, {"first": "Sean", "last": "Coleman", "membership": "12148255", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "Sean@8thwinchester.org.uk", "phone": "7525811372", "team": "Volunteering Development Team", "acc_count": 3, "profile_url": "https://membership.scouts.org.uk/#/membersearch/bc472c7f-eb5d-3f1d-e176-c2251e839209/viewmember"}, {"first": "Steven", "last": "Boardman", "membership": "987844", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "stevenboardman26@gmail.com", "phone": "1420563710", "team": "Volunteering Development Team", "acc_count": 1, "profile_url": "https://membership.scouts.org.uk/#/membersearch/809e7cd4-2b78-72f1-cf79-9146749f2853/viewmember"}, {"first": "Susan", "last": "Bowdery", "membership": "932895", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "susanbowdery@hotmail.co.uk", "phone": "7936355696", "team": "Volunteering Development Team", "acc_count": 5, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d076c5e8-72ff-a128-4414-ff732d7c7e48/viewmember"}, {"first": "Terenia", "last": "James", "membership": "275010", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "tereniajames@yahoo.co.uk", "phone": "7587141163", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/a43474a6-2629-474a-0c0c-56415a95baf1/viewmember"}, {"first": "Vic", "last": "Bolton", "membership": "12139706", "unit": "Winchester", "accreditation": "Welcome Conversation Volunteer", "email": "vicbolton@gmail.com", "phone": "7775725808", "team": "Volunteering Development Team", "acc_count": 2, "profile_url": "https://membership.scouts.org.uk/#/membersearch/d61d0ca8-048c-e23d-28ad-ec08d02dc141/viewmember"}], "stats": {"unique_people": 62, "multi_acc_people": 27, "total_rows": 116, "top_acc": "Disclosure Support Volunteer", "top_acc_count": 49}, "units": ["11th Winchester (Fulflood)", "12th Winchester (Green Jackets)", "14th Winchester (Wonston & Micheldever)", "1st Winchester (Weeke & Harestock)", "3rd Winchester (The Worthies)", "5th Winchester (Compton & Shawford)", "6th Winchester (Abbotts Barton and Hyde)", "7th Winchester (St Cross)", "8th Winchester", "9th Winchester (Colden Common)", "Winchester"], "accreditations": ["Assessor - Nights away (Campsite)", "Assessor - Nights away (Greenfield)", "Data Lead", "Disclosure Support Volunteer", "Leadership Support", "Learning Assessor", "Nights Away Approver", "Recruiter", "Welcome Conversation Volunteer"]};
+const ROWS = RAW.rows;
+const UNITS = RAW.units;
+const ACCS = RAW.accreditations;
+
+function chipClass(acc) {
+  if (acc.startsWith('Assessor')) return 'chip-assessor';
+  if (acc.includes('Approver')) return 'chip-approver';
+  if (['Learning Assessor','First Response Trainer','Trainer'].includes(acc)) return 'chip-training';
+  if (['Data Lead','Leadership Support'].includes(acc)) return 'chip-admin';
+  return 'chip-support';
+}
+
+// Populate filters
+const accSel = document.getElementById('accFilter');
+ACCS.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; accSel.appendChild(o); });
+const unitSel = document.getElementById('unitFilter');
+UNITS.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; unitSel.appendChild(o); });
+
+let sortCol = 0, sortDir = 1, multiOnly = false;
+
+function toggleMulti() {
+  multiOnly = !multiOnly;
+  document.getElementById('multiToggle').classList.toggle('active', multiOnly);
+  filterTable();
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('accFilter').value = '';
+  document.getElementById('unitFilter').value = '';
+  multiOnly = false;
+  document.getElementById('multiToggle').classList.remove('active');
+  filterTable();
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const accF = document.getElementById('accFilter').value;
+  const unitF = document.getElementById('unitFilter').value;
+  const rows = document.getElementById('tableBody').querySelectorAll('tr');
+  let visible = 0;
+  rows.forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    const name = cells[0].textContent.toLowerCase();
+    const unit = cells[2].textContent.toLowerCase();
+    const acc  = cells[3].textContent.toLowerCase();
+    const accCount = parseInt(tr.dataset.accCount);
+    const matchQ     = !q     || name.includes(q) || unit.includes(q) || acc.includes(q);
+    const matchAcc   = !accF  || tr.dataset.acc  === accF;
+    const matchUnit  = !unitF || tr.dataset.unit === unitF;
+    const matchMulti = !multiOnly || accCount > 1;
+    const show = matchQ && matchAcc && matchUnit && matchMulti;
+    tr.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('resultsCount').textContent = visible + ' of ' + ROWS.length + ' shown';
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function sortTable(col) {
+  const ths = document.querySelectorAll('thead th');
+  ths.forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
+  if (sortCol === col) sortDir = -sortDir; else { sortCol = col; sortDir = 1; }
+  ths[col].classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+  const tbody = document.getElementById('tableBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.sort((a, b) => {
+    const aT = a.querySelectorAll('td')[col].dataset.sort || a.querySelectorAll('td')[col].textContent.trim();
+    const bT = b.querySelectorAll('td')[col].dataset.sort || b.querySelectorAll('td')[col].textContent.trim();
+    // Numeric sort for roles column
+    if (col === 1) return (parseInt(bT) - parseInt(aT)) * sortDir;
+    return aT.localeCompare(bT) * sortDir;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+  filterTable();
+}
+
+function buildTable() {
+  const tbody = document.getElementById('tableBody');
+  ROWS.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.dataset.acc = r.accreditation;
+    tr.dataset.unit = r.unit;
+    tr.dataset.accCount = r.acc_count;
+    if (r.acc_count > 1) tr.classList.add('multi-highlight');
+
+    const pillClass = r.acc_count > 1 ? 'roles-pill' : 'roles-pill single';
+    const accChip = `<span class="acc-chip ${chipClass(r.accreditation)}">${r.accreditation}</span>`;
+    const emailLink = r.email
+      ? `<a href="mailto:${r.email}" style="color:var(--teal);text-decoration:none;font-size:0.8rem">${r.email}</a>`
+      : '';
+
+    const nameHtml = r.profile_url
+      ? `<a href="${r.profile_url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px solid var(--border);" onmouseover="this.style.borderBottomColor='var(--purple)'" onmouseout="this.style.borderBottomColor='var(--border)'">${r.first} ${r.last}</a>`
+      : `${r.first} ${r.last}`;
+    tr.innerHTML = `
+      <td class="name-cell">${nameHtml}</td>
+      <td class="roles-col" data-sort="${r.acc_count}"><span class="${pillClass}">${r.acc_count}</span></td>
+      <td class="unit-cell">${r.unit}</td>
+      <td class="acc-cell">${accChip}</td>
+      <td class="team-cell">${r.team}</td>
+      <td>${emailLink}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  filterTable();
+}
+
+// Fixed colour per accreditation type — consistent across all cards
+const ACC_COLOURS = {
+  'Disclosure Support Volunteer':          '#2563eb',
+  'Welcome Conversation Volunteer':        '#0d9488',
+  'Learning Assessor':                     '#7c3aed',
+  'Recruiter':                             '#d97706',
+  'Assessor - Nights away (Campsite)':     '#059669',
+  'Assessor - Nights away (Greenfield)':   '#10b981',
+  'Nights Away Approver':                  '#dc2626',
+  'Data Lead':                             '#db2777',
+  'Leadership Support':                    '#6366f1',
+};
+function accColour(acc) { return ACC_COLOURS[acc] || '#6b7280'; }
+
+function makeGroupCard(label, accs, initial, isDistrict) {
+  const total = Object.values(accs).reduce((s,n) => s+n, 0);
+  const maxVal = Math.max(...Object.values(accs));
+  const card = document.createElement('div');
+  card.className = 'group-card';
+  if (isDistrict) card.style.cssText = 'border-color:#5b2d8e;border-width:2px;background:#faf8ff;';
+  const badgeStyle = isDistrict ? 'background:linear-gradient(135deg,#3d1a6e,#7a4aab);font-size:1rem;' : '';
+  const accRows = Object.entries(accs).sort((a,b) => b[1]-a[1]).map(([acc, n]) => {
+    const pct = Math.round((n / maxVal) * 100);
+    const colour = accColour(acc);
+    return `<div class="group-acc-row">
+      <span class="group-acc-name">${acc}</span>
+      <div class="group-acc-bar-wrap"><div class="group-acc-bar" style="width:${pct}%;background:${colour}"></div></div>
+      <span class="group-acc-count">${n}</span>
+    </div>`;
+  }).join('');
+  card.innerHTML = `
+    <div class="group-card-header">
+      <div class="group-badge" style="${badgeStyle}">${initial}</div>
+      <div class="group-name">${label}</div>
+    </div>
+    <div class="group-acc-list">${accRows}</div>
+    <div class="group-total">Total: <span>${total}</span> accreditation${total !== 1 ? 's' : ''}</div>
+  `;
+  return card;
+}
+
+function buildGroups() {
+  const grid = document.getElementById('groupGrid');
+
+  // Aggregate by unit
+  const byUnit = {};
+  ROWS.forEach(r => {
+    if (!byUnit[r.unit]) byUnit[r.unit] = {};
+    byUnit[r.unit][r.accreditation] = (byUnit[r.unit][r.accreditation] || 0) + 1;
+  });
+
+  // District-wide totals
+  const districtTotals = {};
+  ROWS.forEach(r => {
+    districtTotals[r.accreditation] = (districtTotals[r.accreditation] || 0) + 1;
+  });
+
+  // District total first, then Winchester, then remaining units alphabetically
+  grid.appendChild(makeGroupCard('Winchester District — Total', districtTotals, '∑', true));
+
+  const units = Object.keys(byUnit).sort((a, b) => {
+    if (a === 'Winchester') return -1;
+    if (b === 'Winchester') return 1;
+    const numA = parseInt(a.match(/^\d+/)?.[0] || '999');
+    const numB = parseInt(b.match(/^\d+/)?.[0] || '999');
+    return numA - numB;
+  });
+  units.forEach(unit => {
+    const initial = unit === 'Winchester' ? 'W' : (unit.match(/\d+/)?.[0] || unit[0]);
+    grid.appendChild(makeGroupCard(unit, byUnit[unit], initial, false));
+  });
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+buildTable();
+buildGroups();
+document.getElementById('resultsCount').textContent = ROWS.length + ' of ' + ROWS.length + ' shown';
+</script>
+</body>
+</html>

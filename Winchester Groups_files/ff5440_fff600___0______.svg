@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg id="RolledNeckerchiefSVG" version="1.1" width="1000px" viewBox="0 0 615.06009 139.68033"
+   inkscape:version="0.92.1 r15371" sodipodi:docname="NeckerchiefHalfRolled - Copy (2) - Copy.svg"
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
+
+  <sodipodi:namedview id="base" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0"
+     inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="0.25" inkscape:cx="1488.5247" inkscape:cy="123.57145"
+     inkscape:document-units="mm" inkscape:current-layer="layer1" showgrid="false" units="mm" inkscape:window-width="1280"
+     inkscape:window-height="1001" inkscape:window-x="-8" inkscape:window-y="-8" inkscape:window-maximized="1"
+     inkscape:object-nodes="true" inkscape:measure-start="587.5,3122.5" inkscape:measure-end="584.943,3002.67"
+     inkscape:snap-intersection-paths="true" inkscape:object-paths="true" fit-margin-top="0" fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+
+  <defs id="defs2">
+    <linearGradient id="linearGradient2098" osb:paint="solid">
+      <stop id="stop2096" style="stop-color:#0055aa;stop-opacity:1;" offset="0" />
+    </linearGradient>
+    <pattern id="EMFhbasepattern" y="0" x="0" height="6" width="6" patternUnits="userSpaceOnUse" />
+  </defs>
+
+  <metadata id="metadata5">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+
+  <g id="layer1" inkscape:label="Layer 1" inkscape:groupmode="layer" transform="translate(-120.80607,-152.04765)">
+    <path id="BackgroundCentre" inkscape:connector-curvature="0" sodipodi:nodetypes="ccccccc"
+      style="fill:#ff5440;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+      d="m 452.83,152.32832 -24.63157,7e-4 h -24.63207 v 114.81349 l 24.63207,24.58352 24.63157,-24.62744 z" />
+    <path id="BackgroundLeft" sodipodi:nodetypes="cccc" inkscape:connector-curvature="0"
+      style="fill:#ff5440;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+      d="M 428.19832,291.72798 289.07566,152.32832 h 139.12261 z" />
+    <path id="BackgroundLeftRoll" inkscape:connector-curvature="0" sodipodi:nodetypes="ccccccccccc"
+      style="opacity:1;fill:#ff5440;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.26458332"
+      d="m 161.27181,152.26103 c 1.1485,0.002 0,0 0,0 -16.93039,0.0401 -27.94026,12.49641 -27.94299,12.4995 h -0.005 l -12.50311,12.50053 127.56843,-0.17002 14.44666,-0.002 h 87.16406 V 152.478 l -162.17594,-0.38952 z" />
+
+    <path id="BackgroundRightRoll" inkscape:connector-curvature="0" sodipodi:nodetypes="ccccccccccc"
+      style="opacity:1;fill:#fff600;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0"
+      d="m 695.41509,152.22019 c -1.1485,0.002 0,0 0,0 16.9304,0.0401 27.94027,12.4964 27.943,12.49949 h 0.005 l 12.50311,12.50053 -127.56843,-0.17002 -14.44666,-0.002 h -87.16406 v -24.61102 l 162.17594,-0.38952 z" />
+    <path id="BackgroundRight" inkscape:connector-curvature="0" sodipodi:nodetypes="cccc"
+      style="fill:#fff600;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+      d="M 428.19832,291.72798 565.40176,152.32832 H 428.19829 Z" />
+
+    <path id="BackStripeFull" inkscape:connector-curvature="0" sodipodi:nodetypes="ccccccc"
+      style="fill:transparent;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+      d="m 452.83,152.32832 -24.63157,7e-4 h -24.63207 v 114.81349 l 24.63207,24.58352 24.63157,-24.62744 z" />
+    <path id="BackStripeLeft" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"
+      d="m 428.19829,152.32832 v 139.39731 0 L 403.566,267.14202 v -114.813 z"
+      style="fill:transparent;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none" />
+    <path id="BackStripeRight" inkscape:connector-curvature="0" sodipodi:nodetypes="cccccc"
+      style="fill:transparent;fill-opacity:1;stroke:none;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
+      d="m 428.19833,152.32832 -4e-5,139.39731 v 0 L 452.83,267.09788 V 152.32802 Z" />
+  </g>
+</svg>
+

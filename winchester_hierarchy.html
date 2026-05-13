@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winchester District – Unit Hierarchy</title>
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600&family=DM+Mono&display=swap');
+  :root {
+    --purple:  #7B2D8B;
+    --teal:    #006B77;
+    --bg:      #F7F5F2;
+    --surface: #FFFFFF;
+    --border:  #E0DDD8;
+    --text:    #1A1A2E;
+    --muted:   #6B6B80;
+
+    /* Section colours */
+    --squirrel-bg:  #FDECEA; --squirrel-fg:  #B71C1C; --squirrel-acc: #E53935;
+    --beaver-bg:    #E0F7FA; --beaver-fg:    #00695C; --beaver-acc:   #00ACC1;
+    --cub-bg:       #E8F5E9; --cub-fg:       #1B5E20; --cub-acc:      #43A047;
+    --scout-bg:     #EDE7F6; --scout-fg:     #4527A0; --scout-acc:    #7B2D8B;
+    --explorer-bg:  #FFF3E0; --explorer-fg:  #E65100; --explorer-acc: #FB8C00;
+    --network-bg:   #ECEFF1; --network-fg:   #37474F; --network-acc:  #607D8B;
+    --district-bg:  #F3E5F5; --district-fg:  #4A148C; --district-acc: #7B2D8B;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ── */
+  header { background: var(--purple); color: white; padding: 28px 40px 20px; border-bottom: 4px solid var(--teal); }
+  header h1 { font-size: 1.4rem; font-weight: 600; }
+  header p  { margin-top: 4px; font-size: 0.85rem; opacity: 0.75; }
+
+  /* ── Stats bar ── */
+  .stats { display: flex; gap: 12px; padding: 16px 40px; background: var(--surface); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .stat-card {
+    flex: 1; min-width: 90px; max-width: 140px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .stat-card .num { font-size: 1.55rem; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
+  .stat-card .lbl { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .c-district { border-color: var(--purple) !important; }
+  .c-district .num { color: var(--purple); }
+  .c-squirrel .num  { color: var(--squirrel-acc); }
+  .c-beaver .num    { color: var(--beaver-acc); }
+  .c-cub .num       { color: var(--cub-acc); }
+  .c-scout .num     { color: var(--scout-acc); }
+  .c-explorer .num  { color: var(--explorer-acc); }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex; gap: 12px; align-items: center;
+    padding: 14px 40px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .search-wrap { flex: 1; min-width: 220px; position: relative; }
+  .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  input[type=text] {
+    width: 100%; padding: 9px 14px 9px 36px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font: inherit; font-size: 0.9rem; background: var(--bg); outline: none;
+  }
+  input[type=text]:focus { border-color: var(--teal); }
+  .filter-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .fbtn {
+    padding: 7px 13px; border-radius: 20px; cursor: pointer;
+    font: inherit; font-size: 0.78rem; font-weight: 500;
+    border: 1.5px solid var(--border);
+    background: var(--bg); color: var(--muted);
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .fbtn:hover { border-color: var(--teal); color: var(--teal); }
+  .fbtn.active { color: white; border-color: transparent; }
+  .fbtn.f-all.active     { background: var(--purple); }
+  .fbtn.f-squirrel.active { background: var(--squirrel-acc); }
+  .fbtn.f-beaver.active   { background: var(--beaver-acc); }
+  .fbtn.f-cub.active      { background: var(--cub-acc); }
+  .fbtn.f-scout.active    { background: var(--scout-acc); }
+  .fbtn.f-explorer.active { background: var(--explorer-acc); }
+
+  .ctrl-right { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .btn-toggle {
+    padding: 8px 13px; border-radius: 8px; cursor: pointer;
+    font: inherit; font-size: 0.82rem; font-weight: 500;
+    border: 1.5px solid var(--teal); color: var(--teal);
+    background: transparent; white-space: nowrap; transition: all 0.15s;
+  }
+  .btn-toggle:hover { background: #e6f4f5; }
+  .count-label { font-family: 'DM Mono', monospace; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+  /* ── Main layout ── */
+  .main { padding: 24px 40px 48px; }
+
+  /* ── District card ── */
+  .district-card {
+    background: var(--surface); border: 1.5px solid var(--purple);
+    border-radius: 12px; margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .district-header {
+    background: var(--purple); color: white;
+    padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+  }
+  .district-header h2 { font-size: 1rem; font-weight: 600; }
+  .district-header .badge-dist {
+    margin-left: auto; background: rgba(255,255,255,0.2);
+    padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 500;
+  }
+  .district-teams { padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .district-team-group { display: flex; flex-direction: column; gap: 4px; }
+  .team-tag-link {
+    display: inline-flex;
+    text-decoration: none; color: var(--muted);
+    background: #EDE7F6; border-color: #C9B8E8;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .team-tag-link:hover { background: var(--purple); color: white; border-color: var(--purple); }
+  .subteam-row { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 10px; }
+  .subteam-tag {
+    font-size: 0.62rem !important; padding: 1px 6px !important;
+    background: #F3EEF9; border-color: #C9B8E8;
+    opacity: 0.85; text-decoration: none; color: var(--muted);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    border-style: dashed !important;
+  }
+  .subteam-tag:hover { background: var(--teal); color: white; border-color: var(--teal); opacity: 1; }
+
+  /* ── Section heading ── */
+  .section-heading {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted);
+    padding: 0 0 10px; margin-top: 6px;
+  }
+
+  /* ── Groups grid ── */
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  /* ── Group card ── */
+  .group-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: box-shadow 0.15s;
+  }
+  .group-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
+  .group-header {
+    background: var(--purple); color: white;
+    padding: 12px 16px; display: flex; align-items: center; gap: 8px;
+    cursor: pointer; user-select: none;
+  }
+  .group-header h3 { font-size: 0.9rem; font-weight: 600; flex: 1; }
+  .group-header .toggle-icon { font-size: 0.7rem; opacity: 0.6; transition: transform 0.2s; }
+  .group-card.collapsed .toggle-icon { transform: rotate(-90deg); }
+  .group-meta { padding: 10px 16px 4px; display: flex; flex-wrap: wrap; gap: 5px; border-bottom: 1px solid var(--border); }
+  .group-body { padding: 10px 16px 14px; }
+  .group-card.collapsed .group-body { display: none; }
+
+  /* ── Section rows ── */
+  .section-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+  }
+  .section-row:last-child { border-bottom: none; }
+  .section-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .section-name {
+    font-size: 0.82rem; color: var(--text); flex: 1; min-width: 0;
+    text-decoration: none;
+  }
+  .section-name:hover { color: var(--teal); text-decoration: underline; }
+  .group-title-link {
+    font-size: 0.9rem; font-weight: 600; flex: 1;
+    color: white; text-decoration: none;
+  }
+  .group-title-link:hover { text-decoration: underline; opacity: 0.9; }
+  .explorer-name {
+    font-size: 0.88rem; font-weight: 600; margin-bottom: 6px;
+    color: var(--text); text-decoration: none; display: block;
+  }
+  .explorer-name:hover { color: var(--teal); text-decoration: underline; }
+  .type-squirrel  { background: var(--squirrel-bg); color: var(--squirrel-fg); }
+  .type-beaver    { background: var(--beaver-bg);   color: var(--beaver-fg); }
+  .type-cub       { background: var(--cub-bg);      color: var(--cub-fg); }
+  .type-scout     { background: var(--scout-bg);    color: var(--scout-fg); }
+  .type-explorer  { background: var(--explorer-bg); color: var(--explorer-fg); }
+  .type-network   { background: var(--network-bg);  color: var(--network-fg); }
+  .type-yl        { background: #FFF8E1;             color: #F57F17; }
+
+  /* ── Team tags ── */
+  .team-tag {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 0.68rem; font-weight: 500;
+    background: var(--bg); color: var(--muted);
+    border: 1px solid var(--border); white-space: nowrap;
+  }
+
+  /* ── Explorer units ── */
+  .explorer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px; margin-top: 12px;
+  }
+  .explorer-card {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .explorer-card.type-explorer { border-color: var(--explorer-acc); }
+  .explorer-card.type-network  { border-color: var(--network-acc); }
+  .explorer-card.type-yl       { border-color: #FBC02D; }
+  .explorer-teams { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* ── Hidden by filter ── */
+  .hidden { display: none !important; }
+
+  /* ── No results ── */
+  .no-results {
+    text-align: center; padding: 48px; color: var(--muted);
+    font-style: italic; display: none;
+  }
+  .no-results.visible { display: block; }
+
+  /* ── Header title row ── */
+  .title-row { padding-bottom: 10px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 0; margin-top: 8px; }
+  .tab-btn {
+    padding: 9px 20px; font: inherit; font-size: 0.85rem; font-weight: 500;
+    background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75);
+    border: none; border-radius: 8px 8px 0 0; cursor: pointer;
+    transition: background 0.15s, color 0.15s; border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+  .tab-btn.active { background: var(--bg); color: var(--text); border-bottom-color: var(--bg); font-weight: 600; }
+
+  /* ── Tab panels ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Organogram panel ── */
+  .org-controls {
+    display: flex; gap: 12px; align-items: center;
+    padding: 12px 40px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .org-hint { font-size: 0.8rem; color: var(--muted); margin-left: auto; }
+  #org-svg-wrap {
+    overflow: auto;
+    background: var(--bg);
+    padding: 20px;
+    width: 100%;
+  }
+  #org-svg-wrap svg { display: block; overflow: visible; }
+
+  /* ── D3 node styles (applied via JS) ── */
+  .org-node rect {
+    rx: 6; ry: 6;
+    stroke-width: 1.5;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.10));
+  }
+  .org-node text { font-family: 'DM Sans', sans-serif; pointer-events: none; }
+  .org-link { fill: none; stroke: #C4BAD0; stroke-width: 1.5; }
+  .org-node { cursor: pointer; }
+  .org-node.collapsed rect { opacity: 0.85; }
+
+  /* ── Key/legend ── */
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 12px 40px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  /* ── Pin drop animation ── */
+  @keyframes pinDrop {
+    0%   { transform: translate3d(0,-125px,0); animation-timing-function: ease-in; }
+    50%  { transform: translate3d(0,0,0);      animation-timing-function: ease-out; }
+    75%  { transform: translate3d(0,-5px,0);   animation-timing-function: ease-in; }
+    100% { transform: translate3d(0,0,0);      animation-timing-function: ease-out; }
+  }
+  .pin-drop {
+    animation: pinDrop 0.6s both;
+  }
+  #tab-map { height: calc(100vh - 130px); display: none; flex-direction: column; }
+  #tab-map.active { display: flex; }
+  #map-controls {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 10px 24px; background: var(--surface);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #map-controls .map-legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 0.75rem; color: var(--muted);
+  }
+  .map-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  #map { flex: 1; z-index: 0; }
+  .map-hint { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+  .map-filter-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    font: inherit; font-size: 0.78rem; font-weight: 500;
+    border: 1.5px solid var(--border); background: var(--bg); color: var(--muted);
+    transition: all 0.15s;
+  }
+  .map-filter-btn.active { background: var(--surface); color: var(--text); border-color: var(--teal); }
+  .map-filter-btn:not(.active) { opacity: 0.5; }
+  .map-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1A1A2E;
+    text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
+    white-space: nowrap;
+  }
+  .leaflet-popup-content { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; min-width: 180px; }
+  .leaflet-popup-content h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; color: #1A1A2E; }
+  .leaflet-popup-content .popup-type { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: #6B6B80; margin-bottom: 8px; }
+  .leaflet-popup-content .popup-sections { font-size: 0.78rem; color: #444; line-height: 1.6; }
+  .leaflet-popup-content a.popup-sms { display: inline-block; margin-top: 8px; font-size: 0.75rem; color: #006B77; text-decoration: none; font-weight: 500; }
+  .leaflet-popup-content a.popup-sms:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="title-row">
+      <h1>Winchester District — Unit Hierarchy</h1>
+      <p>13 Scout Groups · 70 Sections · 10 District Units · Generated from SMS organogram data</p>
+    </div>
+    <img src="Winchester Groups_files/Scouts_Logo_Marque_Black.png" style="height:64px;flex-shrink:0;margin-right:8px;filter:brightness(0) invert(1);" alt="Scouts logo">
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('cards',this)">Cards View</button>
+    <button class="tab-btn"        onclick="switchTab('org',this)">Organogram</button>
+    <button class="tab-btn"        onclick="switchTab('map',this)">Map</button>
+  </div>
+</header>
+
+<!-- ══ CARDS TAB ══ -->
+<div class="tab-panel active" id="tab-cards">
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-card c-district"><span class="num">13</span><span class="lbl">Groups</span></div>
+  <div class="stat-card c-squirrel"><span class="num">7</span><span class="lbl">Squirrel Dreys</span></div>
+  <div class="stat-card c-beaver"><span class="num">19</span><span class="lbl">Beaver Colonies</span></div>
+  <div class="stat-card c-cub"><span class="num">19</span><span class="lbl">Cub Packs</span></div>
+  <div class="stat-card c-scout"><span class="num">20</span><span class="lbl">Scout Troops</span></div>
+  <div class="stat-card c-explorer"><span class="num">10</span><span class="lbl">District Units</span></div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot" style="background:var(--squirrel-acc)"></span>Squirrels</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--beaver-acc)"></span>Beavers</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--cub-acc)"></span>Cubs</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--scout-acc)"></span>Scouts</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--explorer-acc)"></span>Explorers</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--network-acc)"></span>Network / YL</span>
+  <span style="margin-left:auto;font-size:0.75rem;color:var(--muted);display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+    <span>🔗 Clicking a necker opens the WinScouts website</span>
+    <span>🔗 Clicking a name or unit name opens its record in the Scout Membership System</span>
+  </span>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchBox" placeholder="Search groups or sections…" oninput="applyFilters()">
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Winchester District card -->
+  <div class="district-card">
+    <div class="district-header" style="flex-direction:column;align-items:flex-start;padding:0 20px 14px;">
+      <div style="padding:10px 0 6px"><a href="https://www.winscouts.org/" target="_blank" title="View on District Website"><img src="Winchester Groups_files/black_black___1_ef3e45_cbc92e____.svg" style="height:52px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a></div>
+      <div style="display:flex;align-items:center;gap:10px;width:100%">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <h2><a href="https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/unitdetailsau" target="_blank" style="color:white;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Winchester District</a></h2>
+        <button onclick="toggleDistrictTeams(this)" id="districtTeamsToggle" style="margin-left:auto;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:6px;padding:3px 10px;font-size:0.72rem;cursor:pointer;">District Teams ▶</button>
+      </div>
+    </div>
+    <div id="districtTeamsPanel" style="display:none;">
+      <div class="district-teams" id="districtTeamsContainer"></div>
+    </div>
+    <div style="padding: 10px 20px 14px; border-top: 1px solid var(--border);">
+      <div style="font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px;">District Lead Volunteers</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <a href="https://membership.scouts.org.uk/#/membersearch/5a7e4e2b-e7d1-2f9b-00cc-1504ecea5274/viewmember" target="_blank" class="team-tag team-tag-link" style="flex-direction:column;height:auto;padding:5px 10px;">
+          <span>👤 Bruce Martin</span>
+          <span style="font-size:0.62rem;font-weight:400;opacity:0.7">Programme &amp; Delivery</span>
+        </a>
+        <a href="https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember" target="_blank" class="team-tag team-tag-link" style="flex-direction:column;height:auto;padding:5px 10px;">
+          <span>👤 Rob James</span>
+          <span style="font-size:0.62rem;font-weight:400;opacity:0.7">Compliance, Safety &amp; Safeguarding</span>
+        </a>
+        <a href="https://membership.scouts.org.uk/#/membersearch/223d999d-eb9e-5394-fd72-d8d5f8257db3/viewmember" target="_blank" class="team-tag team-tag-link" style="flex-direction:column;height:auto;padding:5px 10px;">
+          <span>👤 Laurence Mallinson</span>
+          <span style="font-size:0.62rem;font-weight:400;opacity:0.7">Operations &amp; Governance</span>
+        </a>
+        <a href="https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember" target="_blank" class="team-tag team-tag-link" style="flex-direction:column;height:auto;padding:5px 10px;">
+          <span>👤 Nick Elborough</span>
+          <span style="font-size:0.62rem;font-weight:400;opacity:0.7">People &amp; Development</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Explorer / District sections -->
+  <div class="section-heading">District Sections — Explorer Scouts &amp; Network</div>
+  <div class="explorer-grid" id="explorerGrid"></div>
+
+  <!-- Groups -->
+  <div style="display:flex;align-items:center;gap:8px;margin-top:28px;margin-bottom:10px;flex-wrap:wrap">
+    <div class="section-heading" style="margin:0">Scout Groups</div>
+    <div class="filter-btns">
+      <button class="fbtn f-all active"  onclick="setFilter('all',this)">All</button>
+      <button class="fbtn f-squirrel"    onclick="setFilter('squirrel',this)">🐿 Squirrels</button>
+      <button class="fbtn f-beaver"      onclick="setFilter('beaver',this)">🦫 Beavers</button>
+      <button class="fbtn f-cub"         onclick="setFilter('cub',this)">🐯 Cubs</button>
+      <button class="fbtn f-scout"       onclick="setFilter('scout',this)">⚜️ Scouts</button>
+    </div>
+    <button class="btn-toggle" style="padding:5px 10px;font-size:0.75rem" onclick="expandAllCards()">Expand All</button>
+    <button class="btn-toggle" style="padding:5px 10px;font-size:0.75rem" onclick="collapseAllCards()">Collapse All</button>
+    <span class="count-label" id="countLabel"></span>
+  </div>
+  <div class="groups-grid" id="groupsGrid"></div>
+  <div class="no-results" id="noResults">No groups or sections match your search.</div>
+
+</div>
+</div><!-- end tab-cards -->
+
+<!-- ══ ORGANOGRAM TAB ══ -->
+<div class="tab-panel" id="tab-org">
+  <div class="org-controls">
+    <button class="btn-toggle" id="teamsToggleBtn" onclick="toggleTeams()">Show Teams</button>
+    <button class="btn-toggle" onclick="orgExpandAll()">Expand All</button>
+    <button class="btn-toggle" onclick="orgCollapseAll()">Collapse to Groups</button>
+    <span class="org-hint">Click any node to expand · Scroll to navigate</span>
+  </div>
+  <div id="org-svg-wrap"></div>
+</div>
+
+<!-- ══ MAP TAB ══ -->
+<div class="tab-panel" id="tab-map">
+  <div id="map-controls">
+    <button class="map-filter-btn active" id="mf-group" onclick="toggleMapFilter('group',this)">
+      <img src="Winchester Groups_files/2018FleurDeLis_7B2D8B.png" style="height:18px;vertical-align:middle"> Scout Groups
+    </button>
+    <button class="map-filter-btn active" id="mf-explorer" onclick="toggleMapFilter('explorer',this)">
+      <img src="Winchester Groups_files/2018FleurDeLis_FB8C00.png" style="height:18px;vertical-align:middle"> Explorer Units
+    </button>
+    <span class="map-legend-item" style="margin-left:8px">
+      <img src="Winchester Groups_files/2018FleurDeLis_FFD600.png" style="height:18px;vertical-align:middle"> Pinsent / District HQ
+    </span>
+    <span class="map-hint">Click a pin for details · Links open in SMS</span>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+const DATA = {"district":{"id":"eb650909-e5f6-a30b-5d58-fb826873a69f","name":"Winchester","teams":["14-24 Team","Helpers","Leadership Team","Programme Team","Retired members","Support Team","Trustee Board","Volunteering Development Team"]},"groups":[{"id":"4d29a659-d95c-d44c-aebb-417698916ed6","name":"11th Winchester (Fulflood)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"7d1a9e65-2a4f-58ef-a0f3-ff0275e285c6","name":"11th Winchester (Fulflood) - Beaver Scout Thursday","type":"Group Section","teams":["Beaver Section Team"]},{"id":"9e857ad1-0706-a655-9b71-3980d128abf9","name":"11th Winchester (Fulflood) - Beaver Scout Wednesday","type":"Group Section","teams":["Beaver Section Team"]},{"id":"b3313ee1-072c-48f3-d1d2-9535377b1a15","name":"11th Winchester (Fulflood) - Cub Scout Hawks (Monday)","type":"Group Section","teams":["Cub Section Team"]},{"id":"d9685c87-7d21-62a4-c8e2-350250fb58d2","name":"11th Winchester (Fulflood) - Cub Scouts Falcons (Tuesday)","type":"Group Section","teams":["Cub Section Team"]},{"id":"4f238096-16dd-dda5-d8d5-46a9f0b2d226","name":"11th Winchester (Fulflood) - Scout Thor (Thursday)","type":"Group Section","teams":["Scout Section Team"]},{"id":"31f770dd-50b8-b916-e911-edc5eb4ee024","name":"11th Winchester (Fulflood) - Scout Woden (Wednesday)","type":"Group Section","teams":["Scout Section Team"]},{"id":"ff6de195-5384-e083-d380-20f74df80719","name":"11th Winchester (Fulflood) - Squirrels (Saturday)","type":"Group Section","teams":["Squirrel Section Team"]}]},{"id":"ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3","name":"12th Winchester (Green Jackets)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"d0e3718a-80e0-9fc0-d453-4307f25e777d","name":"12th Winchester (Green Jackets) - Beaver Scout Monday","type":"Group Section","teams":["Beaver Section Team"]},{"id":"12447364-0ac8-2d3b-8980-9655a8f59bbe","name":"12th Winchester (Green Jackets) - Cub Scout 1","type":"Group Section","teams":["Cub Section Team"]},{"id":"44886c5a-3de7-0eb6-1eaf-4a191eb61794","name":"12th Winchester (Green Jackets) - Scout 1","type":"Group Section","teams":["Scout Section Team"]},{"id":"794130c1-037c-86d5-d5db-97a72058b173","name":"12th Winchester (Green Jackets) - Squirrels 1","type":"Group Section","teams":["Squirrel Section Team"]}]},{"id":"6f4d9cc7-004c-c947-f971-b8168df7eae2","name":"14th Winchester (Wonston & Micheldever)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"0dcf48d8-4f88-61b2-e59d-8d6ba41d29f0","name":"14th Winchester (Wonston & Micheldever) - Beavers - Hawks","type":"Group Section","teams":["Beaver Section Team"]},{"id":"6649e37d-45c0-e739-df4c-831c8af22b1c","name":"14th Winchester (Wonston & Micheldever) - Beavers - Kestrels","type":"Group Section","teams":["Beaver Section Team"]},{"id":"8680cee5-3902-4828-a328-307bd4dff9fe","name":"14th Winchester (Wonston & Micheldever) - Cubs - Osprey","type":"Group Section","teams":["Cub Section Team"]},{"id":"d4678970-289d-c397-6320-6afc5888b1f4","name":"14th Winchester (Wonston & Micheldever) - Cubs - Swordfish","type":"Group Section","teams":["Cub Section Team"]},{"id":"02508615-7778-286d-50c4-3cbb973fc695","name":"14th Winchester (Wonston & Micheldever) - Scouts - Endeavour","type":"Group Section","teams":["Scout Section Team"]},{"id":"3900f85a-0495-db8e-ac87-d5a423e3f6d6","name":"14th Winchester (Wonston & Micheldever) - Scouts - Spitfire","type":"Group Section","teams":["Scout Section Team"]},{"id":"dc927265-8abb-de17-f0b7-f31f1059b810","name":"14th Winchester (Wonston & Micheldever) - Squirrels - Tiger Moth","type":"Group Section","teams":["Squirrel Section Team"]}]},{"id":"71d00678-ddf8-95dd-23e0-9bf12c09bbf4","name":"16th Winchester (Littleton & Sparsholt)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"d72ee6ce-4e4c-54c9-a647-d0b5a3cba298","name":"16th Winchester (Littleton & Sparsholt) - Himba Beaver Scouts","type":"Group Section","teams":["Beaver Section Team"]},{"id":"5b66f520-81a4-b332-45b6-24a812d6e3a0","name":"16th Winchester (Littleton & Sparsholt) - Maasai Beaver Scouts","type":"Group Section","teams":["Beaver Section Team"]},{"id":"c5f91508-beb0-963a-d7f9-54935243730a","name":"16th Winchester (Littleton & Sparsholt) - Turkana Scouts","type":"Group Section","teams":["Scout Section Team"]},{"id":"64f87c8d-00e8-5252-4101-07de5e5fc61d","name":"16th Winchester (Littleton & Sparsholt) - Zulu Cub Scouts","type":"Group Section","teams":["Cub Section Team"]}]},{"id":"5d4d1fdb-01c4-4af1-1ee6-90836b729c77","name":"17th WINCHESTER (CANDOVER VALLEY)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"e299fad6-66f9-31ac-bf95-9d36957f4cb1","name":"17th WINCHESTER (CANDOVER VALLEY) - Beavers","type":"Group Section","teams":["Beaver Section Team"]},{"id":"ee4c8f61-70ed-9c45-142b-a07f146d7ad3","name":"17th WINCHESTER (CANDOVER VALLEY) - Cubs","type":"Group Section","teams":["Cub Section Team"]},{"id":"e2b528d9-76b3-f6bf-8bb3-ff9f92127807","name":"17th WINCHESTER (CANDOVER VALLEY) - Scouts","type":"Group Section","teams":["Scout Section Team"]},{"id":"31d3c4c8-89e5-dd4f-0373-cd53a77e2637","name":"17th WINCHESTER (CANDOVER VALLEY) - Squirrels","type":"Group Section","teams":["Squirrel Section Team"]}]},{"id":"bd62ad13-0006-11eb-3b4a-d1d3bcc82ced","name":"1st Winchester (Weeke & Harestock)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"f7af71bd-d07f-942d-e58d-e84a7897bcbf","name":"1st Winchester (Weeke & Harestock) - Beaver Scout Normans","type":"Group Section","teams":["Beaver Section Team"]},{"id":"6014aa77-52dc-6dc4-19c1-69abae3452f4","name":"1st Winchester (Weeke & Harestock) - Beaver Scout Saxons","type":"Group Section","teams":["Beaver Section Team"]},{"id":"fe2ef170-13c3-1d49-5321-225400525a3a","name":"1st Winchester (Weeke & Harestock) - Cub Scout Celts","type":"Group Section","teams":["Cub Section Team"]},{"id":"1cae0d71-2054-bb28-c12a-eabcc279b289","name":"1st Winchester (Weeke & Harestock) - Cub Scout Vikings","type":"Group Section","teams":["Cub Section Team"]},{"id":"4d10538d-78ee-4573-b7a6-96e7866eaf2b","name":"1st Winchester (Weeke & Harestock) - Scouts Greeks","type":"Group Section","teams":["Scout Section Team"]},{"id":"e0df5e1c-687e-ef53-222b-0ce6f418a874","name":"1st Winchester (Weeke & Harestock) - Scouts Osborne","type":"Group Section","teams":["Scout Section Team"]},{"id":"0e361c4f-6eae-4f05-1423-5a863cd72114","name":"1st Winchester (Weeke & Harestock) - Scouts Romans","type":"Group Section","teams":["Scout Section Team"]}]},{"id":"299c40fd-2d86-e562-1bdd-8f45c1509f6a","name":"3rd Winchester (The Worthies)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"f8442277-c1c2-fbb1-e813-71bb9e4024c4","name":"3rd Winchester (The Worthies) - Beaver Scout Abbots","type":"Group Section","teams":["Beaver Section Team"]},{"id":"fdee9715-1ab1-ab6a-0243-98e728e4c8b5","name":"3rd Winchester (The Worthies) - Beaver Scout Kings","type":"Group Section","teams":["Beaver Section Team"]},{"id":"dfc49a8b-f1b6-c34b-e91a-88c375ce1818","name":"3rd Winchester (The Worthies) - Cub Scout Bears","type":"Group Section","teams":["Cub Section Team"]},{"id":"bb36c687-260a-64d9-933d-e931be3a8fa6","name":"3rd Winchester (The Worthies) - Cub Scout Wolves","type":"Group Section","teams":["Cub Section Team"]},{"id":"17367a16-fb44-d715-e745-fe6fe4ebd2df","name":"3rd Winchester (The Worthies) - Maple Squirrels Drey","type":"Group Section","teams":["Squirrel Section Team"]},{"id":"cb7ee483-4c28-dd37-28e5-ac78c65d6d8f","name":"3rd Winchester (The Worthies) - Scouts - Donderdag","type":"Group Section","teams":["Scout Section Team"]},{"id":"47997132-6c5d-ec7f-2acd-0ae6dee2450c","name":"3rd Winchester (The Worthies) - Scouts - Popty Ping","type":"Group Section","teams":["Scout Section Team"]}]},{"id":"01c4fc4b-70d2-18d2-8bfb-b99694999715","name":"5th Winchester (Compton & Shawford)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"b6dca70f-1b24-b896-2c4a-fc6efb5c1faa","name":"5th Winchester (Compton & Shawford) - Beaver Scout 1","type":"Group Section","teams":["Beaver Section Team"]},{"id":"78527d32-54aa-248c-48c9-7b31b2849af3","name":"5th Winchester (Compton & Shawford) - Cub Scout 1","type":"Group Section","teams":["Cub Section Team"]},{"id":"6e984ec5-d403-4d07-5cf0-4f25da106cff","name":"5th Winchester (Compton & Shawford) - Scout 1","type":"Group Section","teams":["Scout Section Team"]},{"id":"3f2ec41d-24db-9703-dbc9-f6ce641ed6e6","name":"5th Winchester (Compton & Shawford) - Squirrels 1","type":"Group Section","teams":["Squirrel Section Team"]}]},{"id":"2a47d018-be66-8521-7b17-b4f570c8900c","name":"6th Winchester (Abbotts Barton and Hyde)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"d914715e-d4a2-f1a9-910e-7a8a4ba0cf8c","name":"6th Winchester (Abbotts Barton and Hyde) - Chestnut Beaver Scouts","type":"Group Section","teams":["Beaver Section Team"]},{"id":"f2cb5431-9993-72db-ead9-f6efd3a6795c","name":"6th Winchester (Abbotts Barton and Hyde) - Manticore Scouts","type":"Group Section","teams":["Scout Section Team"]},{"id":"7f3d403d-b77a-eec2-fc7b-f231ac006c62","name":"6th Winchester (Abbotts Barton and Hyde) - Squirrels","type":"Group Section","teams":["Squirrel Section Team"]},{"id":"13d60d51-231f-c374-90d8-7646e9940dbf","name":"6th Winchester (Abbotts Barton and Hyde) - Thestral Scouts","type":"Group Section","teams":["Scout Section Team"]},{"id":"04cfbcd2-4a31-d039-2141-4f288bedf6ae","name":"6th Winchester (Abbotts Barton and Hyde) - Tiger Cubs","type":"Group Section","teams":["Cub Section Team"]},{"id":"f4f751af-8c23-755f-88b7-4b02734dbc01","name":"6th Winchester (Abbotts Barton and Hyde) - Willow Beaver Scouts","type":"Group Section","teams":["Beaver Section Team"]},{"id":"41b4354e-ace7-f82e-3e0d-fba28d19be38","name":"6th Winchester (Abbotts Barton and Hyde) - Wolf Cubs","type":"Group Section","teams":["Cub Section Team"]}]},{"id":"df3b4a63-1761-5b6f-6fe6-893accece24e","name":"7th Winchester (St Cross)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"594212de-4534-49cc-e16a-6c3df24ead2a","name":"7th Winchester (St Cross) - Beavers 1","type":"Group Section","teams":["Beaver Section Team"]},{"id":"ac66530a-8325-1b99-8d1b-1e18ffc8f61c","name":"7th Winchester (St Cross) - Cubs 1","type":"Group Section","teams":["Cub Section Team"]},{"id":"c8da6f0a-c92d-aa53-823b-50a1f683f31b","name":"7th Winchester (St Cross) - Scout Troop 1","type":"Group Section","teams":["Scout Section Team"]}]},{"id":"341a3344-c706-a2b0-1dc8-b4cb8cf2b4d4","name":"8th Winchester","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"4755e000-e695-a0cc-bcaf-03a2edde19e8","name":"8th Winchester - Galahad","type":"Group Section","teams":["Cub Section Team"]},{"id":"fba5d646-f0c4-5843-72e3-5111394ac650","name":"8th Winchester - Lamorak","type":"Group Section","teams":["Cub Section Team"]},{"id":"d30230ca-7636-325f-6151-f9a7339e6d8f","name":"8th Winchester - Lancelot","type":"Group Section","teams":["Beaver Section Team"]},{"id":"363c6e28-8779-bc15-144d-a1552ed66be1","name":"8th Winchester - Percival","type":"Group Section","teams":["Scout Section Team"]},{"id":"ce2710a8-c0c1-3846-72b6-ba0cb11d79d0","name":"8th Winchester - Tristan","type":"Group Section","teams":["Beaver Section Team"]}]},{"id":"cc67abad-3df3-dfac-8353-733b617e8eb3","name":"9th Winchester (Colden Common)","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"654fdec5-43b0-b369-09a4-49fac8d32289","name":"9th Winchester (Colden Common) - Bretons Cub Pack","type":"Group Section","teams":["Cub Section Team"]},{"id":"8a5d923f-667a-4d78-b33a-2090be4e134e","name":"9th Winchester (Colden Common) - Normans Cub Pack","type":"Group Section","teams":["Cub Section Team"]},{"id":"df58c8c0-b183-30be-bd9c-c41c7f818e8f","name":"9th Winchester (Colden Common) - Otter Beaver Colony","type":"Group Section","teams":["Beaver Section Team"]},{"id":"c0092703-3367-1aaf-c02d-925fbb9c7323","name":"9th Winchester (Colden Common) - Spitfire Beaver Colony","type":"Group Section","teams":["Beaver Section Team"]},{"id":"34019bf6-4b66-75df-37b1-635e07a3b853","name":"9th Winchester (Colden Common) - Valiant Scout Troop","type":"Group Section","teams":["Scout Section Team"]},{"id":"efd828f0-ffa0-9817-e7bc-aac6bf400c15","name":"9th Winchester (Colden Common) - Vulcan Scout Troop","type":"Group Section","teams":["Scout Section Team"]}]},{"id":"1be9d0a3-6d9e-d47c-d538-876263b66b6e","name":"Alresford and Cheriton","teams":["Helpers","Leadership Team","Trustee Board"],"sections":[{"id":"fcfe0f7e-bc80-6c59-9736-7d8faf15122d","name":"Alresford and Cheriton - Monday Beavers","type":"Group Section","teams":["Beaver Section Team"]},{"id":"6d2fe622-8f33-9a35-1ed8-8e5a964e439d","name":"Alresford and Cheriton - Thursday Cubs","type":"Group Section","teams":["Cub Section Team"]},{"id":"aa3c1176-53ca-4b4c-878c-f9a92d695f21","name":"Alresford and Cheriton - Thursday Scouts","type":"Group Section","teams":["Scout Section Team"]},{"id":"60550f55-87f6-9c50-ae73-61bebefb179a","name":"Alresford and Cheriton - Tuesday Cubs","type":"Group Section","teams":["Cub Section Team"]},{"id":"97bebfa5-4410-d0fd-b0f9-22030a5fabca","name":"Alresford and Cheriton - Wednesday Scouts","type":"Group Section","teams":["Scout Section Team"]}]}],"districtSections":[{"id":"64b19758-cdf5-644d-8e32-a8f03f9e5b60","name":"Rotherfield - Yaks","type":"District Section","teams":["Explorer section Team"]},{"id":"5ab0ba1b-5f4b-6a76-50b5-d5376726d155","name":"Winchester - Explorer Scouts Beacons","type":"District Section","teams":["Explorer section Team"]},{"id":"80cc89cf-83a4-5553-4798-adb2f1fd9663","name":"Winchester - Explorer Scouts Excalibur","type":"District Section","teams":["Explorer section Team"]},{"id":"b3b97bfb-a5b9-7035-ee5c-6fd788294899","name":"Winchester - Explorer Scouts Jupiter","type":"District Section","teams":["Explorer section Team"]},{"id":"69c568a9-8af6-51b8-6bbf-63350d4dd584","name":"Winchester - Explorer Scouts Mercury","type":"District Section","teams":["Explorer section Team"]},{"id":"24cccaee-548b-8703-6770-6ff6d72fed30","name":"Winchester - Explorer Scouts Paladin","type":"District Section","teams":["Explorer section Team"]},{"id":"ac6bd1db-f126-498a-1e92-088bf6528008","name":"Winchester - Explorer Scouts Titan","type":"District Section","teams":["Explorer section Team"]},{"id":"478a77ef-0919-0785-0f1a-bd7cbc7f4943","name":"Winchester - Explorer Scouts Trident","type":"District Section","teams":["Explorer section Team"]},{"id":"97572a4a-e83d-31e4-b30e-405809435903","name":"Winchester - Virtual Explorer Young Leader Unit","type":"District Section","teams":["Young Leader Section Team"]},{"id":"3788c119-4328-e149-829c-bd7797d275b6","name":"Winchester - Winchester - Scout Network","type":"District Section","teams":["Scout Network section team"]}]};
+
+// ── Helpers ──────────────────────────────────────────
+// Explicit overrides for sections whose names don't reveal their type
+const SECTION_TYPE_OVERRIDES = {
+  '8th winchester - tristan':  'beaver',
+  '8th winchester - lancelot': 'beaver',
+  '8th winchester - percival': 'scout',
+  '8th winchester - lamorak':  'cub',
+  '8th winchester - galahad':  'cub',
+};
+
+function sectionType(name) {
+  const n = name.toLowerCase().trim();
+  if (SECTION_TYPE_OVERRIDES[n]) return SECTION_TYPE_OVERRIDES[n];
+  if (n.includes('squirrel'))  return 'squirrel';
+  if (n.includes('beaver'))    return 'beaver';
+  if (n.includes('cub'))       return 'cub';
+  if (n.includes('scout') && !n.includes('explorer') && !n.includes('network')) return 'scout';
+  if (n.includes('young leader') || n.includes('yl')) return 'yl';
+  if (n.includes('network'))   return 'network';
+  if (n.includes('explorer') || n.includes('yak') || n.includes('rotherfield')) return 'explorer';
+  return 'explorer';
+}
+
+function sectionLabel(type) {
+  return { squirrel:'Squirrels', beaver:'Beavers', cub:'Cubs',
+           scout:'Scouts', explorer:'Explorers', network:'Network', yl:'Young Leaders' }[type] || type;
+}
+
+function shortName(fullName, groupName) {
+  return fullName.replace(groupName + ' - ', '').trim();
+}
+
+// Section sort order: Scouts first, then Cubs, Beavers, Squirrels
+const SECTION_ORDER = { scout: 0, cub: 1, beaver: 2, squirrel: 3, explorer: 4, yl: 5, network: 6 };
+
+function sortSections(sections) {
+  return [...sections].sort((a, b) => {
+    const oa = SECTION_ORDER[sectionType(a.name)] ?? 9;
+    const ob = SECTION_ORDER[sectionType(b.name)] ?? 9;
+    if (oa !== ob) return oa - ob;
+    return a.name.localeCompare(b.name); // alphabetical within same type
+  });
+}
+
+// Sort groups: numbered Winchester groups first (by number), then others alphabetically
+function groupSortKey(name) {
+  const m = name.match(/^(\d+)(st|nd|rd|th)\s+winchester/i);
+  if (m) return parseInt(m[1], 10); // 1, 3, 5 … 17
+  return 999; // Alresford etc go to the end
+}
+
+// District website IDs by group SMS id
+const GROUP_WEB_ID = {
+  'bd62ad13-0006-11eb-3b4a-d1d3bcc82ced': 679,
+  '299c40fd-2d86-e562-1bdd-8f45c1509f6a': 680,
+  '01c4fc4b-70d2-18d2-8bfb-b99694999715': 830,
+  '2a47d018-be66-8521-7b17-b4f570c8900c': 828,
+  'df3b4a63-1761-5b6f-6fe6-893accece24e': 832,
+  '341a3344-c706-a2b0-1dc8-b4cb8cf2b4d4': 836,
+  'cc67abad-3df3-dfac-8353-733b617e8eb3': 834,
+  '4d29a659-d95c-d44c-aebb-417698916ed6': 681,
+  'ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3': 837,
+  '6f4d9cc7-004c-c947-f971-b8168df7eae2': 839,
+  '71d00678-ddf8-95dd-23e0-9bf12c09bbf4': 841,
+  '5d4d1fdb-01c4-4af1-1ee6-90836b729c77': 1478,
+  '1be9d0a3-6d9e-d47c-d538-876263b66b6e': 1476,
+};
+const NECKER_SVG = {
+  'bd62ad13-0006-11eb-3b4a-d1d3bcc82ced': 'darkblue_darkblue___2_lightgreen_lightgreen_yellow_yellow__.svg', // 1st
+  '299c40fd-2d86-e562-1bdd-8f45c1509f6a': 'yellow_yellow___1_purple_purple____.svg',                          // 3rd
+  '01c4fc4b-70d2-18d2-8bfb-b99694999715': '317b31_317b31___1_ f1d603_ f1d603____.svg',                        // 5th
+  '2a47d018-be66-8521-7b17-b4f570c8900c': 'ddcea5_ddcea5___2_771552_771552_ffe941_ffe941__.svg',               // 6th
+  'df3b4a63-1761-5b6f-6fe6-893accece24e': 'ffff00_ffff00___1_f81100_f81100____.svg',                          // 7th
+  '341a3344-c706-a2b0-1dc8-b4cb8cf2b4d4': 'ff5440_fff600___0______.svg',                                      // 8th
+  'cc67abad-3df3-dfac-8353-733b617e8eb3': 'f91516_f91516___1_0a0074_0a0074____.svg',                          // 9th
+  '4d29a659-d95c-d44c-aebb-417698916ed6': 'darkblue_darkblue___1_yellow_yellow____.svg',                       // 11th
+  'ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3': '008000_008000___1_f34646_000400____.svg',                          // 12th
+  '6f4d9cc7-004c-c947-f971-b8168df7eae2': 'darkblue_yellow___0______.svg',                                    // 14th
+  '71d00678-ddf8-95dd-23e0-9bf12c09bbf4': 'green_green___2_black_black_yellow_yellow__.svg',                  // 16th
+  // 17th and Alresford not in folder — no necker shown
+};
+
+// ── District Teams data (shared by Cards view and Organogram) ─────────
+const DISTRICT_TEAMS = [
+    { name: '14-24 Team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/04165cff-a0f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [
+      { name: 'Duke of Edinburgh sub-team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/04165cff-a0f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/2b8db92a-7c99-4133-bb76-73873cd8bf09/subteamdashboardaust' },
+      { name: 'Explorers - Occasional helpers', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/04165cff-a0f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/c19ddfa5-7d04-47df-9e1e-4abad8499317/subteamdashboardaust' },
+    ]},
+    { name: 'Helpers', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/b5abf18b-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [] },
+    { name: 'Leadership Team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/c30f4d78-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [] },
+    { name: 'Programme Team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/f8ced6bd-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [
+      { name: 'SEN Support sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/f8ced6bd-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/382de68a-0708-4c72-854f-115b1567a981/subteamdashboardaust' },
+      { name: 'Adventurous Activities sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/f8ced6bd-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/492130fc-4349-46e1-8c34-c50d818fb88d/subteamdashboardaust' },
+      { name: "St. George's Day sub-team", url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/f8ced6bd-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/548fdac4-646a-43b4-950c-6d3239e47f78/subteamdashboardaust' },
+      { name: 'Pinsent Activities sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/f8ced6bd-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/93136d61-d6c6-4f10-ac51-ceda719f15a9/subteamdashboardaust' },
+    ]},
+    { name: 'Retired members', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/9f05399a-a1f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [] },
+    { name: 'Support Team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [
+      { name: 'Pinsent Operations & Maintenance sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/5055956c-c9f4-4e85-a3a7-068e9bea8e6c/subteamdashboardaust' },
+      { name: 'Pinsent New Building Fund Raising sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/69e091f4-4ebe-43e1-9776-db9de1886c44/subteamdashboardaust' },
+      { name: 'Administration sub-team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/73a50d0a-5441-41b8-af49-cb9d50fac156/subteamdashboardaust' },
+      { name: 'Nights Away Assessors sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/7b862b84-5d32-4f94-bce6-7d9b70537bec/subteamdashboardaust' },
+      { name: 'Pinsent New Building sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/3d63d811-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/b643a689-896d-47b1-b457-27e070c1f676/subteamdashboardaust' },
+    ]},
+    { name: 'Trustee Board', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/a4b6414e-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [
+      { name: '14-24 Governance sub-team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/a4b6414e-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/4deb238d-948c-49fb-9398-61440ee27b36/subteamdashboardaust' },
+      { name: 'Finance sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/a4b6414e-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/6256efc8-4ef5-40a1-9062-c839ff28fb37/subteamdashboardaust' },
+      { name: 'Pinsent Governance sub-team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/a4b6414e-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/fbe089db-b681-41d6-b08b-479f7e40dee3/subteamdashboardaust' },
+    ]},
+    { name: 'Volunteering Development Team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/2d234f86-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut', subteams: [
+      { name: 'Welcome Conversation sub-team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/2d234f86-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/362c437d-4f00-43cd-a855-6febe928f69a/subteamdashboardaust' },
+      { name: 'Welcome Conversation Team *', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/2d234f86-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/5a93a655-394d-4e1c-bfd1-f1955b1ec398/subteamdashboardaust' },
+      { name: 'Learning sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/2d234f86-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/cc152c70-1a69-4673-9bf1-fa566b9147e3/subteamdashboardaust' },
+      { name: 'Recognition sub-team', url: 'https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/teamsau/2d234f86-a2f8-ed11-8f6d-6045bdd0ed08/teamdashboardaut/fcda1103-f7a9-49b6-8cee-580365528d05/subteamdashboardaust' },
+    ]},
+];
+
+// ── Render district teams ─────────────────────────────
+function renderDistrictTeams() {
+  const container = document.getElementById('districtTeamsContainer');
+  container.innerHTML = DISTRICT_TEAMS.map(t => {
+    const subteamHtml = t.subteams.length
+      ? `<div class="subteam-row">${t.subteams.map(st =>
+          `<a class="team-tag subteam-tag" href="${st.url}" target="_blank">${st.name}</a>`
+        ).join('')}</div>`
+      : '';
+    return `<div class="district-team-group">
+      <a class="team-tag team-tag-link" href="${t.url}" target="_blank">${t.name}</a>
+      ${subteamHtml}
+    </div>`;
+  }).join('') + `<div style="width:100%;margin-top:6px;font-size:0.65rem;color:var(--muted)">* inherited permissions</div>`;
+}
+
+// GLV lookup by group SMS id
+const GROUP_GLV = {
+  '4d29a659-d95c-d44c-aebb-417698916ed6': { name: 'Nick Elborough',    url: 'https://membership.scouts.org.uk/#/membersearch/14b83199-8a48-9f86-c854-0503eaf71a82/viewmember' }, // 11th
+  'ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3': { name: 'Stacey Burrage',    url: 'https://membership.scouts.org.uk/#/membersearch/a88162a5-7928-a55b-b8c0-ca20cce3cd50/viewmember' }, // 12th
+  '6f4d9cc7-004c-c947-f971-b8168df7eae2': { name: 'Laurence Mallinson',url: 'https://membership.scouts.org.uk/#/membersearch/223d999d-eb9e-5394-fd72-d8d5f8257db3/viewmember' }, // 14th
+  '5d4d1fdb-01c4-4af1-1ee6-90836b729c77': { name: 'John Easton',       url: 'https://membership.scouts.org.uk/#/membersearch/eef3dda6-a50e-b25c-9966-6ebb7783079a/viewmember' }, // 17th
+  'bd62ad13-0006-11eb-3b4a-d1d3bcc82ced': { name: 'Mike Wilson',        url: 'https://membership.scouts.org.uk/#/membersearch/c88759d4-ba21-449f-49c8-b5e730f505c1/viewmember' }, // 1st
+  '299c40fd-2d86-e562-1bdd-8f45c1509f6a': { name: 'Leigh Bambridge',   url: 'https://membership.scouts.org.uk/#/membersearch/613a6358-155b-3434-d8e9-b1982b571b62/viewmember' }, // 3rd
+  '01c4fc4b-70d2-18d2-8bfb-b99694999715': { name: 'Rob James',          url: 'https://membership.scouts.org.uk/#/membersearch/04b92709-3c78-ec43-a1c7-3e80141b266d/viewmember' }, // 5th
+  '2a47d018-be66-8521-7b17-b4f570c8900c': { name: 'Helen Howell',       url: 'https://membership.scouts.org.uk/#/membersearch/181e0aef-3782-2bf4-de13-a60db7e4f50f/viewmember' }, // 6th
+  'df3b4a63-1761-5b6f-6fe6-893accece24e': { name: 'Robin Cook',         url: 'https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember' }, // 7th
+  '341a3344-c706-a2b0-1dc8-b4cb8cf2b4d4': { name: 'Sean Coleman',       url: 'https://membership.scouts.org.uk/#/membersearch/bc472c7f-eb5d-3f1d-e176-c2251e839209/viewmember' }, // 8th
+  'cc67abad-3df3-dfac-8353-733b617e8eb3': { name: 'Robin Cook',         url: 'https://membership.scouts.org.uk/#/membersearch/07e8faff-1177-4145-6fd8-2a31d02da9bc/viewmember' }, // 9th
+  '1be9d0a3-6d9e-d47c-d538-876263b66b6e': { name: 'Roy Naismith',       url: 'https://membership.scouts.org.uk/#/membersearch/e18bc8b4-9c13-ac14-ea23-750a27987b9a/viewmember' }, // Alresford
+};
+
+// ── Render groups ─────────────────────────────────────
+function renderGroups() {
+  const grid = document.getElementById('groupsGrid');
+  grid.innerHTML = '';
+
+  const sorted = [...DATA.groups].sort((a, b) => {
+    const ka = groupSortKey(a.name), kb = groupSortKey(b.name);
+    if (ka !== kb) return ka - kb;
+    return a.name.localeCompare(b.name);
+  });
+
+  sorted.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'group-card';
+    card.dataset.groupName = g.name.toLowerCase();
+
+    // Collect what section types this group has (in display order)
+    const orderedSections = sortSections(g.sections);
+    const types = [...new Set(orderedSections.map(s => sectionType(s.name)))];
+    const typeDots = types.map(t =>
+      `<span class="section-pill type-${t}" style="font-size:0.68rem;padding:2px 7px">${sectionLabel(t)}</span>`
+    ).join('');
+
+    // Group meta teams
+    const metaTags = g.teams.map(t => `<span class="team-tag">${t}</span>`).join('');
+
+    // Section rows — sorted Scout → Cub → Beaver → Squirrel
+    const sectionRows = orderedSections.map(s => {
+      const st = sectionType(s.name);
+      const display = shortName(s.name, g.name);
+      const url = `https://membership.scouts.org.uk/#/teams/allunits/${s.id}/unitdetailsau`;
+      return `<div class="section-row" data-type="${st}">
+        <span class="section-pill type-${st}">${sectionLabel(st)}</span>
+        <a class="section-name" href="${url}" target="_blank" title="Open in SMS">${display}</a>
+      </div>`;
+    }).join('');
+
+    const neckerFile = NECKER_SVG[g.id];
+    const webId = GROUP_WEB_ID[g.id];
+    const webUrl = webId ? `https://www.winscouts.org/Groups/GroupDetails?GlobalGrpId=${webId}` : null;
+    const neckerSrc = neckerFile
+      ? `Winchester Groups_files/${neckerFile}`
+      : `Winchester Groups_files/placeholder_necker.png`;
+    const neckerImg = webUrl
+      ? `<div style="padding:10px 0 6px"><a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" title="View on District Website"><img src="${neckerSrc}" style="height:52px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a></div>`
+      : `<div style="padding:10px 0 6px"><img src="${neckerSrc}" style="height:52px"></div>`;
+
+    const glv = GROUP_GLV[g.id];
+    const glvHtml = glv
+      ? `<div style="margin-top:3px"><a href="${glv.url}" target="_blank" onclick="event.stopPropagation()" style="color:rgba(255,255,255,0.7);font-size:0.72rem;text-decoration:none;font-weight:400;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.7)'">👤 GLV: ${glv.name}</a></div>`
+      : `<div style="margin-top:3px;color:rgba(255,255,255,0.4);font-size:0.72rem;">👤 GLV: not assigned</div>`;
+
+    card.innerHTML = `
+      <div class="group-header" onclick="toggleCard(this.parentElement)" style="flex-direction:column;align-items:stretch;padding:0 16px 12px;">
+        ${neckerImg}
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a class="group-title-link" href="https://membership.scouts.org.uk/#/teams/allunits/${g.id}/unitdetailsau" target="_blank" onclick="event.stopPropagation()" title="Open in SMS">${g.name}</a>
+          <span style="opacity:0.5;font-size:0.72rem;font-family:'DM Mono',monospace;white-space:nowrap">${g.sections.length} sections</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+        ${glvHtml}
+      </div>
+      <div class="group-meta">${metaTags}</div>
+      <div class="group-body">
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">${typeDots}</div>
+        ${sectionRows}
+      </div>`;
+
+    grid.appendChild(card);
+  });
+}
+
+// ── Render explorer/district sections ────────────────
+const EXPLORER_WEB_ID = {
+  '64b19758-cdf5-644d-8e32-a8f03f9e5b60': 1477, // Yaks
+  '5ab0ba1b-5f4b-6a76-50b5-d5376726d155': 890,  // Beacons
+  '80cc89cf-83a4-5553-4798-adb2f1fd9663': 892,  // Excalibur
+  '478a77ef-0919-0785-0f1a-bd7cbc7f4943': 889,  // Trident
+  'b3b97bfb-a5b9-7035-ee5c-6fd788294899': 1101, // Jupiter
+  '69c568a9-8af6-51b8-6bbf-63350d4dd584': 891,  // Mercury
+  '24cccaee-548b-8703-6770-6ff6d72fed30': 893,  // Paladin
+  'ac6bd1db-f126-498a-1e92-088bf6528008': 1249, // Titan
+};
+
+function renderExplorers() {
+  const grid = document.getElementById('explorerGrid');
+  grid.innerHTML = '';
+  DATA.districtSections.forEach(ds => {
+    const st = sectionType(ds.name);
+    const card = document.createElement('div');
+    card.className = `explorer-card type-${st}`;
+    const display = ds.name.replace('Winchester - Winchester - ', 'Winchester - ').replace('Winchester - ', '');
+    const smsUrl = `https://membership.scouts.org.uk/#/teams/allunits/${ds.id}/unitdetailsau`;
+    const webId = EXPLORER_WEB_ID[ds.id];
+    const webUrl = webId ? `https://www.winscouts.org/Groups/GroupDetails?GlobalGrpId=${webId}` : null;
+
+    // Unit name links to District Website (if available), otherwise SMS
+    const nameLink = webUrl
+      ? `<a class="explorer-name" href="${webUrl}" target="_blank" title="View on District Website">${display}</a>`
+      : `<a class="explorer-name" href="${smsUrl}" target="_blank" title="Open in SMS">${display}</a>`;
+
+    // Team tags — first team links to SMS, rest are plain
+    const teamTags = ds.teams.map((t, i) =>
+      i === 0
+        ? `<a class="team-tag" href="${smsUrl}" target="_blank" title="Open in SMS" style="text-decoration:none;color:inherit">${t} ↗</a>`
+        : `<span class="team-tag">${t}</span>`
+    ).join('');
+
+    card.innerHTML = `${nameLink}<div class="explorer-teams">${teamTags}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function toggleDistrictTeams(btn) {
+  const panel = document.getElementById('districtTeamsPanel');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? 'District Teams ▼' : 'District Teams ▶';
+}
+
+// ── Toggle card open/closed ───────────────────────────
+function toggleCard(card) {
+  card.classList.toggle('collapsed');
+}
+
+function expandAllCards() {
+  document.querySelectorAll('.group-card').forEach(c => c.classList.remove('collapsed'));
+}
+
+function collapseAllCards() {
+  document.querySelectorAll('.group-card').forEach(c => c.classList.add('collapsed'));
+}
+
+// ── Filter state ──────────────────────────────────────
+let activeFilters = new Set(['all']);
+
+function setFilter(f, btn) {
+  if (f === 'all') {
+    // All clears everything else
+    activeFilters = new Set(['all']);
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    // Toggle this filter
+    activeFilters.delete('all');
+    document.querySelector('.fbtn.f-all').classList.remove('active');
+    if (activeFilters.has(f)) {
+      activeFilters.delete(f);
+      btn.classList.remove('active');
+    } else {
+      activeFilters.add(f);
+      btn.classList.add('active');
+    }
+    // If nothing selected, revert to All
+    if (activeFilters.size === 0) {
+      activeFilters.add('all');
+      document.querySelector('.fbtn.f-all').classList.add('active');
+    }
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchBox').value.toLowerCase().trim();
+  const isAll = activeFilters.has('all');
+  let visible = 0;
+
+  document.querySelectorAll('.group-card').forEach(card => {
+    const groupName = card.dataset.groupName;
+    const rows = card.querySelectorAll('.section-row');
+
+    // Filter section rows by type
+    let anyRowVisible = false;
+    rows.forEach(row => {
+      const t = row.dataset.type;
+      const typeMatch = isAll || activeFilters.has(t);
+      const searchMatch = q === '' || groupName.includes(q) ||
+        row.querySelector('.section-name').textContent.toLowerCase().includes(q);
+      const show = typeMatch && searchMatch;
+      row.classList.toggle('hidden', !show);
+      if (show) anyRowVisible = true;
+    });
+
+    // Show card if any rows visible, or group name matches with no type filter
+    const groupMatch = q === '' || groupName.includes(q);
+    const show = anyRowVisible || (groupMatch && isAll);
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+
+  document.getElementById('countLabel').textContent = `${visible} group${visible !== 1 ? 's' : ''}`;
+  document.getElementById('noResults').classList.toggle('visible', visible === 0);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderDistrictTeams();
+renderGroups();
+renderExplorers();
+applyFilters();
+</script>
+
+<!-- D3 v7 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+// ORGANOGRAM — D3 collapsible horizontal tree
+// ═══════════════════════════════════════════════════════
+
+let orgBuilt = false;
+let showTeams = false;
+let orgRoot, orgSvg, orgG, orgTree;
+
+const NODE_COLORS = {
+  district: { fill: '#7B2D8B', stroke: '#5a1f69', text: '#fff' },
+  group:    { fill: '#1A1A2E', stroke: '#111',    text: '#fff' },
+  explorer: { fill: '#FB8C00', stroke: '#E65100', text: '#fff' },
+  network:  { fill: '#607D8B', stroke: '#37474F', text: '#fff' },
+  yl:       { fill: '#F9A825', stroke: '#F57F17', text: '#fff' },
+  scout:    { fill: '#7B2D8B', stroke: '#5a1f69', text: '#fff' },
+  cub:      { fill: '#43A047', stroke: '#1B5E20', text: '#fff' },
+  beaver:   { fill: '#00ACC1', stroke: '#00695C', text: '#fff' },
+  squirrel: { fill: '#E53935', stroke: '#B71C1C', text: '#fff' },
+  team:     { fill: '#F7F5F2', stroke: '#C4BAD0', text: '#555' },
+};
+
+const NODE_W = 170, NODE_H = 34, H_GAP = 52, V_GAP = 10;
+
+function nodeColor(d) {
+  return NODE_COLORS[d.data.nodeType] || NODE_COLORS.team;
+}
+
+function buildTreeData() {
+  const sortedGroups = [...DATA.groups].sort((a, b) => {
+    const ka = groupSortKey(a.name), kb = groupSortKey(b.name);
+    return ka !== kb ? ka - kb : a.name.localeCompare(b.name);
+  });
+
+  const districtNode = { name: 'Winchester District', nodeType: 'district', id: DATA.district.id, _collapsed: false, children: [] };
+
+  // District Teams branch — structured with sub-teams, shown when teams toggle is on
+  const distTeamsNode = {
+    name: 'District Teams', nodeType: 'group', _collapsed: true,
+    children: DISTRICT_TEAMS.map(t => ({
+      name: t.name, nodeType: 'team', _collapsed: true,
+      children: t.subteams.length > 0
+        ? t.subteams.map(st => ({ name: st.name, nodeType: 'team', children: null }))
+        : null
+    }))
+  };
+  districtNode.children.push(distTeamsNode);
+
+  const distSectionNode = {
+    name: 'District Sections', nodeType: 'group', _collapsed: true,
+    children: DATA.districtSections.map(ds => {
+      const st = sectionType(ds.name);
+      const display = ds.name.replace('Winchester - Winchester - ','Winchester - ').replace('Winchester - ','');
+      const node = { name: display, nodeType: st, id: ds.id, _collapsed: true, children: [] };
+      if (showTeams) node.children = ds.teams.map(t => ({ name: t, nodeType: 'team', children: [] }));
+      return node;
+    })
+  };
+  districtNode.children.push(distSectionNode);
+
+  sortedGroups.forEach(g => {
+    const groupNode = {
+      name: g.name, nodeType: 'group', id: g.id, _collapsed: true,
+      children: sortSections(g.sections).map(s => {
+        const st = sectionType(s.name);
+        const display = shortName(s.name, g.name);
+        const sNode = { name: display, nodeType: st, id: s.id, _collapsed: true, children: [] };
+        if (showTeams) sNode.children = s.teams.map(t => ({ name: t, nodeType: 'team', children: [] }));
+        return sNode;
+      })
+    };
+    if (showTeams) g.teams.forEach(t => groupNode.children.push({ name: t, nodeType: 'team', children: [] }));
+    districtNode.children.push(groupNode);
+  });
+
+  return districtNode;
+}
+
+function buildOrg() {
+  orgBuilt = true;
+  drawOrg();
+}
+
+function drawOrg() {
+  const wrap = document.getElementById('org-svg-wrap');
+  wrap.innerHTML = '';
+
+  const treeData = buildTreeData();
+  orgRoot = d3.hierarchy(treeData);
+
+  orgRoot.each(d => {
+    if (d.data._collapsed && d.children) {
+      d._children = d.children;
+      d.children = null;
+    }
+  });
+
+  // Left-to-right tree: nodeSize([vertical-spread-per-node, horizontal-depth-spacing])
+  orgTree = d3.tree()
+    .nodeSize([NODE_H + V_GAP, NODE_W + H_GAP])
+    .separation((a, b) => a.parent === b.parent ? 1 : 1.2);
+
+  // Create SVG — will be sized to exact content in updateOrg
+  orgSvg = d3.select(wrap).append('svg');
+  orgG = orgSvg.append('g').attr('transform', 'translate(20,0)');
+
+  updateOrg(orgRoot);
+}
+
+let orgNodeId = 0;
+
+function updateOrg(source) {
+  orgTree(orgRoot);
+
+  // Compute exact content bounds
+  let minX = Infinity, maxX = -Infinity, maxY = -Infinity;
+  orgRoot.each(d => {
+    if (d.x < minX) minX = d.x;
+    if (d.x > maxX) maxX = d.x;
+    if (d.y > maxY) maxY = d.y;
+  });
+
+  // Size SVG to exact content — browser scroll handles the rest
+  const padX = NODE_H * 2;
+  const padY = NODE_W + 20;
+  const svgH = maxX - minX + padX * 2;
+  const svgW = maxY + padY + 20;
+  orgSvg.attr('width', svgW).attr('height', svgH);
+
+  // Offset so no nodes are clipped at top
+  const offsetY = -minX + padX;
+
+  // ── Links (horizontal) ──
+  const links = orgG.selectAll('.org-link')
+    .data(orgRoot.links(), d => d.target.id);
+
+  links.enter().append('path')
+    .attr('class', 'org-link')
+    .attr('d', d3.linkHorizontal()
+      .x(d => d.y + NODE_W / 2)
+      .y(d => d.x + offsetY + NODE_H / 2))
+    .merge(links)
+    .transition().duration(250)
+    .attr('d', d3.linkHorizontal()
+      .x(d => d.y + NODE_W / 2)
+      .y(d => d.x + offsetY + NODE_H / 2));
+
+  links.exit().remove();
+
+  // ── Nodes ──
+  const nodes = orgG.selectAll('.org-node')
+    .data(orgRoot.descendants(), d => d.id || (d.id = ++orgNodeId));
+
+  const enter = nodes.enter().append('g')
+    .attr('class', 'org-node')
+    .attr('transform', d =>
+      `translate(${source.y0 ?? source.y},${(source.x0 ?? source.x) + offsetY})`)
+    .on('click', (e, d) => {
+      // Section leaf nodes → open in SMS
+      if (!d.children && !d._children && d.data.id) {
+        window.open(`https://membership.scouts.org.uk/#/teams/allunits/${d.data.id}/unitdetailsau`, '_blank');
+        return;
+      }
+      // Branch nodes → expand/collapse
+      if (d.children) { d._children = d.children; d.children = null; }
+      else if (d._children) { d.children = d._children; d._children = null; }
+      updateOrg(d);
+    });
+
+  enter.append('rect')
+    .attr('width', NODE_W).attr('height', NODE_H)
+    .attr('rx', 6).attr('ry', 6)
+    .attr('fill', d => nodeColor(d).fill)
+    .attr('stroke', d => nodeColor(d).stroke)
+    .style('filter', 'drop-shadow(0 1px 3px rgba(0,0,0,0.12))');
+
+  enter.append('text')
+    .attr('x', 10).attr('y', NODE_H / 2).attr('dy', '0.35em')
+    .attr('fill', d => nodeColor(d).text)
+    .style('font-size', '10px')
+    .style('font-family', "'DM Sans', sans-serif")
+    .style('font-weight', d => ['district','group'].includes(d.data.nodeType) ? '600' : '400')
+    .text(d => {
+      const full = d.data.name;
+      return full.length > 22 ? full.slice(0, 21) + '…' : full;
+    });
+
+  enter.append('text')
+    .attr('class', 'expand-icon')
+    .attr('x', NODE_W - 10).attr('y', NODE_H / 2).attr('dy', '0.35em')
+    .attr('text-anchor', 'middle')
+    .attr('fill', d => nodeColor(d).text)
+    .style('font-size', '9px').style('opacity', '0.65');
+
+  const merged = enter.merge(nodes);
+
+  merged.transition().duration(250)
+    .attr('transform', d => `translate(${d.y},${d.x + offsetY})`);
+
+  merged.select('rect')
+    .attr('fill', d => nodeColor(d).fill)
+    .attr('stroke', d => nodeColor(d).stroke);
+
+  merged.select('.expand-icon')
+    .text(d => d._children ? '▶' : d.children ? '▼' : '');
+
+  nodes.exit().transition().duration(200)
+    .attr('transform', d => `translate(${source.y},${source.x + offsetY})`)
+    .remove();
+
+  orgRoot.each(d => { d.x0 = d.x; d.y0 = d.y; });
+}
+
+function toggleTeams() {
+  showTeams = !showTeams;
+  document.getElementById('teamsToggleBtn').textContent = showTeams ? 'Hide Teams' : 'Show Teams';
+  document.getElementById('teamsToggleBtn').style.background = showTeams ? 'var(--teal)' : '';
+  document.getElementById('teamsToggleBtn').style.color = showTeams ? 'white' : '';
+  drawOrg();
+}
+
+function orgExpandAll() {
+  orgRoot.each(d => {
+    if (d._children) { d.children = d._children; d._children = null; }
+  });
+  updateOrg(orgRoot);
+}
+
+function orgCollapseAll() {
+  orgRoot.each(d => {
+    if (d.depth > 0 && d.children) { d._children = d.children; d.children = null; }
+  });
+  updateOrg(orgRoot);
+}
+
+// ── Tab switching (updated to handle map) ─────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'org' && !orgBuilt) buildOrg();
+  if (name === 'map' && !mapBuilt) buildMap();
+  if (name === 'map' && mapInstance) setTimeout(() => mapInstance.invalidateSize(), 50);
+}
+</script>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════
+// MAP — Leaflet with postcodes.io geocoding
+// ═══════════════════════════════════════════════════════
+
+let mapBuilt = false;
+let mapInstance = null;
+const mapMarkers = { group: [], explorer: [], hq: [] };
+const mapFilters = { group: true, explorer: true };
+
+function toggleMapFilter(type, btn) {
+  mapFilters[type] = !mapFilters[type];
+  btn.classList.toggle('active', mapFilters[type]);
+  mapMarkers[type].forEach(m => {
+    if (mapFilters[type]) m.addTo(mapInstance);
+    else m.remove();
+  });
+}
+
+// All map locations
+const MAP_LOCATIONS = [
+  // Scout Groups (purple)
+  { name: '1st Winchester (Weeke & Harestock)',      short: '1st (Weeke & Harestock)',      postcode: 'SO22 6EE', type: 'group',    smsId: 'bd62ad13-0006-11eb-3b4a-d1d3bcc82ced', webId: 679  },
+  { name: '3rd Winchester (The Worthies)',            short: '3rd (The Worthies)',            postcode: 'SO23 7PX', type: 'group',    smsId: '299c40fd-2d86-e562-1bdd-8f45c1509f6a', webId: 680  },
+  { name: '5th Winchester (Compton & Shawford)',      short: '5th (Compton & Shawford)',      postcode: 'SO21 2AZ', type: 'group',    smsId: '01c4fc4b-70d2-18d2-8bfb-b99694999715', webId: 830  },
+  { name: '6th Winchester (Abbotts Barton & Hyde)',   short: '6th (Abbotts Barton & Hyde)',   postcode: 'SO23 7JD', type: 'group',    smsId: '2a47d018-be66-8521-7b17-b4f570c8900c', webId: 828  },
+  { name: '7th Winchester (St Cross)',                short: '7th (St Cross)',                postcode: 'SO23 9SB', type: 'group',    smsId: 'df3b4a63-1761-5b6f-6fe6-893accece24e', webId: 832  },
+  { name: '8th Winchester',                           short: '8th (Stanmore)',                postcode: 'SO22 4EJ', type: 'group',    smsId: '341a3344-c706-a2b0-1dc8-b4cb8cf2b4d4', webId: 836  },
+  { name: '9th Winchester (Colden Common)',            short: '9th (Colden Common)',           postcode: 'SO21 1TA', type: 'group',    smsId: 'cc67abad-3df3-dfac-8353-733b617e8eb3', webId: 834  },
+  { name: '11th Winchester (Fulflood)',               short: '11th (Fulflood)',               postcode: 'SO22 6RH', type: 'group',    smsId: '4d29a659-d95c-d44c-aebb-417698916ed6', webId: 681  },
+  { name: '12th Winchester (Green Jackets)',           short: '12th (Green Jackets)',          postcode: 'SO23 0NY', type: 'group',    smsId: 'ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3', webId: 837  },
+  { name: '14th Winchester (Wonston & Micheldever)',  short: '14th (Wonston & Micheldever)',  postcode: 'SO21 3GX', type: 'group',    smsId: '6f4d9cc7-004c-c947-f971-b8168df7eae2', webId: 839, extraLocations: ['SO21 3HH', 'SO21 2QZ'] },
+  { name: '16th Winchester (Littleton & Sparsholt)',  short: '16th (Littleton & Sparsholt)', postcode: 'SO22 6QL', type: 'group',    smsId: '71d00678-ddf8-95dd-23e0-9bf12c09bbf4', webId: 841  },
+  { name: '17th Winchester (Candover Valley)',         short: '17th (Candover Valley)',        postcode: 'SO24 9TT', type: 'group',    smsId: '5d4d1fdb-01c4-4af1-1ee6-90836b729c77', webId: 1478 },
+  { name: 'Alresford and Cheriton',                   short: 'Alresford & Cheriton',          postcode: 'SO24 9HN', type: 'group',    smsId: '1be9d0a3-6d9e-d47c-d538-876263b66b6e', webId: 1476 },
+  // 14th Winchester secondary meeting locations (faded)
+  { name: '14th Winchester (Wonston & Micheldever)',  short: '14th (South Wonston)',         postcode: 'SO21 3HH', type: 'group',    smsId: '6f4d9cc7-004c-c947-f971-b8168df7eae2', webId: 839, secondary: true },
+  { name: '14th Winchester (Wonston & Micheldever)',  short: '14th (Worthy Down)',            postcode: 'SO21 2QZ', type: 'group',    smsId: '6f4d9cc7-004c-c947-f971-b8168df7eae2', webId: 839, secondary: true },
+  { name: 'Rotherfield Yaks',                         short: 'Yaks',      postcode: 'SO24 9HN', type: 'explorer', smsId: '64b19758-cdf5-644d-8e32-a8f03f9e5b60', webId: 1477, fixedOffset: [ 0.0018, 0] },
+  { name: 'Explorer Scouts Beacons',                  short: 'Beacons',   postcode: 'SO50 6HW', type: 'explorer', smsId: '5ab0ba1b-5f4b-6a76-50b5-d5376726d155', webId: 890  },
+  { name: 'Explorer Scouts Excalibur',                short: 'Excalibur', postcode: 'SO22 6RH', type: 'explorer', smsId: '80cc89cf-83a4-5553-4798-adb2f1fd9663', webId: 892,  fixedOffset: [ 0.0018, 0] },
+  { name: 'Explorer Scouts Trident',                  short: 'Trident',   postcode: 'SO22 6RH', type: 'explorer', smsId: '478a77ef-0919-0785-0f1a-bd7cbc7f4943', webId: 889,  fixedOffset: [-0.0018, 0] },
+  { name: 'Explorer Scouts Jupiter (SEN)',             short: 'Jupiter',   postcode: 'SO23 7GA', type: 'explorer', smsId: 'b3b97bfb-a5b9-7035-ee5c-6fd788294899', webId: 1101 },
+  { name: 'Explorer Scouts Mercury',                  short: 'Mercury',   postcode: 'SO22 6EE', type: 'explorer', smsId: '69c568a9-8af6-51b8-6bbf-63350d4dd584', webId: 891,  fixedOffset: [ 0.0018, 0] },
+  { name: 'Explorer Scouts Paladin',                  short: 'Paladin',   postcode: 'SO23 0NY', type: 'explorer', smsId: '24cccaee-548b-8703-6770-6ff6d72fed30', webId: 893,  fixedOffset: [ 0.0018, 0] },
+  { name: 'Explorer Scouts Titan',                    short: 'Titan',     postcode: 'SO23 7PT', type: 'explorer', smsId: 'ac6bd1db-f126-498a-1e92-088bf6528008', webId: 1249, fixedOffset: [0.0018, 0] },
+  // District HQ / Campsite (gold)
+  { name: 'Pinsent Campsite & District HQ',           short: 'Pinsent',   postcode: 'SO22 5QL', type: 'hq',       smsId: null, webId: null },
+];
+
+// Marker icons using fleur-de-lis PNGs with baked-in drop animation
+function makeIcon(type, delay, secondary) {
+  const files = {
+    group:    'Winchester Groups_files/2018FleurDeLis_7B2D8B.png',
+    explorer: 'Winchester Groups_files/2018FleurDeLis_FB8C00.png',
+    hq:       'Winchester Groups_files/2018FleurDeLis_FFD600.png',
+  };
+  return L.divIcon({
+    className: '',
+    html: `<img src="${files[type] || files.group}" style="
+      width:32px; height:42px;
+      animation: pinDrop 0.6s ${delay}ms both;
+      opacity: ${secondary ? '0.4' : '1'};
+    ">`,
+    iconSize:    [32, 42],
+    iconAnchor:  [16, 42],
+    popupAnchor: [0, -44],
+  });
+}
+
+function buildMap() {
+  mapBuilt = true;
+
+  mapInstance = L.map('map', { zoomControl: true }).setView([51.06, -1.31], 11);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(mapInstance);
+
+  // Hardcoded coordinates — avoids fetch() which fails when opened as a local file
+  const coords = {
+    'SO22 6EE': [51.0783, -1.3417],
+    'SO23 7PX': [51.0987, -1.3003],
+    'SO21 2AZ': [51.0313, -1.3395],
+    'SO23 7JD': [51.0725, -1.3093],
+    'SO23 9SB': [51.0491, -1.3213],
+    'SO22 4EJ': [51.0518, -1.3366],
+    'SO21 1TA': [50.9991, -1.3128],
+    'SO22 6RH': [51.0693, -1.3283],
+    'SO23 0NY': [51.0649, -1.3020],
+    'SO21 3GX': [51.152441, -1.336864],
+    'SO21 3HH': [51.122068, -1.327068],
+    'SO21 2QZ': [51.111934, -1.336443],
+    'SO22 6QL': [51.088452, -1.348075],
+    'SO24 9TT': [51.153770, -1.167465],
+    'SO24 9HN': [51.086437, -1.172231],
+    'SO50 6HW': [50.994339, -1.323148],
+    'SO23 7GA': [51.0707, -1.3174],
+    'SO23 7PT': [51.098541, -1.299975],
+    'SO22 5QL': [51.0622, -1.3579],
+  };
+
+  // Track how many pins share each postcode for offset
+  const pcCount = {};
+  let pinIndex = 0;
+
+  MAP_LOCATIONS.forEach(loc => {
+    const latlng = coords[loc.postcode];
+    if (!latlng) return;
+
+    // Use explicit fixed offset if provided, otherwise radial spread for co-located pins
+    let offsetLat, offsetLng;
+    if (loc.fixedOffset) {
+      offsetLat = loc.fixedOffset[0];
+      offsetLng = loc.fixedOffset[1];
+    } else {
+      pcCount[loc.postcode] = (pcCount[loc.postcode] || 0) + 1;
+      const count = pcCount[loc.postcode];
+      const angle = (count - 1) * (Math.PI * 2 / 6);
+      const radius = count > 1 ? 0.0012 : 0;
+      offsetLat = radius * Math.sin(angle);
+      offsetLng = radius * Math.cos(angle);
+    }
+
+    // Draw a connector line if this pin has a fixed offset
+    if (loc.fixedOffset) {
+      const line = L.polyline(
+        [latlng, [latlng[0] + offsetLat, latlng[1] + offsetLng]],
+        { color: '#FB8C00', weight: 1.5, dashArray: '4 4', opacity: 0.7 }
+      ).addTo(mapInstance);
+      mapMarkers[loc.type].push(line);
+    }
+
+    const delay = pinIndex * 80;
+    pinIndex++;
+
+    const marker = L.marker(
+      [latlng[0] + offsetLat, latlng[1] + offsetLng],
+      { icon: makeIcon(loc.type, delay, loc.secondary) }
+    ).addTo(mapInstance);
+
+    // Draw dashed connector from secondary pin back to its primary location
+    if (loc.secondary) {
+      const primaryCoords = coords[loc.postcode];
+      const line = L.polyline(
+        [primaryCoords, [latlng[0] + offsetLat, latlng[1] + offsetLng]],
+        { color: '#7B2D8B', weight: 1.5, dashArray: '4 4', opacity: 0.4 }
+      ).addTo(mapInstance);
+      mapMarkers[loc.type].push(line);
+    }
+
+    // Short label as permanent tooltip
+    marker.bindTooltip(loc.short, {
+      permanent: true, direction: 'right', offset: [10, 0], className: 'map-label',
+    });
+
+    // Store for filter toggling
+    mapMarkers[loc.type].push(marker);
+
+    const smsLink = loc.smsId
+      ? `<a class="popup-sms" href="https://membership.scouts.org.uk/#/teams/allunits/${loc.smsId}/unitdetailsau" target="_blank">Open in SMS →</a>`
+      : '';
+    const webLink = loc.webId
+      ? `<a class="popup-sms" href="https://www.winscouts.org/Groups/GroupDetails?GlobalGrpId=${loc.webId}" target="_blank">View on District Website →</a>`
+      : '';
+    const extraLocs = loc.extraLocations
+      ? `<div style="margin-top:6px;font-size:0.72rem;color:#6B6B80">Some sections also meet at: ${loc.extraLocations.join(', ')}</div>`
+      : '';
+    const typeLabel = { group: 'Scout Group', explorer: 'Explorer Unit', hq: 'District HQ / Campsite' }[loc.type];
+
+    marker.bindPopup(`
+      <h4>${loc.name}</h4>
+      <div class="popup-type">${typeLabel} · ${loc.postcode}</div>
+      ${extraLocs}
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">${smsLink}${webLink}</div>
+    `);
+
+    marker.on('mouseover', function() {
+      clearTimeout(this._closeTimer);
+      this.openPopup();
+    });
+    marker.on('mouseout', function(e) {
+      const popup = this.getPopup();
+      if (popup && popup.getElement() && popup.getElement().contains(e.originalEvent.relatedTarget)) return;
+      this._closeTimer = setTimeout(() => this.closePopup(), 300);
+    });
+    marker.on('popupopen', function() {
+      const popupEl = this.getPopup().getElement();
+      if (!popupEl) return;
+      const m = this;
+      popupEl.addEventListener('mouseenter', () => clearTimeout(m._closeTimer));
+      popupEl.addEventListener('mouseleave', () => { m._closeTimer = setTimeout(() => m.closePopup(), 300); });
+    });
+  });
+}
+</script>
+</body>
+</html>
