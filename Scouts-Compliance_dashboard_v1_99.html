@@ -891,7 +891,7 @@
   </div>
   <input type="file" id="tsvFileInput" accept=".tsv,.txt">
   <input type="file" id="htmlFileInput" accept=".html,.htm">
-  <button id="importHtmlBtn" onclick="document.getElementById('htmlFileInput').click()" title="Import data previously exported from this dashboard, including embedded member profile URLs">📂 Import HTML file…</button>
+  <button id="importHtmlBtn" onclick="document.getElementById('htmlFileInput').click()" title="Import data previously exported from this dashboard, including embedded member profile URLs">📂 Import Data file…</button>
   <button id="importTsvBtn" onclick="document.getElementById('tsvFileInput').click()" title="Import tab-separated data. Member profile URLs are not included in TSV files">📂 Import TSV file…</button>
   <div id="snapshotsWrap" class="snapshots-section" style="max-width:640px;width:100%;margin-bottom:8px"></div>
   <button id="loadBtn" onclick="loadData()">Load Compliance Dashboard →</button>
@@ -985,7 +985,7 @@
       <button class="btn-reset" onclick="printDashboard()" title="Print / Save as PDF">🖨 Print</button>
       <button id="draftEmailBtn" class="btn-draft-email" onclick="openEmailModal()" title="Draft reminder email for selected members">✉ Draft email</button>
       <button class="btn-export" id="copyEmailsBtn" onclick="copyEmails()" title="Copy email addresses of filtered members to clipboard">📋 Copy emails</button>
-      <button class="btn-export" onclick="exportHTML()" title="Export filtered data as HTML including embedded member profile URLs — recommended for sharing with colleagues who use this dashboard">⬇ Export HTML</button>
+      <button class="btn-export" onclick="exportHTML()" title="Export filtered data as HTML including embedded member profile URLs — recommended for sharing with colleagues who use this dashboard">⬇ Export Data</button>
       <button class="btn-export" onclick="exportCSV()" title="Export filtered data as tab-separated values for use in Excel or Google Sheets. Member profile URL appears as the last column">⬇ Export TSV</button>
       <button class="btn-reset" onclick="sortByUrgency()" id="urgencyBtn" title="Sort by most urgent expiry across all modules">⚡ Sort by urgency</button>
       <span id="memberCount">—</span>
