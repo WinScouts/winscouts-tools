@@ -1,0 +1,66 @@
+
+.CookieGreyOutContent {
+  z-index:200000;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:calc(100vh);
+  background-color:rgba(0,0,0,0.6);
+}
+
+
+
+.CookieWarning .CookieMessage {
+  z-index:200010;
+  background-color:white;
+  color:slategray;
+}
+
+
+
+.CookieWarning .PreferencesPanel {
+  z-index:200010;
+  max-height:calc(100vh - 245px);
+  padding:5px 0 10px 0;
+  position:fixed;
+  top:80px;
+  background-color:white;
+  box-shadow:0 0 30px 0 rgba(0,0,0,0.9);
+}
+@media only screen and (max-width:575px) {.CookieWarning .PreferencesPanel {width:400px;left:calc(50% - 200px);}}
+@media only screen and (min-width:576px) and (max-width:767px) {.CookieWarning .PreferencesPanel {width:500px;left:calc(50% - 250px);}}
+@media only screen and (min-width:768px) and (max-width:991px) {.CookieWarning .PreferencesPanel {width:650px;left:calc(50% - 325px);}}
+@media only screen and (min-width:992px) {.CookieWarning .PreferencesPanel {width:800px;left:calc(50% - 400px);}}
+
+.CookieWarning .CenterVertically {display:flex;align-items:center;}
+.CookieWarning .SmallPrint {font-size:13px;line-height:14px;}
+
+
+.CookieWarning .CookiePrefScriptScrollBarPost {width:100%;max-height:calc(100vh - 390px);overflow-y:auto;}
+
+
+
+.CookieWarning .ButtonPurpleBackground, .CookieWarning .ButtonWhiteBackground, .CookieWarning .ButtonPurpleBorder {
+  font-family:NunitoSansExtraBold;
+  font-size:16px;
+  line-height:24px;
+  border:none;
+  text-align:center;
+  margin:0 10px 10px 0;
+  padding:5px 8px 5px 8px;
+	position:relative;
+	top:6px;
+}
+.CookieWarning .ButtonPurpleBackground {background-color:#7413dc;color:white;} .CookieWarning .ButtonPurpleBackground a {color:white;}
+.CookieWarning .ButtonWhiteBackground {background-color:white;color:#404e5a;text-decoration:underline;}
+.CookieWarning .ButtonPurpleBorder {background-color:white;color:#404e5a;border:1px solid #7413dc;}
+.CookieWarning .ButtonPurpleBackground:hover {background-color:#490499;}
+.CookieWarning .ButtonPurpleBorder:hover {background-color:#eeeeee;}
+
+.MarketingWebsite .CookieWarning .ButtonPurpleBackground, .MarketingWebsite .CookieWarning .ButtonWhiteBackground,
+  .MarketingWebsite .CookieWarning .ButtonPurpleBorder {font-family:Arial,sans-serif;font-size:16px;font-weight:bold;}
+
+.MarketingWebsite .CookieWarning .ButtonPurpleBackground {background-color:#0000fd;}
+.MarketingWebsite .CookieWarning .ButtonPurpleBorder {border:1px solid #0000fd;}
+.MarketingWebsite .CookieWarning .ButtonPurpleBackground:hover {background-color:#7c7cfe;}
