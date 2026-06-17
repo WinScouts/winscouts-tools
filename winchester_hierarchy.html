@@ -342,7 +342,7 @@
       <h1>Winchester District — Unit Hierarchy</h1>
       <p>13 Scout Groups · 70 Sections · 10 District Units · Generated from SMS organogram data</p>
     </div>
-    <img src="Winchester Groups_files/Scouts_Logo_Marque_Black.png" style="height:64px;flex-shrink:0;margin-right:8px;filter:brightness(0) invert(1);" alt="Scouts logo">
+    <img src="Winchester_Groups_files/Scouts_Logo_Marque_Black.png" style="height:64px;flex-shrink:0;margin-right:8px;filter:brightness(0) invert(1);" alt="Scouts logo">
   </div>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('cards',this)">Cards View</button>
@@ -391,7 +391,7 @@
   <!-- Winchester District card -->
   <div class="district-card">
     <div class="district-header" style="flex-direction:column;align-items:flex-start;padding:0 20px 14px;">
-      <div style="padding:10px 0 6px"><a href="https://www.winscouts.org/" target="_blank" title="View on District Website"><img src="Winchester Groups_files/black_black___1_ef3e45_cbc92e____.svg" style="height:52px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a></div>
+      <div style="padding:10px 0 6px"><a href="https://www.winscouts.org/" target="_blank" title="View on District Website"><img src="Winchester_Groups_files/DistrictNecker.svg" style="height:52px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a></div>
       <div style="display:flex;align-items:center;gap:10px;width:100%">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <h2><a href="https://membership.scouts.org.uk/#/teams/allunits/eb650909-e5f6-a30b-5d58-fb826873a69f/unitdetailsau" target="_blank" style="color:white;text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Winchester District</a></h2>
@@ -426,6 +426,15 @@
 
   <!-- Explorer / District sections -->
   <div class="section-heading">District Sections — Explorer Scouts &amp; Network</div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:10px 16px;background:var(--surface);border:1.5px solid var(--explorer-acc);border-radius:10px;">
+    <a href="https://www.winscouts.org/OurSections/Explorers/" target="_blank" title="View Explorers on District Website">
+      <img src="Winchester_Groups_files/black_black___1_ef3e45_cbc92e____.svg" style="height:42px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9">
+    </a>
+    <div>
+      <div style="font-weight:600;font-size:0.85rem;color:var(--text)">Explorer Scouts &amp; Network</div>
+      <div style="font-size:0.72rem;color:var(--muted)">Common necker for all Winchester District Explorer units</div>
+    </div>
+  </div>
   <div class="explorer-grid" id="explorerGrid"></div>
 
   <!-- Groups -->
@@ -463,13 +472,13 @@
 <div class="tab-panel" id="tab-map">
   <div id="map-controls">
     <button class="map-filter-btn active" id="mf-group" onclick="toggleMapFilter('group',this)">
-      <img src="Winchester Groups_files/2018FleurDeLis_7B2D8B.png" style="height:18px;vertical-align:middle"> Scout Groups
+      <img src="Winchester_Groups_files/2018FleurDeLis_7B2D8B.png" style="height:18px;vertical-align:middle"> Scout Groups
     </button>
     <button class="map-filter-btn active" id="mf-explorer" onclick="toggleMapFilter('explorer',this)">
-      <img src="Winchester Groups_files/2018FleurDeLis_FB8C00.png" style="height:18px;vertical-align:middle"> Explorer Units
+      <img src="Winchester_Groups_files/2018FleurDeLis_FB8C00.png" style="height:18px;vertical-align:middle"> Explorer Units
     </button>
     <span class="map-legend-item" style="margin-left:8px">
-      <img src="Winchester Groups_files/2018FleurDeLis_FFD600.png" style="height:18px;vertical-align:middle"> Pinsent / District HQ
+      <img src="Winchester_Groups_files/2018FleurDeLis_FFD600.png" style="height:18px;vertical-align:middle"> Pinsent / District HQ
     </span>
     <span class="map-hint">Click a pin for details · Links open in SMS</span>
   </div>
@@ -558,7 +567,8 @@ const NECKER_SVG = {
   'ecd4fb53-aa86-eb8b-1cfd-0601243fc7d3': '008000_008000___1_f34646_000400____.svg',                          // 12th
   '6f4d9cc7-004c-c947-f971-b8168df7eae2': 'darkblue_yellow___0______.svg',                                    // 14th
   '71d00678-ddf8-95dd-23e0-9bf12c09bbf4': 'green_green___2_black_black_yellow_yellow__.svg',                  // 16th
-  // 17th and Alresford not in folder — no necker shown
+  '5d4d1fdb-01c4-4af1-1ee6-90836b729c77': 'CandoversNecker.svg',                                              // 17th
+  // Alresford uses the placeholder necker
 };
 
 // ── District Teams data (shared by Cards view and Organogram) ─────────
@@ -669,8 +679,8 @@ function renderGroups() {
     const webId = GROUP_WEB_ID[g.id];
     const webUrl = webId ? `https://www.winscouts.org/Groups/GroupDetails?GlobalGrpId=${webId}` : null;
     const neckerSrc = neckerFile
-      ? `Winchester Groups_files/${neckerFile}`
-      : `Winchester Groups_files/placeholder_necker.png`;
+      ? `Winchester_Groups_files/${neckerFile}`
+      : `Winchester_Groups_files/placeholder_necker.png`;
     const neckerImg = webUrl
       ? `<div style="padding:10px 0 6px"><a href="${webUrl}" target="_blank" onclick="event.stopPropagation()" title="View on District Website"><img src="${neckerSrc}" style="height:52px;cursor:pointer;opacity:0.9;transition:opacity 0.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.9"></a></div>`
       : `<div style="padding:10px 0 6px"><img src="${neckerSrc}" style="height:52px"></div>`;
@@ -1134,9 +1144,9 @@ const MAP_LOCATIONS = [
 // Marker icons using fleur-de-lis PNGs with baked-in drop animation
 function makeIcon(type, delay, secondary) {
   const files = {
-    group:    'Winchester Groups_files/2018FleurDeLis_7B2D8B.png',
-    explorer: 'Winchester Groups_files/2018FleurDeLis_FB8C00.png',
-    hq:       'Winchester Groups_files/2018FleurDeLis_FFD600.png',
+    group:    'Winchester_Groups_files/2018FleurDeLis_7B2D8B.png',
+    explorer: 'Winchester_Groups_files/2018FleurDeLis_FB8C00.png',
+    hq:       'Winchester_Groups_files/2018FleurDeLis_FFD600.png',
   };
   return L.divIcon({
     className: '',
