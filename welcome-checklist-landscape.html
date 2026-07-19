@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome Conversation: Let's Get Started!</title>
+<link rel="icon" type="image/png" href="Scout2Favicon.png">
+<style>
+  /* ============================================================
+     COLOUR PALETTE — official Scouts brand colours
+     Defined once here as "CSS variables" so they can be reused
+     anywhere below by writing var(--purple) etc.
+     ============================================================ */
+  :root {
+    --purple: #7413DC;      /* Scouts core purple */
+    --purple-dark: #490B3D;
+    --pink: #FFB4E5;        /* Scouts pink */
+    --pink-pale: #FFE7F7;
+    --green: #23A950;       /* Scouts green */
+    --green-pale: #E4F6EB;
+    --grey-text: #333333;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    /* Nunito Sans is the official Scouts typeface; the fallbacks
+       kick in if it isn't installed on the viewer's machine */
+    font-family: "Nunito Sans", "Segoe UI", Arial, sans-serif;
+    background: #f2f0f5;
+    color: var(--grey-text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  /* The "page" — a wide landscape card that suits a laptop screen */
+  .page {
+    background: var(--white);
+    width: 100%;
+    max-width: 1280px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(73, 11, 61, 0.15);
+    padding: 40px 48px 28px;
+  }
+
+  /* ---------- Header row: title + intro on the left, timer on the right ---------- */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    color: var(--purple);
+    font-size: 2.4rem;
+    line-height: 1.1;
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+
+  .intro {
+    max-width: 720px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .timer {
+    text-align: center;
+    color: var(--purple);
+    flex-shrink: 0;
+  }
+  .timer svg { display: block; margin: 0 auto 6px; }
+  .timer .mins { font-weight: 800; font-size: 1.05rem; }
+
+  .instruction {
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  /* ---------- The six checklist cards, laid out 3 across × 2 down ----------
+     "display: grid" turns the container into a grid; the
+     grid-template-columns line says "make 3 equal-width columns". */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 26px;
+  }
+
+  .card {
+    border: 3px solid;
+    border-radius: 10px;
+    padding: 16px 16px 14px;
+    display: flex;
+    gap: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  /* Alternating border colours, matching the original PDF */
+  .card.pink   { border-color: var(--pink); }
+  .card.purple { border-color: var(--purple); }
+  .card.green  { border-color: var(--green); }
+
+  .card .num {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .card.pink .num   { color: var(--pink); }
+  .card.purple .num { color: var(--purple); }
+  .card.green .num  { color: var(--green); }
+
+  .card p {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    padding-bottom: 26px; /* leaves room for the tick box below */
+  }
+
+  /* The tick box in the bottom-right corner of each card */
+  .tick {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border: 2.5px solid;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--white);
+    background: var(--white);
+  }
+  .card.pink .tick   { border-color: var(--pink); }
+  .card.purple .tick { border-color: var(--purple); }
+  .card.green .tick  { border-color: var(--green); }
+
+  /* When a card has been clicked, we add the class "done" to it with
+     JavaScript, and these rules fill in the tick and tint the card */
+  .card.done.pink   { background: var(--pink-pale); }
+  .card.done.purple { background: #F1E7FB; }
+  .card.done.green  { background: var(--green-pale); }
+  .card.done.pink .tick   { background: var(--pink); }
+  .card.done.purple .tick { background: var(--purple); }
+  .card.done.green .tick  { background: var(--green); }
+
+  /* ---------- Bottom strip: top tips on the left, sign-off + logo right ---------- */
+  .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 40px;
+    border-top: 2px solid #eee;
+    padding-top: 18px;
+  }
+
+  .tips h2 {
+    color: var(--purple);
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  .tips ul {
+    list-style: none;
+    max-width: 640px;
+  }
+  .tips li {
+    font-size: 0.92rem;
+    line-height: 1.45;
+    padding-left: 16px;
+    position: relative;
+    margin-bottom: 7px;
+  }
+  /* A little purple bullet dot, drawn with a "::before" pseudo-element */
+  .tips li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+  }
+
+  .signoff { text-align: right; flex-shrink: 0; }
+  .signoff .thanks { font-size: 0.92rem; max-width: 340px; margin-bottom: 8px; }
+  .signoff .thanks strong { color: var(--purple); }
+  .signoff .luck { color: var(--purple); font-weight: 800; font-size: 0.95rem; margin-bottom: 12px; }
+  .signoff .scouts-logo { display: inline-block; }
+
+  .version { text-align: center; color: #999; font-size: 0.75rem; margin-top: 14px; }
+
+  /* On narrower windows (e.g. half-screen), drop to 2 columns then 1 */
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  {
+    .grid { grid-template-columns: 1fr; }
+    .header, .bottom { flex-direction: column; align-items: flex-start; }
+    .signoff { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h1>Welcome conversation:<br>let&rsquo;s get started!</h1>
+      <p class="intro">Thank you for taking this next step with us. We want you to have the best
+      welcome possible. Within your first 30 days, you&rsquo;ll have a chat with a Welcome
+      Conversation Volunteer and your Team Leader. Here, you can chat about everything
+      you need to feel confident in your new role.</p>
+    </div>
+    <div class="timer">
+      <!-- Simple stopwatch drawn as an inline SVG so no image file is needed -->
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <rect x="26" y="2" width="12" height="6" rx="2" fill="currentColor"/>
+        <line x1="32" y1="8" x2="32" y2="14" stroke="currentColor" stroke-width="4"/>
+        <circle cx="32" cy="37" r="22" stroke="currentColor" stroke-width="5"/>
+        <path d="M32 37 L32 21 A16 16 0 0 1 46 30 Z" fill="currentColor"/>
+      </svg>
+      <div class="mins">30-45 mins</div>
+    </div>
+  </div>
+
+  <p class="instruction">Tick off the following points together for an easy start to your new role.
+  <em>(Click a box to tick it off.)</em></p>
+
+  <div class="grid">
+    <div class="card pink">
+      <div class="num">1</div>
+      <p>Tell us a little bit about yourself and your interest in Scouts. Do you have any
+      access needs we can support you with?</p>
+      <div class="tick">&#10003;</div>
+    </div>
+    <div class="card purple">
+      <div class="num">2</div>
+      <p>Do you know what tasks you&rsquo;ll be doing? Let us know which tasks you&rsquo;ve signed
+      up for and how you&rsquo;ll organise your time to get them done.</p>
+      <div class="tick">&#10003;</div>
+    </div>
+    <div class="card green">
+      <div class="num">3</div>
+      <p>At Scouts, we want to help you grow. Chat through our learning and development
+      opportunities.</p>
+      <div class="tick">&#10003;</div>
+    </div>
+    <div class="card pink">
+      <div class="num">4</div>
+      <p>It&rsquo;s everyone&rsquo;s responsibility in Scouts to keep young people safe. Chat through
+      the Scout values, promise, policies, Yellow Card and volunteering culture.</p>
+      <div class="tick">&#10003;</div>
+    </div>
+    <div class="card purple">
+      <div class="num">5</div>
+      <p>We make your journey easy to follow through our membership system. Can you
+      access this?</p>
+      <div class="tick">&#10003;</div>
+    </div>
+    <div class="card green">
+      <div class="num">6</div>
+      <p>Complete the rest of your steps to becoming a full member including providing
+      references, signing declarations, completing disclosure and Confidential Enquiry
+      checks and your Growing Roots learning.</p>
+      <div class="tick">&#10003;</div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="tips">
+      <h2>Top tips</h2>
+      <ul>
+        <li>Volunteering is flexible, so chat to your Welcome Conversation Volunteer to see
+        if there&rsquo;s something else you&rsquo;d like to try.</li>
+        <li>We&rsquo;d love to hear from you. If you have any questions or just want to chat,
+        reach out to your Welcome Conversation Volunteer, Team Leader or buddy
+        (if you have one).</li>
+      </ul>
+    </div>
+    <div class="signoff">
+      <p class="thanks"><strong>Thank you</strong> for everything you&rsquo;ve done so far and for
+      having this conversation with us.</p>
+      <p class="luck">Good luck on your volunteering journey!</p>
+      <!-- Official Scouts logo — keep Scout_Logo.png in the same folder as this file -->
+      <img class="scouts-logo" src="Scout_Logo.png" alt="Scouts logo" width="120">
+    </div>
+  </div>
+
+  <p class="version">Version 2, May 2025 &mdash; landscape screen edition</p>
+
+</div>
+
+<script>
+  // A small piece of JavaScript to make the cards interactive.
+  // It finds every element with the class "card", and when one is
+  // clicked, toggles the class "done" on it — the CSS above then
+  // handles the visual change (tinted background + filled tick).
+  document.querySelectorAll('.card').forEach(function (card) {
+    card.addEventListener('click', function () {
+      card.classList.toggle('done');
+    });
+  });
+</script>
+
+</body>
+</html>
