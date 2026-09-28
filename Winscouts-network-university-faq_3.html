@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scout Network at University – FAQs | Winchester District Scouts</title>
+<meta name="description" content="Frequently asked questions about Scout Network for 18–25-year-olds at university, from Winchester District Scouts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ---- Colours: change these to restyle the whole page ---- */
+  :root {
+    --purple: #7413dc;      /* Scouts purple */
+    --purple-dark: #490499;
+    --green: #4dba87;       /* accent used on the Network pages */
+    --ink: #1a1a1a;
+    --muted: #555;
+    --line: #e2e2e2;
+    --pale: #f4f1fa;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Nunito Sans", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--white);
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  a { color: var(--purple); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---- Top bar ---- */
+  .topbar { border-bottom: 1px solid var(--line); background: var(--white); }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: 12px; }
+  .brand { font-weight: 900; font-size: 1.15rem; color: var(--ink); text-decoration: none; line-height: 1.2; }
+  .brand span { display: block; font-weight: 600; font-size: .85rem; color: var(--muted); }
+  .topbar .join {
+    background: var(--purple); color: var(--white); text-decoration: none;
+    font-weight: 800; padding: 10px 18px; border-radius: 4px; white-space: nowrap; font-size: .95rem;
+  }
+  .topbar .join:hover { background: var(--purple-dark); }
+
+  /* ---- Hero banner ---- */
+  .hero { background: var(--purple); color: var(--white); padding: 56px 0 64px; position: relative; overflow: hidden; }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; bottom: -120px; width: 360px; height: 360px;
+    border-radius: 50%; background: var(--green); opacity: .9;
+  }
+  .hero .wrap { position: relative; z-index: 1; }
+  .crumbs { font-size: .9rem; margin: 0 0 20px; opacity: .9; }
+  .crumbs a { color: var(--white); }
+  .hero h1 { font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 900; line-height: 1.1; margin: 0 0 16px; max-width: 16ch; }
+  .hero p { font-size: 1.2rem; margin: 0; max-width: 38ch; }
+
+  /* ---- Intro ---- */
+  main { padding: 48px 0 24px; }
+  .intro { font-size: 1.2rem; max-width: 70ch; }
+  .intro strong { color: var(--purple); }
+
+  /* ---- Accordion (built with <details>/<summary>) ---- */
+  .faq-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin: 40px 0 12px; flex-wrap: wrap; }
+  .faq-head h2 { font-size: 1.9rem; font-weight: 900; margin: 0; }
+  .toggle-all {
+    background: none; border: 2px solid var(--purple); color: var(--purple); font: inherit;
+    font-weight: 800; font-size: .9rem; padding: 6px 14px; border-radius: 4px; cursor: pointer;
+  }
+  .toggle-all:hover { background: var(--pale); }
+
+  details { border-top: 1px solid var(--line); }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary {
+    list-style: none; cursor: pointer; padding: 20px 52px 20px 0; position: relative;
+    font-weight: 800; font-size: 1.2rem; line-height: 1.35;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {               /* the round +/– button on the right */
+    content: "+"; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    width: 36px; height: 36px; border-radius: 50%; background: var(--purple); color: var(--white);
+    display: grid; place-items: center; font-size: 1.5rem; font-weight: 700; line-height: 1;
+  }
+  details[open] summary::after { content: "–"; background: var(--green); }
+  summary:hover { color: var(--purple); }
+  summary:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
+  .answer { padding: 0 0 24px; max-width: 70ch; }
+  .answer p { margin: 0 0 14px; }
+  .answer ul { margin: 0 0 14px; padding-left: 1.2em; }
+  .answer li { margin-bottom: 4px; }
+  .answer li::marker { color: var(--purple); }
+
+  /* little "choices" diagram used in the Leader question */
+  .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 16px; }
+  .opt { border: 2px solid var(--line); border-radius: 6px; padding: 12px; text-align: center; font-weight: 700; font-size: .95rem; color: var(--muted); }
+  .opt.yes { border-color: var(--green); background: #eaf7f0; color: var(--ink); }
+  .opt small { display: block; font-weight: 600; font-size: .8rem; }
+
+  .pillars { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 16px; }
+  .pillars span { background: var(--pale); color: var(--purple-dark); font-weight: 800; padding: 6px 14px; border-radius: 999px; }
+
+  .path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 16px; font-size: .95rem; }
+  .path span { background: var(--pale); padding: 6px 10px; border-radius: 4px; font-weight: 700; }
+  .path b { color: var(--purple); }
+
+  .note { border-left: 4px solid var(--green); background: #f3faf6; padding: 10px 14px; border-radius: 0 4px 4px 0; }
+
+  /* ---- Summary panel ---- */
+  .summary { background: var(--pale); border-radius: 8px; padding: 32px 24px; margin: 56px 0 0; }
+  .summary h2 { font-size: 1.9rem; font-weight: 900; margin: 0 0 8px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 24px; }
+  .compare div { background: var(--white); border-radius: 6px; padding: 16px; }
+  .compare div:last-child { border: 3px solid var(--purple); }
+  .compare h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .compare p { margin: 0; font-size: .95rem; color: var(--muted); }
+  .benefits { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .benefits li { background: var(--white); padding: 10px 14px; border-radius: 6px; font-weight: 600; font-size: .95rem; }
+
+  .in-short { background: var(--purple); color: var(--white); border-radius: 8px; padding: 32px 24px; margin: 24px 0 0; }
+  .in-short h2 { margin: 0 0 8px; font-weight: 900; }
+  .in-short .big { font-size: 1.35rem; font-weight: 800; line-height: 1.35; margin: 0 0 12px; }
+  .in-short p { margin: 0 0 16px; }
+  .btn {
+    display: inline-block; background: var(--green); color: var(--ink); text-decoration: none;
+    font-weight: 900; padding: 12px 22px; border-radius: 4px;
+  }
+  .btn:hover { background: #3fa574; }
+  .btn.ghost { background: transparent; color: var(--white); border: 2px solid var(--white); padding: 10px 20px; }
+  .btn.ghost:hover { background: rgba(255,255,255,.12); }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  /* text on the left, QR card on the right */
+  .cta { display: flex; align-items: center; gap: 28px; }
+  .cta-text { flex: 1; }
+  .qr {
+    flex: 0 0 180px; background: var(--white); border-radius: 8px; padding: 12px 12px 8px;
+    text-align: center; text-decoration: none; color: var(--ink);
+  }
+  .qr img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  .qr span { display: block; font-weight: 800; font-size: .85rem; margin-top: 4px; }
+
+  /* ---- Footer ---- */
+  footer { background: #111; color: #ccc; padding: 32px 0; margin-top: 56px; font-size: .9rem; }
+  footer a { color: var(--white); }
+  footer p { margin: 0 0 6px; }
+
+  /* ---- Phone layout ---- */
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    .hero { padding: 36px 0 44px; }
+    .hero::after { width: 140px; height: 140px; right: -60px; bottom: -80px; }
+    .faq-head h2 { line-height: 1.2; }
+    .cta { flex-direction: column; align-items: stretch; }
+    .qr { flex: none; width: 200px; margin: 0 auto; }
+    .options, .compare, .benefits { grid-template-columns: 1fr; }
+    summary { font-size: 1.08rem; }
+    .topbar .join { padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#">Winchester District Scouts<span>Scout Network</span></a>
+    <a class="join" href="https://docs.google.com/forms/d/e/1FAIpQLSfPRV9KmR7481InQo15gDt80nW8UMMS-yijzmLlwZ8cMPHG0w/viewform">Register interest</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="crumbs"><a href="#">Home</a> › <a href="#">Network</a> › University FAQs</p>
+    <h1>Scout Network at University</h1>
+    <p>Frequently asked questions for 18–25-year-olds heading to, or already at, university.</p>
+  </div>
+</section>
+
+<main>
+  <div class="wrap">
+    <p class="intro">Going to university doesn't mean you have to stop Scouting – and you don't have to become a Leader either. <strong>Scout Network</strong> lets you keep having adventures, learning skills and making a difference, alongside university life. Tap a question below to see the answer.</p>
+
+    <div class="faq-head">
+      <h2>Your questions answered</h2>
+      <button class="toggle-all" type="button" aria-pressed="false">Open all</button>
+    </div>
+
+    <details>
+      <summary>What is Scout Network?</summary>
+      <div class="answer">
+        <p>Scout Network is The Scouts' section for 18–25-year-olds. It gives young adults the opportunity to continue Scouting after turning 18, without having to become a Scout Leader.</p>
+        <p>Network members can take part in adventures, expeditions, camps, international activities, community projects and social events, while also organising and running activities themselves.</p>
+        <p>It can work particularly well alongside university life: you can be part of your university community while remaining part of the wider Scout movement.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Isn't Scout Network just a university Scout society?</summary>
+      <div class="answer">
+        <p>No. There can be some overlap, but they are fundamentally different.</p>
+        <p>A university Scout society is normally a university-based club or society. Its activities and protections depend on the arrangements made by the university and the society itself.</p>
+        <p>Scout Network is an official part of The Scouts. As a Network member, you are a member of the national Scout organisation and can take part in Scouting activities within its established programme, policies, safety procedures and insurance arrangements.</p>
+        <p>You can also belong to a university society <em>and</em> Scout Network – they aren't mutually exclusive.</p>
+        <p>In fact, Winchester District Scouts works closely with the Student Scout and Guide Organisation (SSAGO) at the University of Winchester to offer the benefits of Network membership to SSAGO members.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What insurance do I get as a Network member?</summary>
+      <div class="answer">
+        <p>As a member of The Scouts, you benefit from the organisation's insurance arrangements when participating in authorised Scout activities, subject to the terms and conditions of the relevant policies. These include:</p>
+        <ul>
+          <li>Public liability insurance</li>
+          <li>Personal accident and medical expenses cover</li>
+          <li>Legal liability cover for authorised Scout activities</li>
+          <li>Additional insurance arrangements for certain activities and trips</li>
+        </ul>
+        <p>This is an important distinction from simply joining a university society. A university society doesn't automatically give you Scout insurance.</p>
+        <p class="note">The insurance isn't a blanket policy covering everything a Network member does – activities need to be properly authorised and comply with The Scouts' rules.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Does Network provide legal protection?</summary>
+      <div class="answer">
+        <p>Scout Network isn't a way of making an individual immune from legal liability. However, when activities are properly organised and authorised as Scout activities, they take place within The Scouts' established governance and insurance framework.</p>
+        <p>This means there are national policies, procedures, safety rules, safeguarding arrangements and insurance behind the activity.</p>
+        <p>For example, if a Network group organises an authorised Scout expedition, it isn't simply a group of students organising an expedition independently.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What about safeguarding?</summary>
+      <div class="answer">
+        <p>Network members are part of The Scouts and therefore operate within its national safeguarding framework.</p>
+        <p>This includes policies and procedures covering safeguarding, safety, bullying and harassment, complaints and other areas of member welfare.</p>
+        <p>This is particularly useful for Network because members are adults who are able to organise and participate in activities themselves, while still having the support and safeguards of the wider organisation.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Do I have to become a Scout Leader when I turn 18?</summary>
+      <div class="answer">
+        <p>No. That's one of the main reasons Scout Network exists. Turning 18 doesn't have to mean choosing between stopping Scouting or becoming a Leader. Network gives you a third option:</p>
+        <div class="options" role="list">
+          <div class="opt" role="listitem">Stop Scouting</div>
+          <div class="opt" role="listitem">Become a Leader</div>
+          <div class="opt yes" role="listitem">Keep Scouting as a participant<small>Scout Network</small></div>
+        </div>
+        <p>You can go camping, take part in expeditions, learn new skills, organise activities, undertake community projects and travel internationally without becoming responsible for running a Beaver, Cub or Scout section.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I organise my own activities?</summary>
+      <div class="answer">
+        <p>Yes. Network is designed to give 18–25-year-olds considerable responsibility for organising and running their own programme. That could include:</p>
+        <ul>
+          <li>Camping and hiking</li>
+          <li>Expeditions</li>
+          <li>Outdoor activities</li>
+          <li>International trips</li>
+          <li>Community projects</li>
+          <li>Skills development</li>
+          <li>Social events</li>
+          <li>Fundraising</li>
+          <li>Scout events and camps</li>
+        </ul>
+        <p class="note">Activities still need to follow the relevant Scout rules, safety requirements and approval processes.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I go on Scout camps and expeditions?</summary>
+      <div class="answer">
+        <p>Yes. Network members can participate in Scout activities, camps and expeditions as members of The Scouts, subject to the normal rules and arrangements for those activities.</p>
+        <p>This can give you opportunities to do things that aren't necessarily available through a university society – particularly activities involving the wider Scout movement.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I go abroad with Scout Network?</summary>
+      <div class="answer">
+        <p>Yes. Network members can participate in international Scouting activities and organise international projects, subject to the relevant Scout rules and approval arrangements.</p>
+        <p>This means you can combine travelling and adventure with Scouting, rather than simply joining a university travel or outdoor society.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What happens if I move away for university?</summary>
+      <div class="answer">
+        <p>Scout Network is designed to work particularly well for people who move around.</p>
+        <p>You can participate in Network through your local District, and there are arrangements allowing members to participate in more than one District Network or through the wider UK Scout Network.</p>
+        <p>So you don't necessarily have to give up your connection with Scouting when you leave home for university.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Do I have to belong to my local Scout District?</summary>
+      <div class="answer">
+        <p>Not necessarily. There are different ways of participating in Network depending on your circumstances. You can belong to a local District Network, participate in another District's Network, or use the UK Scout Network.</p>
+        <p>This flexibility is useful for students who may spend term time at university and holidays somewhere else.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I still be involved with my Scout Group at home?</summary>
+      <div class="answer">
+        <p>Yes. Network membership doesn't prevent you from continuing to volunteer with your old Scout Group if you'd like to. You could, for example:</p>
+        <div class="path">
+          <span>Be a Network member</span><b>→</b>
+          <span>Attend university</span><b>→</b>
+          <span>Volunteer occasionally at your home Group</span><b>→</b>
+          <span>Go on Network activities with other young adults</span>
+        </div>
+        <p>You can choose how much or how little volunteering you want to do.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What programme does Scout Network have?</summary>
+      <div class="answer">
+        <p>Network has its own programme built around three broad areas:</p>
+        <div class="pillars"><span>Adventure</span><span>Community</span><span>International</span></div>
+        <p>The programme is designed for adults aged 18–25 and gives members opportunities to develop skills, take on responsibility and create their own activities and projects.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Are there awards and qualifications?</summary>
+      <div class="answer">
+        <p>Yes. Network members can take part in the Scout programme and access opportunities for personal development, leadership, teamwork and practical skills.</p>
+        <p>There are also opportunities to gain experience that can be useful when applying for jobs or further study.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Is Scout Network only for people who have been Scouts before?</summary>
+      <div class="answer">
+        <p>No. You don't necessarily have to have been through Beavers, Cubs and Scouts to join Network.</p>
+        <p>If you're aged 18–25 and interested in adventure, volunteering, community projects, international experiences or simply meeting other people, you can find out about joining.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Can I join both Network and a university society?</summary>
+      <div class="answer">
+        <p>Absolutely. In fact, they can complement each other very well.</p>
+        <p>A university society might provide a social group of students at your university. Network connects you to the much larger Scout movement, with opportunities to take part in activities beyond your university.</p>
+        <p>You don't have to choose one or the other.</p>
+      </div>
+    </details>
+
+    <section class="summary" aria-labelledby="diff">
+      <h2 id="diff">So what's the difference?</h2>
+      <div class="compare">
+        <div><h3>University Scout society</h3><p>A university club.</p></div>
+        <div><h3>Scout Network</h3><p>Membership of The Scouts.</p></div>
+      </div>
+      <p><strong>Being a Network member gives you access to:</strong></p>
+      <ul class="benefits">
+        <li>🏕️ Scouting adventures and expeditions</li>
+        <li>🌍 International Scouting</li>
+        <li>🤝 Community projects</li>
+        <li>🧗 Outdoor activities</li>
+        <li>🛡️ The Scouts' safeguarding and safety framework</li>
+        <li>📋 The Scouts' policies and procedures</li>
+        <li>🏠 The Scouts' insurance arrangements for authorised activities</li>
+        <li>🎯 A programme designed specifically for 18–25-year-olds</li>
+        <li>🌐 Connections with Scouts and Network members across the UK and internationally</li>
+        <li>🎓 A way to continue Scouting through university without becoming a Leader</li>
+      </ul>
+    </section>
+
+    <section class="in-short">
+      <h2>In short</h2>
+      <p class="big">You don't have to stop Scouting when you go to university – and you don't have to become a Leader either.</p>
+      <div class="cta">
+        <div class="cta-text">
+          <p>Scout Network lets you carry on having adventures, developing skills and making a difference as a member of The Scouts, alongside university life.</p>
+          <p><strong>Interested?</strong> Register your interest and we'll get in touch.</p>
+          <div class="btns">
+            <a class="btn" href="https://docs.google.com/forms/d/e/1FAIpQLSfPRV9KmR7481InQo15gDt80nW8UMMS-yijzmLlwZ8cMPHG0w/viewform">Register your interest</a>
+            <a class="btn ghost" href="https://www.scouts.org.uk/network/">More about Network</a>
+          </div>
+        </div>
+        <a class="qr" href="https://docs.google.com/forms/d/e/1FAIpQLSfPRV9KmR7481InQo15gDt80nW8UMMS-yijzmLlwZ8cMPHG0w/viewform" aria-label="Register your interest (Google Form)">
+          <img src="data:image/png;base64,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" alt="QR code linking to the Scout Network register of interest form" width="480" height="467">
+          <span>Scan to register</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Winchester District Scouts</strong> – Scout Network</p>
+    <p>More about Network on the national site: <a href="https://www.scouts.org.uk/network/">scouts.org.uk/network</a></p>
+  </div>
+</footer>
+
+<script>
+  // "Open all / Close all" button: loops over every FAQ and opens or closes it.
+  const btn = document.querySelector('.toggle-all');
+  const items = document.querySelectorAll('main details');
+  btn.addEventListener('click', () => {
+    const openAll = btn.getAttribute('aria-pressed') === 'false';
+    items.forEach(d => d.open = openAll);
+    btn.setAttribute('aria-pressed', openAll);
+    btn.textContent = openAll ? 'Close all' : 'Open all';
+  });
+</script>
+</body>
+</html>
